@@ -138,8 +138,6 @@ namespace GenshinLibrary.Services.Wishes
                     cmd.Parameters.Add(param);
             }
 
-            Console.WriteLine(cmd.CommandText);
-
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
             cmd.Parameters.AddWithValue("banner", banner);
 

@@ -36,6 +36,7 @@ namespace GenshinLibrary.Modules
 
         [Command("info")]
         [Summary("Basic info about the bot.")]
+        [Ratelimit(5)]
         public async Task Info() => await ReplyAsync(embed: _support.GetInfoEmbed().Build());
 
         [Command("help")]
