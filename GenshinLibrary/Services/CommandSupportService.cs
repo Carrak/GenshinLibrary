@@ -23,7 +23,7 @@ namespace GenshinLibrary
         ///     Constructs a predetermined embed which has the primary information about the bot.
         /// </summary>
         /// <returns>Info embed</returns>
-        public Embed GetInfoEmbed()
+        public EmbedBuilder GetInfoEmbed()
         {
             var embed = new EmbedBuilder()
                 .WithTitle("GenshinLibrary / Info")
@@ -32,9 +32,9 @@ namespace GenshinLibrary
                 .WithDescription("GenshinLibrary is a tool bot made for Genshin Impact players that " +
                 "allows easier access to player details and flexible control over them. Pity counters, wish history with filters, " +
                 "personal analytics, resin trackers, profiles, various calculators and a gacha simulator is what we've got in store for you.\n\n" +
-                "[Community Server](https://discord.gg/4P23TZFZUN) | [Patreon](https://www.patreon.com/) | ");
+                "[Community Server](https://discord.gg/4P23TZFZUN) | [Patreon](https://www.patreon.com/)");
 
-            return embed.Build();
+            return embed;
         }
 
         public bool IsNameUnique(ModuleInfo module, CommandInfo command) => module.Commands.Count(x => x.Name == command.Name) > 1;

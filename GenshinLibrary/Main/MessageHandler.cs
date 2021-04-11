@@ -221,7 +221,7 @@ namespace GenshinLibrary
                 splitStacktrace.Add(executeResult.Exception.StackTrace.Substring(index, Math.Min(1994, executeResult.Exception.StackTrace.Length - index)));
 
             // Send the logs to the channel
-            if (_client.GetChannel(820654342573916228) is ITextChannel logChannel)
+            if (_client.GetChannel(830891691862655056) is ITextChannel logChannel)
             {
                 try
                 {

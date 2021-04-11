@@ -86,7 +86,8 @@ namespace GenshinLibrary
             if (guild.SystemChannel != null)
             {
                 var embed = _support.GetInfoEmbed();
-                await guild.SystemChannel.SendMessageAsync(embed: embed);
+                embed.WithTitle("Thank you for inviting the bot!");
+                await guild.SystemChannel.SendMessageAsync(embed: embed.Build());
             }
         }
 
