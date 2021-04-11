@@ -12,6 +12,7 @@ namespace GenshinLibrary.Main
 {
     [RequireOwner]
     [HelpIgnore]
+    [Group("ce")]
     public class BotMessages : GLInteractiveBase
     {
         private static CustomMessage customMessage = new CustomMessage();
