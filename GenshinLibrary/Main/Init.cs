@@ -77,6 +77,9 @@ namespace GenshinLibrary
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
+            // Set status
+            await _client.SetGameAsync("gl!help");
+
             // Make sure it doesn't die
             await Task.Delay(-1);
         }
