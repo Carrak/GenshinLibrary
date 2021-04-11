@@ -22,19 +22,17 @@ namespace GenshinLibrary
         /// <summary>
         ///     Constructs a predetermined embed which has the primary information about the bot.
         /// </summary>
-        /// <param name="guild">Guild for determining prefix</param>
         /// <returns>Info embed</returns>
         public Embed GetInfoEmbed()
         {
-            var embed = new EmbedBuilder();
-
-            /*embed.AddField("Getting started", $"Use `{_database.GetPrefix(guild.Id)}help` for the list of command modules and more info.")
-                .AddField("Invite the bot!", "[Click me to invite!](https://discordapp.com/oauth2/authorize?client_id=689177733464457275&scope=bot&permissions=8)")
-                .WithTitle("I am TeaBot!")
-                .WithDescription("TeaBot is a bot created for various handy features, fun commands, math, anime art search and detailed server statistics.")
-                .WithCurrentTimestamp()
+            var embed = new EmbedBuilder()
+                .WithTitle("GenshinLibrary / Info")
+                .AddField("Getting started", $"Use `{Globals.DefaultPrefix}help` for the list of command modules and more info.")
                 .WithColor(Globals.MainColor)
-                .WithFooter(infoFooter);*/
+                .WithDescription("GenshinLibrary is a tool bot made for Genshin Impact players that " +
+                "allows easier access to player details and flexible control over them. Pity counters, wish history with filters, " +
+                "personal analytics, resin trackers, profiles, various calculators and a gacha simulator is what we've got in store for you.\n\n" +
+                "[Community Server](https://discord.gg/4P23TZFZUN) | [Patreon](https://www.patreon.com/) | ");
 
             return embed.Build();
         }

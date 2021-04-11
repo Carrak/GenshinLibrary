@@ -34,6 +34,10 @@ namespace GenshinLibrary.Modules
             await message.ModifyAsync(x => x.Content = $"Pong! | `Ping: {sw.ElapsedMilliseconds}ms` | `WebSocket: {Context.Client.Latency}ms`");
         }
 
+        [Command("info")]
+        [Summary("Basic info about the bot.")]
+        public async Task Info() => await ReplyAsync(embed: _support.GetInfoEmbed());
+
         [Command("help")]
         [Summary("Help on a specific command or module")]
         [Ratelimit(3)]
