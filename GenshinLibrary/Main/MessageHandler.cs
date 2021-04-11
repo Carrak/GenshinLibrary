@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Commands.Builders;
 using Discord.Net;
 using Discord.WebSocket;
 using GenshinLibrary.Attributes;
@@ -42,6 +43,19 @@ namespace GenshinLibrary
         {
             _commands.AddTypeReader<Color>(new ColorTypeReader());
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+            
+            await _commands.CreateModuleAsync("", x =>
+            {
+                var helpCommand = _commands.Modules.FirstOrDefault(x => x.Name == "Support").Commands.FirstOrDefault(x => x.Name == "help" && x.Parameters.Count == 1);
+                x.AddAttributes(new HelpIgnoreAttribute());
+
+                foreach (var module in _commands.Modules.Where(x => !x.Attributes.Any(attr => attr is HelpIgnoreAttribute)))
+                    x.AddCommand(module.Name, async (ctx, _, provider, _1) =>
+                    {
+                        var parseResult = ParseResult.FromSuccess(new List<TypeReaderResult>() { TypeReaderResult.FromSuccess(module.Name) }, new List<TypeReaderResult>());
+                        await helpCommand.ExecuteAsync(ctx, parseResult, _services);
+                    }, command => { });
+            });
 
             foreach (var cmd in _commands.Commands.Where(x => !x.Module.Attributes.Any(atr => atr is HelpIgnoreAttribute)))
             {

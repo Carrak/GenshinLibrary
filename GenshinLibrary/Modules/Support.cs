@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 namespace GenshinLibrary.Modules
 {
     [Summary("Support/help on the bot and its commands.")]
-    public class Help : GLInteractiveBase
+    public class Support : GLInteractiveBase
     {
         private readonly CommandService _commands;
         private readonly CommandSupportService _support;
 
-        public Help(CommandService commands, CommandSupportService support)
+        public Support(CommandService commands, CommandSupportService support)
         {
             _commands = commands;
             _support = support;
@@ -67,7 +67,7 @@ namespace GenshinLibrary.Modules
 
                 var embed = new EmbedBuilder();
 
-                embed.WithTitle($"{module.Name} commands")
+                embed.WithTitle($"{module.Name}")
                     .WithDescription(
                     $"{module.Summary}\n\n" +
                     $"`*` notation means there's more than one command with a given name\n" +
