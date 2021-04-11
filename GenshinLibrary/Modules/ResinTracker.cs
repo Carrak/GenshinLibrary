@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 namespace GenshinLibrary.Modules
 {
     [Summary("Keep track of your resin.")]
-    public class Resin : GLInteractiveBase
+    public class ResinTracker : GLInteractiveBase
     {
         private readonly ResinTrackerService _resinTracker;
 
-        public Resin(ResinTrackerService resinTracker)
+        public ResinTracker(ResinTrackerService resinTracker)
         {
             _resinTracker = resinTracker;
         }
