@@ -25,7 +25,7 @@ namespace GenshinLibrary.Services.GachaSim
                 var count = entry.Value;
 
                 var wishItemCount = new WishItemCount(wi, count);
-                switch(wi.Rarity)
+                switch (wi.Rarity)
                 {
                     case 3: threestars.Add(wishItemCount); break;
                     case 4: fourstars.Add(wishItemCount); break;

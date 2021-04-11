@@ -28,7 +28,7 @@ namespace GenshinLibrary.Modules
             "`[filter]:[operator][value]`\n" +
             "Where `[operator]` is either an equality (`=`, `!=`) or an inequality (`<`, `>`, `<=`, `>=`) operator.\nYou can specify several filter values of one type by separating them with a comma.\nOperator can be unspecified if it's `=`.\n\n" +
             "You can also specify the order by adding `order:pity` or `order:rarity`. By default wishes are ordered chronologically.";
-        
+
         private static readonly Emoji checkmark = new Emoji("✅");
         private readonly WishService _wishes;
 
@@ -46,7 +46,7 @@ namespace GenshinLibrary.Modules
         [Summary("View someone's wish analytics.")]
         [Ratelimit(10)]
         public async Task Anal(
-            [Summary("The user whose analytics you want to see.")] [Remainder] IUser user
+            [Summary("The user whose analytics you want to see.")][Remainder] IUser user
             )
         {
             var data = await _wishes.GetAnalyticsAsync(user);
@@ -131,7 +131,7 @@ namespace GenshinLibrary.Modules
         [Example("This command will display all the 4 stars and 5 stars that you got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard rarity:4,5 pity:<60 order:pity`")]
         [Ratelimit(10)]
         public async Task History
-            (Banner banner, 
+            (Banner banner,
             [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
             ) => await History(banner, Context.User, filters);
 
@@ -139,8 +139,8 @@ namespace GenshinLibrary.Modules
         [Summary("View someone's wish history.")]
         [Ratelimit(10)]
         public async Task History(
-            Banner banner, 
-            [Summary("The user whose history you wish to see.")] IUser user, 
+            Banner banner,
+            [Summary("The user whose history you wish to see.")] IUser user,
             [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
         {
             QueryCondition condition = null;
@@ -188,8 +188,8 @@ namespace GenshinLibrary.Modules
                     "2021-04-06 18:04:01`")]
         [Ratelimit(5)]
         public async Task AddWishBulk(
-            Banner banner, 
-            [Summary("The data copied from the game's history. For accuracy and integrity, copy each page starting from the last on each banner.")] [Remainder] string data
+            Banner banner,
+            [Summary("The data copied from the game's history. For accuracy and integrity, copy each page starting from the last on each banner.")][Remainder] string data
             )
         {
             // dumb check for dumb people xd
@@ -251,9 +251,9 @@ namespace GenshinLibrary.Modules
         [Summary("Add a single wish to a certain banner.")]
         [Ratelimit(5)]
         public async Task AddWish(
-            Banner banner, 
-            [Summary("Date of the wish.")] DateTime datetime, 
-            [Summary("The name of the received item.")] [Remainder] string name)
+            Banner banner,
+            [Summary("Date of the wish.")] DateTime datetime,
+            [Summary("The name of the received item.")][Remainder] string name)
         {
             if (_wishes.WishItems.TryGetValue(name, out var wishItem))
             {
@@ -275,7 +275,7 @@ namespace GenshinLibrary.Modules
         [Summary("Remove recently added wishes on a certain banner.")]
         [Ratelimit(5)]
         public async Task RemoveRecent(
-            Banner banner, 
+            Banner banner,
             [Summary("Amount to remove. Can only delete up to 12 wishes at once.")] int count)
         {
             if (count <= 0)

@@ -1,7 +1,4 @@
 ﻿using GenshinLibrary.GenshinWishes;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace GenshinLibrary.Services.GachaSim
 {

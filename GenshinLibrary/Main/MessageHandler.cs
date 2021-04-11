@@ -43,7 +43,7 @@ namespace GenshinLibrary
             _commands.AddTypeReader<Color>(new ColorTypeReader());
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
-            foreach(var cmd in _commands.Commands.Where(x => !x.Module.Attributes.Any(atr => atr is HelpIgnoreAttribute)))
+            foreach (var cmd in _commands.Commands.Where(x => !x.Module.Attributes.Any(atr => atr is HelpIgnoreAttribute)))
             {
                 if (!cmd.Preconditions.Any(x => x is RatelimitAttribute))
                     Console.WriteLine($"{cmd.Name} has no cooldown set.");

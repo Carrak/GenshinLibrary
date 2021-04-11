@@ -1,6 +1,5 @@
 ﻿using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.Services.GachaSim.Sessions;
-using System;
 using System.Collections.Generic;
 
 namespace GenshinLibrary.Services.GachaSim

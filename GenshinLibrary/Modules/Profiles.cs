@@ -28,7 +28,7 @@ namespace GenshinLibrary.Modules
         [Summary("View someone's profile.")]
         [Ratelimit(5)]
         public async Task UserProfile(
-            [Summary("The user whose profile you want to see")] [Remainder] IUser user
+            [Summary("The user whose profile you want to see")][Remainder] IUser user
             )
         {
             var analytics = await _wishes.GetAnalyticsAsync(user);
@@ -74,7 +74,7 @@ namespace GenshinLibrary.Modules
         [Summary("Change your profile avatar.")]
         [Ratelimit(5)]
         public async Task SetAvatar(
-            [Summary("The name of the character to set as the avatar.")] [Remainder] string character
+            [Summary("The name of the character to set as the avatar.")][Remainder] string character
             )
         {
             if (_wishes.WishItems.TryGetValue(character, out WishItem wi) && wi is Character foundCharacter)

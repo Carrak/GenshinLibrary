@@ -1,7 +1,7 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using System;
 using System.Globalization;
-using Discord;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
