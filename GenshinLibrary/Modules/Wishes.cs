@@ -190,7 +190,7 @@ namespace GenshinLibrary.Modules
         [Ratelimit(5)]
         public async Task AddWishBulk(
             Banner banner,
-            [Summary("The data copied from the game's history. For accuracy and integrity, copy each page starting from the last on each banner.")][Remainder] string data
+            [Summary("The data copied from the game's history. For accuracy and integrity, __**copy each page starting from the last on each banner.**__")][Remainder] string data
             )
         {
             // dumb check for dumb people xd

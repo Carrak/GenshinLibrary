@@ -36,7 +36,7 @@ namespace GenshinLibrary.Modules
         [Summary("Calculates the amount of primogems you can get before a given date.")]
         [Example("`gl!primogems 08.06.2021 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
         public async Task Primogems(
-            [Summary("The end date to calculate to.")] DateTime end,
+            [Summary("The end date to calculate to. Format: MM.DD.YYYY")] DateTime end,
             [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null
             )
         {
