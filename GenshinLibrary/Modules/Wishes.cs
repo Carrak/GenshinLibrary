@@ -8,6 +8,7 @@ using GenshinLibrary.ReactionCallback;
 using GenshinLibrary.Services.Wishes;
 using GenshinLibrary.Services.Wishes.Filtering;
 using GenshinLibrary.StringTable;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -236,14 +237,24 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
+            records.Reverse();
+
             var embed = new EmbedBuilder();
 
             embed.WithColor(Globals.MainColor)
                 .WithTitle($"{records.Count} wishes recorded!")
                 .WithDescription(GetTable(records.ToArray()).GetTable());
 
-            records.Reverse();
-            await _wishes.AddWishesAsync(Context.User, banner, records);
+            try
+            {
+                await _wishes.AddWishesAsync(Context.User, banner, records);
+            } 
+            catch (PostgresException pe)
+            {
+                await ReplyAsync(pe.MessageText);
+                return;
+            }
+
             await ReplyAsync(errorMessage, embed: embed.Build());
         }
 
@@ -257,7 +268,15 @@ namespace GenshinLibrary.Modules
         {
             if (_wishes.WishItems.TryGetValue(name, out var wishItem))
             {
-                await AddWish(wishItem, banner, datetime);
+                try
+                {
+                    await AddWish(wishItem, banner, datetime);
+                }
+                catch (PostgresException pe)
+                {
+                    await ReplyAsync(pe.MessageText);
+                    return;
+                }
             }
             else
             {
