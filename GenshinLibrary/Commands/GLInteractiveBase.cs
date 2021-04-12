@@ -76,15 +76,17 @@ namespace GenshinLibrary.Commands
             timeout ??= TimeSpan.FromSeconds(60);
 
             // Temporary message handler
-            async Task Handler(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
+            Task Handler(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
             {
                 // Ensure the message is in the same channel and by the same user
                 if (reaction.User.Value.Id != user.Id || cachedMessage.Id != message.Id)
-                    return;
+                    return Task.CompletedTask;
 
                 // If message matches the condition, set it as the result
                 if (reaction.Emote.ToString() == emote.Name.ToString())
                     eventTrigger.SetResult(true);
+
+                return Task.CompletedTask;
             }
 
             Context.Client.ReactionAdded += Handler;

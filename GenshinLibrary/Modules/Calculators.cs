@@ -40,6 +40,8 @@ namespace GenshinLibrary.Modules
             [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null
             )
         {
+            settings ??= new PrimogemCalculatorSettings();
+
             if (end - DateTime.UtcNow < TimeSpan.FromDays(1))
             {
                 await ReplyAsync("Cannot calculate periods shorter than 1 day.");

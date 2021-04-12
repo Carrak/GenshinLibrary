@@ -43,7 +43,7 @@ namespace GenshinLibrary.Modules
         [Summary("Help on a specific command or module")]
         [Ratelimit(3)]
         public async Task HelpCommandModule(
-            [Summary("The name of the module or the command to get help on.")] string name
+            [Summary("The name of the module or the command to get help on.")] [Remainder] string name
             )
         {
             var result = _commands.Search(name);
