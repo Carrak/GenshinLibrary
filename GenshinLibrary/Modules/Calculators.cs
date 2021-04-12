@@ -21,7 +21,9 @@ namespace GenshinLibrary.Modules
             "**CurrSojourner** - current Sojourner BP level.\n" +
             "**CurrGnostic** - current Gnostic BP level.\n" +
             "**Gnostic** - amount of Gnostic passes you wish to purchase during the period.\n" +
-            "**Events** - includes an average amount of primogems from events. [true/false]";
+            "**Events** - includes an average amount of primogems from events. [true/false]\n\n" +
+            "Settings are specified in the following format:\n" +
+            "[setting]:[value]";
 
         [Command("primogems")]
         [Ratelimit(10)]

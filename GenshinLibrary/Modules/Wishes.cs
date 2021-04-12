@@ -190,7 +190,9 @@ namespace GenshinLibrary.Modules
         [Ratelimit(5)]
         public async Task AddWishBulk(
             Banner banner,
-            [Summary("The data copied from the game's history.\n__**For accuracy and integrity, copy each page starting from the last on each banner and don't modify the copied data.**__. The bot will handle the rest for you.")][Remainder] string data
+            [Summary("The data copied from the game's history.\nWhen importing, wishes must be added in chronological order, therefore, " +
+            "__**copy each page starting from the last on each banner and don't modify the copied data.**__. " +
+            "The bot will handle the rest for you (including reversing the copied data). For mobile-only players, sadly, there's no viable solution for now.")] [Remainder] string data
             )
         {
             // dumb check for dumb people xd
@@ -248,7 +250,7 @@ namespace GenshinLibrary.Modules
             try
             {
                 await _wishes.AddWishesAsync(Context.User, banner, records);
-            } 
+            }
             catch (PostgresException pe)
             {
                 await ReplyAsync(pe.MessageText);

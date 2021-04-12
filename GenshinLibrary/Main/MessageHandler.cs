@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Commands.Builders;
 using Discord.Net;
 using Discord.WebSocket;
 using GenshinLibrary.Attributes;
@@ -43,7 +42,7 @@ namespace GenshinLibrary
         {
             _commands.AddTypeReader<Color>(new ColorTypeReader());
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-            
+
             await _commands.CreateModuleAsync("", x =>
             {
                 var helpCommand = _commands.Modules.FirstOrDefault(x => x.Name == "Support").Commands.FirstOrDefault(x => x.Name == "help" && x.Parameters.Count == 1);
@@ -122,6 +121,12 @@ namespace GenshinLibrary
                     break;
 
                 case CommandError.Exception when result is ExecuteResult er:
+                    if (er.Exception is HttpException)
+                    {
+                        await context.Channel.SendMessageAsync("An HttpException has occured. This is likely due to missing permissions. Check the bot's permissions and try again.");
+                        return;
+                    }
+
                     // Construct the embed
                     var embed = new EmbedBuilder();
                     embed.WithColor(Color.Red)
@@ -235,7 +240,7 @@ namespace GenshinLibrary
                 splitStacktrace.Add(executeResult.Exception.StackTrace.Substring(index, Math.Min(1994, executeResult.Exception.StackTrace.Length - index)));
 
             // Send the logs to the channel
-            if (_client.GetChannel(820654342573916228) is ITextChannel logChannel)
+            if (_client.GetChannel(830891691862655056) is ITextChannel logChannel)
             {
                 try
                 {

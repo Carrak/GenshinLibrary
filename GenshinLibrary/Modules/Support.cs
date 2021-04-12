@@ -57,10 +57,10 @@ namespace GenshinLibrary.Modules
         public async Task Info() => await ReplyAsync(embed: _support.GetInfoEmbed().Build());
 
         [Command("help")]
-        [Summary("Help on a specific command or module")]
+        [Summary("Help on a specific command or module.")]
         [Ratelimit(3)]
         public async Task HelpCommandModule(
-            [Summary("The name of the module or the command to get help on.")] [Remainder] string name
+            [Summary("The name of the module or the command to get help on.")][Remainder] string name
             )
         {
             var result = _commands.Search(name);
@@ -114,6 +114,6 @@ namespace GenshinLibrary.Modules
             await ReplyAsync(embed: embed.Build());
         }
 
-        private string FormatCommands(ModuleInfo module) => string.Join('\n', module.Commands.Select(x => $"`{Globals.DefaultPrefix}{_support.GetCommandHeader(x)}`\n - {x.Summary}"));
+        private string FormatCommands(ModuleInfo module) => string.Join('\n', module.Commands.Select(x => $"`{_support.GetCommandHeader(x)}`\n - {x.Summary}"));
     }
 }
