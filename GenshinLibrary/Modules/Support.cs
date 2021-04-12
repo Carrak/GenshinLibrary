@@ -114,20 +114,6 @@ namespace GenshinLibrary.Modules
             await ReplyAsync(embed: embed.Build());
         }
 
-        private string FormatCommands(ModuleInfo module)
-        {
-            HashSet<string> names = new HashSet<string>();
-            List<CommandInfo> commands = new List<CommandInfo>();
-            foreach (var cmd in module.Commands)
-            {
-                if (names.Contains(cmd.Name))
-                    continue;
-
-                names.Add(cmd.Name);
-                commands.Add(cmd);
-            }
-
-            return string.Join('\n', commands.Select(x => $"`{Globals.DefaultPrefix}{_support.GetCommandHeader(x)}`{(_support.IsNameUnique(module, x) ? " `*`" : "")}\n - {x.Summary}"));
-        }
+        private string FormatCommands(ModuleInfo module) => string.Join('\n', module.Commands.Select(x => $"`{Globals.DefaultPrefix}{_support.GetCommandHeader(x)}`\n - {x.Summary}"));
     }
 }
