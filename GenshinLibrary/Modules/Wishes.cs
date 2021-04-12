@@ -190,7 +190,7 @@ namespace GenshinLibrary.Modules
         [Ratelimit(5)]
         public async Task AddWishBulk(
             Banner banner,
-            [Summary("The data copied from the game's history. For accuracy and integrity, __**copy each page starting from the last on each banner.**__")][Remainder] string data
+            [Summary("The data copied from the game's history.\n__**For accuracy and integrity, copy each page starting from the last on each banner and don't modify the copied data.**__. The bot will handle the rest for you.")][Remainder] string data
             )
         {
             // dumb check for dumb people xd
@@ -237,13 +237,13 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            records.Reverse();
-
             var embed = new EmbedBuilder();
 
             embed.WithColor(Globals.MainColor)
                 .WithTitle($"{records.Count} wishes recorded!")
                 .WithDescription(GetTable(records.ToArray()).GetTable());
+
+            records.Reverse();
 
             try
             {
