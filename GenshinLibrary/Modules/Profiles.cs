@@ -3,6 +3,7 @@ using Discord.Commands;
 using GenshinLibrary.Commands;
 using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.Preconditions;
+using GenshinLibrary.Services;
 using GenshinLibrary.Services.Wishes;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,10 +14,12 @@ namespace GenshinLibrary.Modules
     public class Profiles : GLInteractiveBase
     {
         private readonly WishService _wishes;
+        private readonly PatreonService _patreon;
 
-        public Profiles(WishService wishService)
+        public Profiles(WishService wishService, PatreonService patreon)
         {
             _wishes = wishService;
+            _patreon = patreon;
         }
 
         [Command("profile")]
@@ -35,18 +38,22 @@ namespace GenshinLibrary.Modules
             var pities = await _wishes.GetPities(user);
             var profile = await _wishes.GetProfileAsync(user);
 
-            string name = "avatar.png";
+            string fileName = "avatar.png";
 
             var color = profile.Avatar is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.Avatar.Vision);
             var image = profile.Avatar is null ? Character.GetDefaultImage() : profile.Avatar.GetImage();
 
             var embed = new EmbedBuilder();
 
+            string name = user.ToString();
+            if (_patreon.IsPatron(user))
+                name = $"{name} | {_patreon.PatreonLogo} Supporter";
+
             embed.WithColor(color)
-                .WithTitle($"{user}")
+                .WithTitle(name)
                 .AddField("5★ Characters", $"{(profile.Characters.Any() ? string.Join('\n', profile.Characters.Select(x => x.ToString())) : "None yet!")}")
                 .AddField("5★ Weapons", $"{(profile.Weapons.Any() ? string.Join('\n', profile.Weapons.Select(x => x.ToString())) : "None yet!")}")
-                .WithThumbnailUrl($"attachment://{name}");
+                .WithThumbnailUrl($"attachment://{fileName}");
 
             if (analytics != null)
             {
@@ -67,7 +74,7 @@ namespace GenshinLibrary.Modules
             if (pities != null)
                 embed.AddField("Pities", pities.ToString());
 
-            await Context.Channel.SendFileAsync(image.Stream, name, embed: embed.Build());
+            await Context.Channel.SendFileAsync(image.Stream, fileName, embed: embed.Build());
         }
 
         [Command("setavatar")]
