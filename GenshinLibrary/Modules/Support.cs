@@ -23,6 +23,23 @@ namespace GenshinLibrary.Modules
             _support = support;
         }
 
+        [Command("botstats")]
+        [Summary("Amount of guilds the bot is in and total users.")]
+        [Ratelimit(5)]
+        public async Task Stats()
+        {
+            var embed = new EmbedBuilder();
+
+            var client = Context.Client;
+
+            embed.WithAuthor(client.CurrentUser)
+                .WithColor(Color.Blue)
+                .AddField("Guilds", client.Guilds.Count, true)
+                .AddField("Users", client.Guilds.Sum(x => x.Users.Count), true);
+
+            await ReplyAsync(embed: embed.Build());
+        }
+
         [Command("ping")]
         [Summary("The bot's and gateway's latencies.")]
         [Ratelimit(5)]
