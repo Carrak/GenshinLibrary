@@ -10,19 +10,22 @@ namespace GenshinLibrary.Services.Resin
         public static int MaxResin { get; } = 160;
         public static int RechargeRateMinutes { get; } = 8;
 
-        public int Value { get; }
+        public ulong UserID { get; }
         public DateTime UpdatedAt { get; }
+        public int Value { get; }
+
         public DateTime FullyRefillsAt { get; }
 
-        public ResinUpdate(DateTime updatedAt, int value)
+        public ResinUpdate(ulong userId, DateTime updatedAt, int value)
         {
+            UserID = userId;
             UpdatedAt = updatedAt;
             Value = value;
             FullyRefillsAt = updatedAt + (MaxResin - value) * TimeSpan.FromMinutes(RechargeRateMinutes);
         }
 
         public TimeSpan TimeBeforeFullRefill() => FullyRefillsAt - DateTime.UtcNow;
-        public int GetCurrentResin() => Value + (int)((DateTime.UtcNow - UpdatedAt) / TimeSpan.FromMinutes(RechargeRateMinutes));
+        public int GetCurrentResin() => Math.Min(MaxResin, Value + (int)((DateTime.UtcNow - UpdatedAt) / TimeSpan.FromMinutes(RechargeRateMinutes)));
         public static string GetResinString(int value) => $"**{value} / {MaxResin}**";
     }
 }

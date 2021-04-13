@@ -1,38 +1,38 @@
 ﻿using Discord;
-using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GenshinLibrary.Services.Resin
 {
     /// <summary>
     ///     The service to keep track of users' resin.
     /// </summary>
-    public class ResinTrackerService
+    public partial class ResinTrackerService
     {
-        /// <summary>
-        ///     The cache to store resin updates in.
-        /// </summary>
-        readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
+        private readonly DatabaseService _database;
+        private Dictionary<ulong, ResinUpdate> _resinUpdates { get;} = new Dictionary<ulong, ResinUpdate>();
 
-        /// <summary>
-        ///     Sets a <see cref="ResinUpdate"/> instance to the cache that expires once the value of that instance is meant to reach <see cref="ResinUpdate.MaxResin"/>
-        /// </summary>
-        /// <param name="user">The user to use for identification.</param>
-        /// <param name="dt">The datetime of the update.</param>
-        /// <param name="value">The updated value.</param>
-        /// <returns>The cached ResinUpdate instance.</returns>
-        public ResinUpdate SetValue(IUser user, DateTime dt, int value)
+        public ResinTrackerService(DatabaseService database)
         {
-            var update = new ResinUpdate(dt, value);
-            _cache.Set(user.Id, update, update.FullyRefillsAt);
+            _database = database;
+        }
+
+        public async Task InitAsync()
+        {
+            var resinUpdates = await GetUpdatesAsync();
+            foreach (var ru in resinUpdates)
+                _resinUpdates[ru.UserID] = ru;
+        }
+
+        public async Task<ResinUpdate> SetValueAsync(IUser user, DateTime dt, int value)
+        {
+            var update = new ResinUpdate(user.Id, dt, value);
+            _resinUpdates[user.Id] = update;
+            await UpdateResinAsync(update);
             return update;
         }
 
-        /// <summary>
-        ///     Gets the <see cref="ResinUpdate"/> instance from the cache at the ID of the given user, or null if it is not found.
-        /// </summary>
-        /// <param name="user">The user to get the object for.</param>
-        /// <returns>The ResinUpdate instance.</returns>
-        public ResinUpdate GetValue(IUser user) => _cache.TryGetValue<ResinUpdate>(user.Id, out var update) ? update : null;
+        public ResinUpdate GetValue(IUser user) => _resinUpdates.TryGetValue(user.Id, out var update) ? update : null;
     }
 }
