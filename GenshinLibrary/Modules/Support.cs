@@ -87,8 +87,7 @@ namespace GenshinLibrary.Modules
                 embed.WithTitle($"{module.Name}")
                     .WithDescription(
                     $"{module.Summary}\n\n" +
-                    $"`*` notation means there's more than one command with a given name\n" +
-                    $"Use `{Globals.DefaultPrefix}help [command]` to get help on a command and see its variations.")
+                    $"Use `{Globals.DefaultPrefix}help [command name]` to get help on a specific command and see what each parameter means.")
                     .WithColor(Globals.MainColor)
                     .AddField("Commands", FormatCommands(module));
 
