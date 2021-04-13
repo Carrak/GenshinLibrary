@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GenshinLibrary.Modules
 {
-    [Summary("Keep track of your resin.")]
+    [Summary("Keep track of your resin outside of the game.")]
     public class ResinTracker : GLInteractiveBase
     {
         private readonly ResinTrackerService _resinTracker;
@@ -19,9 +19,8 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("setresin")]
-        [Alias("resin")]
         [Summary("Update your resin.")]
-        [Ratelimit(10)]
+        [Ratelimit(5)]
         public async Task SetResin(
             [Summary("The value to set.")] int value
             )
@@ -32,7 +31,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var resinUpdate = _resinTracker.SetValue(Context.User, DateTime.UtcNow, value);
+            var resinUpdate = await _resinTracker.SetValueAsync(Context.User, DateTime.UtcNow, value);
             var embed = new EmbedBuilder();
             embed.WithAuthor(Context.User)
                 .WithColor(Globals.MainColor)
@@ -44,7 +43,7 @@ namespace GenshinLibrary.Modules
 
         [Command("resin")]
         [Summary("View your resin.")]
-        [Ratelimit(10)]
+        [Ratelimit(5)]
         public async Task GetResin()
         {
             var resinUpdate = _resinTracker.GetValue(Context.User);

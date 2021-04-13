@@ -26,6 +26,7 @@ namespace GenshinLibrary.Modules
             "[setting]:[value]";
 
         [Command("primogems")]
+        [Alias("primogemcalculator", "pc")]
         [Ratelimit(10)]
         [Summary("Calculates the amount of primogems you can get across a given amount of days.")]
         [Example("`gl!primogems 50 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
@@ -34,6 +35,7 @@ namespace GenshinLibrary.Modules
             [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null) => await Primogems(DateTime.UtcNow.Date.AddDays(days), settings);
 
         [Command("primogems")]
+        [Alias("primogemcalculator", "pc")]
         [Ratelimit(10)]
         [Summary("Calculates the amount of primogems you can get before a given date.")]
         [Example("`gl!primogems 08.06.2021 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]

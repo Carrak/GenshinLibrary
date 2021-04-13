@@ -102,6 +102,7 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("inventory")]
+        [Alias("items", "inv")]
         [Summary("View your current items.")]
         [Ratelimit(5)]
         public async Task History()
@@ -154,6 +155,7 @@ namespace GenshinLibrary.Modules
 
         [Command("banner", RunMode = RunMode.Async)]
         [Summary("Select a banner to wish on.")]
+        [Alias("wishon", "selectbanner", "select")]
         [Ratelimit(5)]
         public async Task SelectBanner(Banner banner)
         {
