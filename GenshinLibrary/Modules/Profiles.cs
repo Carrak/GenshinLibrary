@@ -10,7 +10,9 @@ using System.Threading.Tasks;
 
 namespace GenshinLibrary.Modules
 {
-    [Summary("View and manage your profile.\nProfiles display your 5 stars and current pity counters across all banners.")]
+    [Summary("View and manage your profile.\nProfiles display your 5 stars and current pity counters across all banners. " +
+        "They use the same data as analytics and wishes, so if you're wondering how to add anything to your profile, you might want to import your wishes first. " +
+        "For that, refer to the `Wishes` module.")]
     public class Profiles : GLInteractiveBase
     {
         private readonly WishService _wishes;
