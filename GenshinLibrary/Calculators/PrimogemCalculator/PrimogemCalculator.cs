@@ -325,7 +325,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                     hoyolab.Rewards.Add(new Reward(Currency.Primogems, 1, canClaim * 20));
             }
 
-            if (monthlyResets != 0)
+            if (monthlyResets > 1)
             {
                 hoyolab.Rewards.Add(new Reward(Currency.Primogems, monthlyResets, 60));
 
