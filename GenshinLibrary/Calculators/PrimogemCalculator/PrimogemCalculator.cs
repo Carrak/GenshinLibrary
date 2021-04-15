@@ -128,9 +128,9 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             }
 
             // Stardust shop
-            int shop = DateCalculator(StartDate.DateTruncate(TimePartition.Month), i => i.AddMonths(1));
-            if (shop != 0)
-                totals.Add(new GemTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, shop, 5), new Reward(Currency.Intertwined, shop, 5)));
+            int monthlyResets = DateCalculator(StartDate.DateTruncate(TimePartition.Month), i => i.AddMonths(1));
+            if (monthlyResets != 0)
+                totals.Add(new GemTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, monthlyResets, 5), new Reward(Currency.Intertwined, monthlyResets, 5)));
 
             int codes = DateCalculator(LaunchDay - TimeSpan.FromDays(10), i => i.AddDays(UpdateDuration));
             int reachedUpdateDays = Math.Min((EndDate - Versions[^1].Start).Days + 1, Days);
@@ -152,6 +152,14 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             int testRuns = DateCalculator(LaunchDay, i => i.AddDays(UpdateDuration / 2));
             if (testRuns != 0)
                 totals.Add(new GemTotal(GenshinEmotes.Primogem, "Test Runs", new Reward(Currency.Primogems, testRuns, 20)));
+
+            // Hoyolab
+            if (Settings.Hoyolab != 0)
+            {
+                var hoyolab = GetHoyolab(monthlyResets);
+                if (hoyolab.Rewards.Count > 0)
+                    totals.Add(hoyolab);
+            }
 
             return totals;
         }
@@ -304,6 +312,39 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return battlepass;
         }
 
+        private GemTotal GetHoyolab(int monthlyResets)
+        {
+            var hoyolab = new GemTotal(GenshinEmotes.Primogem, "Hoyolab Monthly Check-in");
+            var days = DateTime.DaysInMonth(StartDate.Year, StartDate.Month);
+
+            if (Settings.Hoyolab < 21)
+            {
+                var daysLeft = Math.Min(Days, days - StartDate.Day);
+                var canClaim = (Settings.Hoyolab + daysLeft) / 7 - Settings.Hoyolab / 7;
+                if (canClaim > 0)
+                    hoyolab.Rewards.Add(new Reward(Currency.Primogems, 1, canClaim * 20));
+            }
+
+            if (monthlyResets != 0)
+            {
+                hoyolab.Rewards.Add(new Reward(Currency.Primogems, monthlyResets, 60));
+
+                int lastMonthReward = EndDate.Day / 7 * 20;
+                if (lastMonthReward >= 60)
+                    hoyolab.Rewards[^1].Quantity++;
+                else
+                    hoyolab.Rewards.Add(new Reward(Currency.Primogems, 1, lastMonthReward));
+            }
+            else if (StartDate.Month != EndDate.Month)
+            {
+                var lastMonthReward = Math.Min(3, EndDate.Day / 7) * 20;
+                if (lastMonthReward > 0)
+                    hoyolab.Rewards.Add(new Reward(Currency.Primogems, 1, lastMonthReward));
+            }
+
+            return hoyolab;
+        }
+
         private List<Version> GetVersions(DateTime start, DateTime end)
         {
             List<Version> versions = new List<Version>();
@@ -324,7 +365,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
         {
             int count = 0;
             for (DateTime i = start; i <= EndDate; i = incrementFunc(i))
-                if (i > StartDate && i <= EndDate)
+                if (i > StartDate)
                     count++;
 
             return count;

@@ -14,6 +14,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
         public int Abyss { get; set; }
         public int CurrSojourner { get; set; }
         public int CurrGnostic { get; set; }
+        public int Hoyolab { get; set; }
         public bool Events { get; set; }
         // Purchaseables
         public int Welkin { get; set; }
@@ -47,6 +48,12 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
             if (Gnostic < 0 || Gnostic > 10)
                 throw new Exception($"`{nameof(Gnostic)}` must be from 1 to 10");
+
+            if (Hoyolab < 0 || Hoyolab > 30)
+                throw new Exception($"`{nameof(Hoyolab)}` must be between 0 and 30");
+
+            if (Hoyolab > DateTime.UtcNow.Day)
+                throw new Exception($"`{nameof(Hoyolab)}` can't be bigger than the current date.");
         }
     }
 }
