@@ -87,7 +87,8 @@ namespace GenshinLibrary.Modules
                 embed.WithTitle($"{module.Name}")
                     .WithDescription(
                     $"{module.Summary}\n\n" +
-                    $"Use `{Globals.DefaultPrefix}help [command name]` to get help on a specific command and see what each parameter means.")
+                    $"Use `{Globals.DefaultPrefix}help [command name]` to get help on a specific command and see what each parameter means.\n" +
+                    $"Parameters in `[]` denote necessary parameteres, whereas parameters in `<>` can be left unspecified.")
                     .WithColor(Globals.MainColor)
                     .AddField("Commands", FormatCommands(module));
 

@@ -21,9 +21,10 @@ namespace GenshinLibrary.Modules
             "**CurrSojourner** - current Sojourner BP level.\n" +
             "**CurrGnostic** - current Gnostic BP level.\n" +
             "**Gnostic** - amount of Gnostic passes you wish to purchase during the period.\n" +
-            "**Events** - includes an average amount of primogems from events. [true/false]\n\n" +
+            "**Events** - includes an average amount of primogems from events. [true/false]\n" +
+            "**Hoyolab** - your current HoyoLab check-in day. Specifying this settings also adds future HoyoLab rewards.\n\n" +
             "Settings are specified in the following format:\n" +
-            "[setting]:[value]";
+            "`[setting]:[value]`";
 
         [Command("primogems")]
         [Alias("primogemcalculator", "pc")]
