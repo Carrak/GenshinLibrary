@@ -43,7 +43,7 @@ namespace GenshinLibrary.Modules
                 }
 
                 var rechargeRate = TimeSpan.FromMinutes(ResinUpdate.RechargeRateMinutes);
-                dt = dt.Add(ts-rechargeRate);
+                dt = dt.Add(ts - rechargeRate);
             }
 
             var resinUpdate = await _resinTracker.SetValueAsync(Context.User, dt, value);

@@ -11,7 +11,7 @@ namespace GenshinLibrary.Services.Resin
     public partial class ResinTrackerService
     {
         private readonly DatabaseService _database;
-        private Dictionary<ulong, ResinUpdate> _resinUpdates { get;} = new Dictionary<ulong, ResinUpdate>();
+        private Dictionary<ulong, ResinUpdate> _resinUpdates { get; } = new Dictionary<ulong, ResinUpdate>();
 
         public ResinTrackerService(DatabaseService database)
         {
