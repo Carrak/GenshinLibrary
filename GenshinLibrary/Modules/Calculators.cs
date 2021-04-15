@@ -33,7 +33,7 @@ namespace GenshinLibrary.Modules
         [Example("`gl!primogems 50 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
         public async Task Primogems(
             [Summary("Amount of days to calculate through.")] int days,
-            [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null) => await Primogems(DateTime.UtcNow.Date.AddDays(days), settings);
+            [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null) => await Primogems(DateTime.UtcNow.AddDays(days), settings);
 
         [Command("primogems")]
         [Alias("primogemcalculator", "pc")]
@@ -47,7 +47,7 @@ namespace GenshinLibrary.Modules
         {
             settings ??= new PrimogemCalculatorSettings();
 
-            if (end - DateTime.UtcNow < TimeSpan.FromDays(1))
+            if (end.Date - DateTime.UtcNow.Date < TimeSpan.FromDays(1))
             {
                 await ReplyAsync("Cannot calculate periods shorter than 1 day.");
                 return;
@@ -69,7 +69,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var calculator = new PrimogemCalculator(DateTime.UtcNow.Date, end, settings);
+            var calculator = new PrimogemCalculator(DateTime.UtcNow.Date, end.Date, settings);
             await ReplyAsync(embed: calculator.ConstructEmbed());
         }
     }
