@@ -22,7 +22,8 @@ namespace GenshinLibrary.Modules
         [Summary("Update your resin.")]
         [Ratelimit(5)]
         public async Task SetResin(
-            [Summary("The value to set.")] int value
+            [Summary("The value to set.")] int value,
+            [Summary("Current in-game resin countdown timer. Specify this in `0m0s` format.")] TimeSpan? adjustBy = null
             )
         {
             if (value < 0 || value >= ResinUpdate.MaxResin)
@@ -31,7 +32,21 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var resinUpdate = await _resinTracker.SetValueAsync(Context.User, DateTime.UtcNow, value);
+            var dt = DateTime.UtcNow;
+            if (adjustBy.HasValue)
+            {
+                var ts = adjustBy.Value;
+                if (ts > TimeSpan.FromMinutes(8))
+                {
+                    await ReplyAsync($"Cannot adjust by more than {ResinUpdate.RechargeRateMinutes} minutes.");
+                    return;
+                }
+
+                var rechargeRate = TimeSpan.FromMinutes(ResinUpdate.RechargeRateMinutes);
+                dt = dt.Add(ts-rechargeRate);
+            }
+
+            var resinUpdate = await _resinTracker.SetValueAsync(Context.User, dt, value);
             var embed = new EmbedBuilder();
             embed.WithAuthor(Context.User)
                 .WithColor(Globals.MainColor)
