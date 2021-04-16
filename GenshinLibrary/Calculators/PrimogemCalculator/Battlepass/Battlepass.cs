@@ -8,17 +8,21 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
     {
         public static IEnumerable<Reward> GetFullRewardsGnostic(int quantity)
         {
-            var gnostics = new List<Reward>();
-            gnostics.Add(new Reward(Currency.Primogems, quantity, 680));
-            gnostics.Add(new Reward(Currency.Acquaint, quantity, 5));
-            gnostics.Add(new Reward(Currency.Intertwined, quantity, 4));
+            var gnostics = new List<Reward>
+            {
+                new Reward(Currency.Primogems, quantity, 680),
+                new Reward(Currency.Acquaint, quantity, 5),
+                new Reward(Currency.Intertwined, quantity, 4)
+            };
             return gnostics;
         }
 
         public static IEnumerable<Reward> GetFullRewardsSojourner(int quantity)
         {
-            var sojourners = new List<Reward>();
-            sojourners.Add(new Reward(Currency.Acquaint, quantity, 5));
+            var sojourners = new List<Reward>
+            {
+                new Reward(Currency.Acquaint, quantity, 5)
+            };
             return sojourners;
         }
 

@@ -53,6 +53,51 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
+            if (!await ValidateSettingsAsync(settings))
+                return;
+
+            var calculator = new PrimogemCalculator(DateTime.UtcNow.Date, end.Date, settings);
+            await ReplyAsync(embed: calculator.ConstructEmbed());
+        }
+
+        [Command("primogems")]
+        [Alias("primogemcalculator", "pc")]
+        [Ratelimit(10)]
+        [Summary("Calculates the amount of primogems you can get before a given banner in a given version..")]
+        [Example("`gl!primogems 1.5 2 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
+        public async Task Primogems(
+            [Summary("The version to calculate to.")] string version,
+            [Summary("The banner to calculate to.")] int banner,
+            [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null
+            )
+        {
+            settings ??= new PrimogemCalculatorSettings();
+
+            if (!await ValidateSettingsAsync(settings))
+                return;
+
+            PrimogemCalculator calculator;
+            try
+            {
+                calculator = new PrimogemCalculator(DateTime.UtcNow.Date, version, banner, settings);
+            }
+            catch (ArgumentException e)
+            {
+                var helpEmbed = new EmbedBuilder();
+
+                helpEmbed.WithTitle("Invalid input.")
+                    .WithDescription(e.Message)
+                    .WithColor(Color.Red);
+
+                await ReplyAsync(embed: helpEmbed.Build());
+                return;
+            }
+
+            await ReplyAsync(embed: calculator.ConstructEmbed());
+        }
+
+        private async Task<bool> ValidateSettingsAsync(PrimogemCalculatorSettings settings)
+        {
             try
             {
                 settings.Validate();
@@ -66,11 +111,10 @@ namespace GenshinLibrary.Modules
                     .WithColor(Color.Red);
 
                 await ReplyAsync(embed: helpEmbed.Build());
-                return;
+                return false;
             }
 
-            var calculator = new PrimogemCalculator(DateTime.UtcNow.Date, end.Date, settings);
-            await ReplyAsync(embed: calculator.ConstructEmbed());
+            return true;
         }
     }
 }
