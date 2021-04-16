@@ -63,7 +63,7 @@ namespace GenshinLibrary.Modules
         [Command("primogems")]
         [Alias("primogemcalculator", "pc")]
         [Ratelimit(10)]
-        [Summary("Calculates the amount of primogems you can get before a given banner in a given version..")]
+        [Summary("Calculates the amount of primogems you can get before the end of a given banner in a given version.")]
         [Example("`gl!primogems 1.5 2 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
         public async Task Primogems(
             [Summary("The version to calculate to.")] string version,
