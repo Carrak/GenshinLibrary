@@ -25,13 +25,11 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("profile")]
-        [Alias("info")]
         [Summary("View your profile.")]
         [Ratelimit(5)]
         public async Task UserProfile() => await UserProfile(Context.User);
 
         [Command("profile")]
-        [Alias("info")]
         [Summary("View someone's profile.")]
         [Ratelimit(5)]
         public async Task UserProfile(
