@@ -67,7 +67,7 @@ namespace GenshinLibrary.Modules
         [Example("`gl!primogems 1.5 2 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
         public async Task Primogems(
             [Summary("The version to calculate to.")] string version,
-            [Summary("The banner to calculate to.")] int banner,
+            [Summary("The banner to calculate to. Either `1` (first banner) or `2` (second banner).")] int banner,
             [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null
             )
         {
