@@ -4,6 +4,7 @@ using GenshinLibrary.ReactionCallback.PrimogemCalculator;
 using GenshinLibrary.Utility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GenshinLibrary.Calculators.PrimogemCalculator
 {
@@ -35,18 +36,28 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
         public PrimogemCalculator(DateTime start, string versionName, int banner, PrimogemCalculatorSettings settings = null)
         {
-            Versions = GetVersions(start, 5);
-            Settings = settings;
+            var versions = new List<Version>();
+            Version version = null;
 
-            var version = Versions.Find(x => x.VersionName == versionName);
+            foreach(var ver in GetVersions(start, 5))
+            {
+                versions.Add(ver);
+                if (ver.VersionName == versionName)
+                {
+                    version = ver;
+                    break;
+                }
+            }
 
             if (version is null)
-                throw new ArgumentException("No such version exists or version out of boundaries.\nCannot specify version that have already ended or versions that are more than 5 versions ahead of the current one.");
+                throw new ArgumentException("No such version exists or version out of boundaries.\nCannot specify versions that have already ended or versions that are more than 5 versions ahead of the current one.");
 
             if (banner < 1 || banner > BannersPerUpdate)
                 throw new ArgumentException($"Invalid banner value. Specify a number from 1 to {BannersPerUpdate}");
 
             TimeSpan bannerDuration = (version.End - version.Start)/BannersPerUpdate;
+            Versions = versions;
+            Settings = settings;
             StartDate = start;
             EndDate = version.Start + bannerDuration * banner - TimeSpan.FromDays(1);
             CurrentVersion = version;
@@ -204,7 +215,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             if (Versions.Count > 1)
             {
                 events.Rewards.Add(new Reward(Currency.Primogems, 1, EventAverage * reachedUpdateDays / UpdateDuration));
-                updateNames.Add($"{Versions[^1]}");
+                updateNames.Add($"{CurrentVersion}");
             }
 
             events.Name += $" ({string.Join(", ", updateNames)})";
