@@ -29,7 +29,7 @@ namespace GenshinLibrary
                 .WithDescription("GenshinLibrary is a tool bot made for Genshin Impact players that " +
                 "allows easier access to player details and flexible control over them. Pity counters, wish history with filters, " +
                 "personal analytics, resin trackers, profiles, various calculators and a gacha simulator is what we've got in store for you.\n\n" +
-                "[Community Server](https://discord.gg/4P23TZFZUN) | [Patreon](https://www.patreon.com/) | [Invite the bot](https://discord.com/oauth2/authorize?client_id=830870729390030960&scope=bot&permissions=379968)");
+                "[Community Server](https://discord.gg/4P23TZFZUN) | [Patreon](https://www.patreon.com/genshinlibrary) | [Invite the bot](https://discord.com/oauth2/authorize?client_id=830870729390030960&scope=bot&permissions=379968)");
 
             return embed;
         }
