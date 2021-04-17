@@ -73,7 +73,7 @@ namespace GenshinLibrary.Modules
 
             var resultEmbed = new EmbedBuilder()
                 .WithFooter($"You are wishing on {bannerName}")
-                 .WithColor(rarityColor);
+                .WithColor(rarityColor);
 
             if (count > 10)
             {
@@ -149,7 +149,7 @@ namespace GenshinLibrary.Modules
         [Ratelimit(5)]
         public async Task ResetHistory()
         {
-            _sim.RemoveProfile(Context.User);
+            _sim.ResetProfile(Context.User);
             await ReplyAsync("Sucessfully reset.");
         }
 

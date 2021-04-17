@@ -22,6 +22,17 @@ namespace GenshinLibrary.Services.GachaSim
             sessions[banner.BID] = banner.NewSession();
         }
 
+        public void Reset()
+        {
+            var currentSession = GetCurrentSession();
+            currentSession = currentSession.Banner.NewSession();
+
+            Inventory.Clear();
+            sessions.Clear();
+
+            sessions[SelectedBannerBID] = currentSession;
+        }
+
         public WishSession GetCurrentSession()
         {
             return sessions[SelectedBannerBID];

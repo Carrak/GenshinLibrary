@@ -101,7 +101,5 @@ namespace GenshinLibrary
             Console.WriteLine(arg);
             return Task.CompletedTask;
         }
-
-
     }
 }

@@ -53,9 +53,11 @@ namespace GenshinLibrary.Services.GachaSim
             SetOrUpdate(user, profile);
         }
 
-        public void RemoveProfile(IUser user)
+        public void ResetProfile(IUser user)
         {
-            profiles.Remove(user.Id);
+            var profile = GetOrCreateProfile(user);
+            profile.Reset();
+            SetOrUpdate(user, profile);
         }
 
         public WishItem[] Wish(IUser user, int count)
