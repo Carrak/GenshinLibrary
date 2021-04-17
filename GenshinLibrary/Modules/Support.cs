@@ -53,6 +53,7 @@ namespace GenshinLibrary.Modules
 
         [Command("info")]
         [Summary("Basic info about the bot.")]
+        [Alias("invite", "patreon", "community")]
         [Ratelimit(5)]
         public async Task Info() => await ReplyAsync(embed: _support.GetInfoEmbed().Build());
 
