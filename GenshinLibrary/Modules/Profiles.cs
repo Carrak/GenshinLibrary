@@ -43,7 +43,7 @@ namespace GenshinLibrary.Modules
             string fileName = "avatar.png";
 
             var color = profile.Character is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.Character.Vision);
-            var image = profile.Character.GetAvatar();
+            var image = profile.GetAvatar();
 
             var embed = new EmbedBuilder();
 

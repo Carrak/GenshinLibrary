@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 namespace GenshinLibrary.GenshinWishes.Profiles
 {
@@ -13,6 +14,19 @@ namespace GenshinLibrary.GenshinWishes.Profiles
             Weapons = weapons;
             Characters = characters;
             Character = avatar;
+        }
+
+        public Stream GetAvatar()
+        {
+            var stream = new MemoryStream();
+
+            if (Character?.AvatarImage != null)
+                Character.AvatarImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            else
+                Character.DefaultAvatar.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+
+            stream.Position = 0;
+            return stream;
         }
     }
 }

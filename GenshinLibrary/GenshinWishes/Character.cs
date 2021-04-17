@@ -55,12 +55,7 @@ namespace GenshinLibrary.GenshinWishes
         public Stream GetAvatar()
         {
             var stream = new MemoryStream();
-
-            if (AvatarImage != null)
-                AvatarImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-            else
-                DefaultAvatar.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-
+            AvatarImage.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             stream.Position = 0;
             return stream;
         }
