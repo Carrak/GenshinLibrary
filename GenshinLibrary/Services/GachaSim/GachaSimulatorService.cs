@@ -5,6 +5,7 @@ using GenshinLibrary.Services.Wishes;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -70,6 +71,10 @@ namespace GenshinLibrary.Services.GachaSim
 
         public async Task InitAsync()
         {
+            foreach(var wi in _wishes.WishItems.Values.Distinct())
+                if (wi.WishArt is null)
+                    Console.WriteLine($"{wi.Name} does not have a wish art image.");
+
             float baseFivestarChance = 0.006f;
             float baseFourstarChance = 0.051f;
             int baseHardpity = 90;

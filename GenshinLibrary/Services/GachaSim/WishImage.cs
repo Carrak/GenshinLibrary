@@ -9,7 +9,7 @@ namespace GenshinLibrary.Services.GachaSim
 {
     class WishImage
     {
-        private static readonly string BackgroundPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Bg.jpg";
+        private static readonly Bitmap Background = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Bg.jpg");
         private static readonly int width = 100;
         private static readonly int height = 316;
         private static readonly int indent = 8;
@@ -24,7 +24,7 @@ namespace GenshinLibrary.Services.GachaSim
 
         public Stream GetImage()
         {
-            var bitmap = new Bitmap(BackgroundPath);
+            var bitmap = new Bitmap(Background);
             using Graphics g = Graphics.FromImage(bitmap);
 
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -38,6 +38,9 @@ namespace GenshinLibrary.Services.GachaSim
             {
                 // Current wish item
                 var wi = _items[i];
+
+                if (wi.WishArt is null)
+                    throw new Exception($"Image missing for {wi.WishArt}");
 
                 // Current x position
                 int x = startingX + i * (width + indent);
@@ -63,31 +66,31 @@ namespace GenshinLibrary.Services.GachaSim
                 g.FillRectangle(gradientBrushBottom, bottom);
 
                 // Draw wish image
-                var wishImage = new Bitmap(wi.GetMultiWishSplashArt());
-                var size = GetSize(Math.Min(width / (double)wishImage.Width, height / (double)wishImage.Height), wishImage);
+                var size = GetSize(Math.Min(width / (double)wi.WishArt.Width, height / (double)wi.WishArt.Height), wi.WishArt);
                 var imageRect = new Rectangle(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2, size.Width, size.Height);
-                g.DrawImage(wishImage, imageRect);
+                g.DrawImage(wi.WishArt, imageRect);
 
                 // Draw outline
                 Pen pen = new Pen(rarityColor, 2);
                 g.DrawRectangle(pen, wishRect);
 
                 // Draw rarity
-                var rarityImage = new Bitmap(wi.GetRarityImage());
-                var raritySize = GetSize(0.2, rarityImage);
+                var raritySize = GetSize(0.2, wi.RarityImage);
                 var rarityRect = new Rectangle(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20, raritySize.Width, raritySize.Height);
-                g.DrawImage(rarityImage, rarityRect);
+                g.DrawImage(wi.RarityImage, rarityRect);
 
                 // Draw icon
-                var icon = new Bitmap(wi.GetIcon());
-                var resizedIconSize = GetSize(iconSize / (double)icon.Width, icon);
+                var resizedIconSize = GetSize(iconSize / (double)wi.Icon.Width, wi.Icon);
                 var iconRect = new Rectangle(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityRect.Y - iconSize - 5, resizedIconSize.Width, resizedIconSize.Height);
-                g.DrawImage(icon, iconRect);
+                g.DrawImage(wi.Icon, iconRect);
             }
 
             Stream stream = new MemoryStream();
             bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             stream.Seek(0, SeekOrigin.Begin);
+
+            g.Dispose();
+            bitmap.Dispose();
 
             return stream;
         }

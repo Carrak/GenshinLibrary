@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Drawing;
 using System.IO;
 
 namespace GenshinLibrary.GenshinWishes
@@ -18,12 +19,12 @@ namespace GenshinLibrary.GenshinWishes
             return $"{GenshinEmotes.GetWeaponEmote(Type)} **{Name}**";
         }
 
-        public override string GetMultiWishSplashArt()
+        protected override string GetMultiWishSplashArt()
         {
             return $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Weapons{Path.DirectorySeparatorChar}{Name}.png";
         }
 
-        public override string GetIcon()
+        protected override string GetIcon()
         {
             return $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Type}.png";
         }

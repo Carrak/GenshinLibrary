@@ -31,12 +31,12 @@ namespace GenshinLibrary.GenshinWishes
             return new Image($"{Globals.ProjectDirectory}Characters{Path.DirectorySeparatorChar}Aether.png");
         }
 
-        public override string GetMultiWishSplashArt()
+        protected override string GetMultiWishSplashArt()
         {
             return $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}SplashArtsPartial{Path.DirectorySeparatorChar}{Name}.png";
         }
 
-        public override string GetIcon()
+        protected override string GetIcon()
         {
             return $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png";
         }

@@ -95,8 +95,9 @@ namespace GenshinLibrary.Modules
             {
                 var image = new WishImage(result).GetImage();
                 resultEmbed.WithImageUrl($"attachment://{fileName}");
-
                 await Context.Channel.SendFileAsync(image, fileName, embed: resultEmbed.Build());
+
+                image.Dispose();
             }
 
         }

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Drawing;
+using System.IO;
 
 namespace GenshinLibrary.GenshinWishes
 {
@@ -9,12 +10,26 @@ namespace GenshinLibrary.GenshinWishes
         public int Rarity { get; }
         public Banner Banners { get; }
 
+        public Bitmap Icon { get; }
+        public Bitmap WishArt { get; }
+        public Bitmap RarityImage { get; }
+
         protected WishItem(int wid, string name, int rarity, Banner banners)
         {
             WID = wid;
             Name = name;
             Rarity = rarity;
             Banners = banners;
+            Icon = new Bitmap(GetIcon());
+            RarityImage = new Bitmap(GetRarityImage());
+
+            try
+            {
+                WishArt = new Bitmap(GetMultiWishSplashArt());
+            } 
+            catch (FileNotFoundException)
+            {
+            }
         }
 
         public string GetFormattedName(int allowedLength)
@@ -39,12 +54,12 @@ namespace GenshinLibrary.GenshinWishes
             return string.Format(format, name);
         }
 
-        public string GetRarityImage() => $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
+        private string GetRarityImage() => $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
 
         public abstract string GetNameWithEmotes();
 
-        public abstract string GetMultiWishSplashArt();
+        protected abstract string GetMultiWishSplashArt();
 
-        public abstract string GetIcon();
+        protected abstract string GetIcon();
     }
 }
