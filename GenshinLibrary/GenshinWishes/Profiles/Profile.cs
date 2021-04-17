@@ -6,13 +6,13 @@ namespace GenshinLibrary.GenshinWishes.Profiles
     {
         public IEnumerable<WishCount> Weapons { get; }
         public IEnumerable<WishCount> Characters { get; }
-        public Character Avatar { get; }
+        public Character Character { get; }
 
         public Profile(IEnumerable<WishCount> weapons, IEnumerable<WishCount> characters, Character avatar)
         {
             Weapons = weapons;
             Characters = characters;
-            Avatar = avatar;
+            Character = avatar;
         }
     }
 }

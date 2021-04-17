@@ -42,6 +42,8 @@ namespace GenshinLibrary.Preconditions
         /// <inheritdoc/>
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext context, CommandInfo command, IServiceProvider services)
         {
+            return Task.FromResult(PreconditionResult.FromSuccess());
+
             DateTime now = DateTime.UtcNow;
             ulong key = context.Channel.Id;
 

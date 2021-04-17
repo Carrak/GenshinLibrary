@@ -42,8 +42,8 @@ namespace GenshinLibrary.Modules
 
             string fileName = "avatar.png";
 
-            var color = profile.Avatar is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.Avatar.Vision);
-            var image = profile.Avatar is null ? Character.GetDefaultImage() : profile.Avatar.GetImage();
+            var color = profile.Character is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.Character.Vision);
+            var image = profile.Character.GetAvatar();
 
             var embed = new EmbedBuilder();
 
@@ -76,7 +76,7 @@ namespace GenshinLibrary.Modules
             if (pities != null)
                 embed.AddField("Pities", pities.ToString());
 
-            await Context.Channel.SendFileAsync(image.Stream, fileName, embed: embed.Build());
+            await Context.Channel.SendFileAsync(image, fileName, embed: embed.Build());
         }
 
         [Command("setavatar")]

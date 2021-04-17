@@ -10,9 +10,9 @@ namespace GenshinLibrary.GenshinWishes
         public int Rarity { get; }
         public Banner Banners { get; }
 
-        public Bitmap Icon { get; }
-        public Bitmap WishArt { get; }
-        public Bitmap RarityImage { get; }
+        public Bitmap Icon { get; protected set; }
+        public Bitmap WishArt { get; protected set; }
+        public Bitmap RarityImage { get; protected set; }
 
         protected WishItem(int wid, string name, int rarity, Banner banners)
         {
@@ -20,16 +20,7 @@ namespace GenshinLibrary.GenshinWishes
             Name = name;
             Rarity = rarity;
             Banners = banners;
-            Icon = new Bitmap(GetIcon());
-            RarityImage = new Bitmap(GetRarityImage());
-
-            try
-            {
-                WishArt = new Bitmap(GetMultiWishSplashArt());
-            } 
-            catch (FileNotFoundException)
-            {
-            }
+            RarityImage = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png");
         }
 
         public string GetFormattedName(int allowedLength)
@@ -54,12 +45,6 @@ namespace GenshinLibrary.GenshinWishes
             return string.Format(format, name);
         }
 
-        private string GetRarityImage() => $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
-
         public abstract string GetNameWithEmotes();
-
-        protected abstract string GetMultiWishSplashArt();
-
-        protected abstract string GetIcon();
     }
 }

@@ -9,7 +9,7 @@ namespace GenshinLibrary.Services.GachaSim
 {
     class WishImage
     {
-        private static readonly Bitmap Background = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Bg.jpg");
+        private static readonly Bitmap background = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Bg.jpg");
         private static readonly int width = 100;
         private static readonly int height = 316;
         private static readonly int indent = 8;
@@ -24,7 +24,7 @@ namespace GenshinLibrary.Services.GachaSim
 
         public Stream GetImage()
         {
-            var bitmap = new Bitmap(Background);
+            using var bitmap = new Bitmap(background);
             using Graphics g = Graphics.FromImage(bitmap);
 
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -88,9 +88,6 @@ namespace GenshinLibrary.Services.GachaSim
             Stream stream = new MemoryStream();
             bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             stream.Seek(0, SeekOrigin.Begin);
-
-            g.Dispose();
-            bitmap.Dispose();
 
             return stream;
         }

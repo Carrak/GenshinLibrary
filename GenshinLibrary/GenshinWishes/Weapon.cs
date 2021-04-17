@@ -12,21 +12,13 @@ namespace GenshinLibrary.GenshinWishes
         public Weapon(int wid, string name, WeaponType type, int rarity, Banner banners) : base(wid, name, rarity, banners)
         {
             Type = type;
+            WishArt = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Weapons{Path.DirectorySeparatorChar}{Name}.png");
+            Icon = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Type}.png");
         }
 
         public override string GetNameWithEmotes()
         {
             return $"{GenshinEmotes.GetWeaponEmote(Type)} **{Name}**";
-        }
-
-        protected override string GetMultiWishSplashArt()
-        {
-            return $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Weapons{Path.DirectorySeparatorChar}{Name}.png";
-        }
-
-        protected override string GetIcon()
-        {
-            return $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Type}.png";
         }
     }
 }
