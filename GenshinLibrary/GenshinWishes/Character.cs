@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Drawing;
 using System.IO;
 
@@ -17,9 +18,33 @@ namespace GenshinLibrary.GenshinWishes
         {
             Vision = vision;
             WieldedWeapon = weapon;
-            WishArt = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}SplashArtsPartial{Path.DirectorySeparatorChar}{Name}.png");
-            Icon = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png");
-            AvatarImage = new Bitmap($"{Globals.ProjectDirectory}Characters{Path.DirectorySeparatorChar}{Name}.png");
+
+            try
+            {
+                Icon = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png");
+            }
+            catch
+            {
+                Console.WriteLine($"Image missing/no access to Icon for {Name}");
+            }
+
+            try
+            {
+                WishArt = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}SplashArtsPartial{Path.DirectorySeparatorChar}{Name}.png");
+            }
+            catch
+            {
+                Console.WriteLine($"Image missing/no access to WishArt for {Name}");
+            }
+
+            try
+            {
+                AvatarImage = new Bitmap($"{Globals.ProjectDirectory}Characters{Path.DirectorySeparatorChar}{Name}.png");
+            }
+            catch
+            {
+                Console.WriteLine($"Image missing/no access to AvatarImage for {Name}");
+            }
         }
 
         public override string GetNameWithEmotes()

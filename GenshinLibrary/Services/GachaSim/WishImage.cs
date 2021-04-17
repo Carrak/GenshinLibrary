@@ -40,7 +40,12 @@ namespace GenshinLibrary.Services.GachaSim
                 var wi = _items[i];
 
                 if (wi.WishArt is null)
-                    throw new Exception($"Image missing for {wi.WishArt}");
+                    throw new Exception($"WishArt missing for {wi.Name}");
+                if (wi.Icon is null)
+                    throw new Exception($"Icon missing for {wi.Name}");
+                if (wi.RarityImage is null)
+                    throw new Exception($"RarityImage missing for {wi.Name}");
+
 
                 // Current x position
                 int x = startingX + i * (width + indent);
