@@ -17,31 +17,28 @@ namespace GenshinLibrary.Commands
             List<RestUserMessage> errorMessages = new List<RestUserMessage>();
             TimeSpan timeout = TimeSpan.FromSeconds(60);
             int cancelLimit = 3;
-            string errorMessage = null;
 
             int count = 0;
 
             // Temporary message handler
-            async Task Handler(SocketMessage message)
+            Task Handler(SocketMessage message)
             {
                 // Ensure the message is in the same channel and by the same user
                 if (message.Author.Id != context.User.Id || message.Channel.Id != context.Channel.Id)
-                    return;
+                    return Task.CompletedTask;
 
                 // If message matches the condition, set it as the result
                 if (func(message))
                 {
                     eventTrigger.SetResult(message);
-                    return;
+                    return Task.CompletedTask;
                 }
-
-                // Send error message in case the message doesn't match the condition
-                if (!string.IsNullOrEmpty(errorMessage))
-                    errorMessages.Add(await context.Channel.SendMessageAsync(errorMessage));
 
                 // Check if the process should be cancelled, and if it is, set the result to null
                 if (++count == cancelLimit || message.Content.StartsWith(Globals.DefaultPrefix, StringComparison.OrdinalIgnoreCase))
                     eventTrigger.SetResult(null);
+
+                return Task.CompletedTask;
             }
 
             Context.Client.MessageReceived += Handler;
@@ -53,19 +50,7 @@ namespace GenshinLibrary.Commands
             Context.Client.MessageReceived -= Handler;
 
             if (task == trigger)
-            {
-                // Delete messages
-                try
-                {
-                    await (context.Channel as ITextChannel).DeleteMessagesAsync(errorMessages);
-                }
-                catch (HttpException)
-                {
-
-                }
-                // Return the message
                 return await trigger;
-            }
             else
                 return null;
         }
