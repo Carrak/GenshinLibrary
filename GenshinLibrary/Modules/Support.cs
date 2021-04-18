@@ -117,6 +117,6 @@ namespace GenshinLibrary.Modules
             await ReplyAsync(embed: embed.Build());
         }
 
-        private string FormatCommands(ModuleInfo module) => string.Join('\n', module.Commands.Select(x => $"`{_support.GetCommandHeader(x)}`\n - {x.Summary}"));
+        private string FormatCommands(ModuleInfo module) => string.Join('\n', module.Commands.Select(x => $"`{_support.GetCommandHeader(x)}`\n - {x.Summary.Split('\n')[0]}"));
     }
 }
