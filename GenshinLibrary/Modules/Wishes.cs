@@ -39,7 +39,8 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("addwishbulk")]
-        [Summary("Add up to 6 wishes at once by copying them from the game.")]
+        [Summary("Add up to 6 wishes at once by copying them from the game.\n" +
+            "If you're wondering where to find your wish history, navigate to the wish screen in-game and press 'History', then select the appropriate banner and follow the instructions from below!")]
         [Alias("awb")]
         [Example("`gl!awb character\n" +
                     "Weapon\n" +
