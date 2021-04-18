@@ -38,145 +38,6 @@ namespace GenshinLibrary.Modules
             _wishes = wishes;
         }
 
-        [Command("analytics")]
-        [Summary("View your wish analytics.")]
-        [Ratelimit(10)]
-        public async Task Analytics() => await Anal(Context.User);
-
-        [Command("analytics")]
-        [Summary("View someone's wish analytics.")]
-        [Ratelimit(10)]
-        public async Task Anal(
-            [Summary("The user whose analytics you want to see.")][Remainder] IUser user
-            )
-        {
-            var data = await _wishes.GetAnalyticsAsync(user);
-
-            if (data is null)
-            {
-                await ReplyAsync("No records exist for this user.");
-                return;
-            }
-
-            var character = data.First(x => x.Banner == Banner.Character);
-            var weapon = data.First(x => x.Banner == Banner.Weapon);
-            var standard = data.First(x => x.Banner == Banner.Standard);
-            var beginner = data.First(x => x.Banner == Banner.Beginner);
-
-            int characterTotal = character.TotalWishes + standard.TotalWishes + beginner.TotalWishes;
-            int characterThreestar = character.ThreeStarWishes + standard.ThreeStarWishes + beginner.ThreeStarWishes;
-            int characterFourstar = character.FourStarWishes + standard.FourStarWishes + beginner.FourStarWishes;
-            int characterFivestar = character.FiveStarWishes + standard.FiveStarWishes + beginner.FiveStarWishes;
-
-            int total = weapon.TotalWishes + characterTotal;
-            int totalThreestar = weapon.ThreeStarWishes + characterThreestar;
-            int totalFourstar = weapon.FourStarWishes + characterFourstar;
-            int totalFivestar = weapon.FiveStarWishes + characterFivestar;
-
-            var embed = new EmbedBuilder();
-
-            embed.WithTitle($"Stats for {user}")
-                .WithColor(Globals.MainColor)
-                .WithFooter("W - weapons, C - characters.\nBeginner banner is not displayed here (but included for the calculations).")
-                .WithDescription(
-                $"Total wishes: **{total}**\n" +
-                $"Total 3-star: **{totalThreestar}**\n" +
-                $"Total 4-star: **{totalFourstar}**\n" +
-                $"Total 5-star: **{totalFivestar}**\n\n" +
-                $"Odds across character banners\n" +
-                $"4-star: {ZeroTernary(characterFourstar, GetPercentageString(characterFourstar, characterTotal))}\n" +
-                $"5-star: {ZeroTernary(characterFivestar, GetPercentageString(characterFivestar, characterTotal))}\n\n" +
-                $"Combined odds (character banners + weapon banner)\n" +
-                $"4-star: {ZeroTernary(totalFourstar, GetPercentageString(totalFourstar, total))}\n" +
-                $"5-star: {ZeroTernary(totalFivestar, GetPercentageString(totalFivestar, total))}\n")
-                .AddField("Character", ZeroTernary(character.TotalWishes, character.GetGeneralInfo(true, false), "No data."), true)
-                .AddField("Weapon", ZeroTernary(weapon.TotalWishes, weapon.GetGeneralInfo(true, false), "No data."), true)
-                .AddField("Standard", ZeroTernary(standard.TotalWishes, standard.GetGeneralInfo(true, true), "No data."), true)
-                .AddField("Character/Average", ZeroTernary(characterTotal, $"Across character banners:\n" +
-                $"4-star odds: {ZeroTernary(characterFourstar, ComparedToAverage(characterFourstar / (float)characterTotal, 0.13f))}\n" +
-                $"5-star odds: {ZeroTernary(characterFivestar, ComparedToAverage(characterFivestar / (float)characterTotal, 0.016f))}\n\n" +
-                $"4-star average: **13%**\n" +
-                $"5-star average: **1.6%**", "No data across character banners."), true)
-                .AddField("Weapon/Average", ZeroTernary(weapon.TotalWishes,
-                $"For the weapon banner:\n" +
-                $"4-star odds: {ZeroTernary(weapon.FourStarWishes, ComparedToAverage(weapon.FourStarWishes / (float)weapon.TotalWishes, 0.145f))}\n" +
-                $"5-star odds: {ZeroTernary(weapon.FiveStarWishes, ComparedToAverage(weapon.FiveStarWishes / (float)weapon.TotalWishes, 0.0185f))}\n\n" +
-                $"4-star average: **14.5%**\n" +
-                $"5-star average: **1.85%**", "No weapon banner data."), true);
-
-            await ReplyAsync(embed: embed.Build());
-
-            static string ComparedToAverage(float player, float average)
-            {
-                if (player > average)
-                    return $"**{player / average:0.00}x** __higher__ than average";
-                else if (average > player)
-                    return $"**{average / player:0.00}x** __lower__ than average";
-                else
-                    return $"exactly the average";
-            }
-
-            static string GetPercentageString(float fraction, float total)
-            {
-                return $"**{fraction / total:0.00%}** (**1** in **{total / fraction:0.00}**)";
-            }
-
-            static string ZeroTernary(int number, string ifNotZero, string errorMessage = "None to compare")
-            {
-                return number == 0 ? errorMessage : ifNotZero;
-            }
-        }
-
-        [Command("history")]
-        [Summary("View your wish history.")]
-        [Example("This command will display all the 4 stars and 5 stars that you got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard rarity:4,5 pity:<60 order:pity`")]
-        [Ratelimit(10)]
-        public async Task History
-            (Banner banner,
-            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
-            ) => await History(banner, Context.User, filters);
-
-        [Command("history")]
-        [Summary("View someone's wish history.")]
-        [Ratelimit(10)]
-        public async Task History(
-            Banner banner,
-            [Summary("The user whose history you wish to see.")] IUser user,
-            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
-        {
-            QueryCondition condition = null;
-
-            if (filters != null)
-                try
-                {
-                    var parsedFilters = new WishHistoryFilters(filters);
-                    _wishes.ValidateFilters(parsedFilters, banner);
-                    condition = parsedFilters.GetCondition();
-                }
-                catch (ArgumentException e)
-                {
-                    var helpEmbed = new EmbedBuilder();
-
-                    helpEmbed.WithTitle("Invalid filters.")
-                        .WithDescription(e.Message)
-                        .WithColor(Color.Red);
-
-                    await ReplyAsync(embed: helpEmbed.Build());
-                    return;
-                }
-
-            var records = await _wishes.GetRecordsAsync(user, banner, condition);
-
-            if (records == null)
-            {
-                await ReplyAsync("No wishes have been found.");
-                return;
-            }
-
-            var history = new WishHistoryPaged(Interactive, Context, 18, records, banner);
-            await history.DisplayAsync();
-        }
-
         [Command("addwishbulk")]
         [Summary("Add up to 6 wishes at once by copying them from the game.")]
         [Alias("awb")]
@@ -333,6 +194,145 @@ namespace GenshinLibrary.Modules
                 await _wishes.RemoveWishesAsync(records);
                 await ReplyAsync("Successfully removed.");
             }
+        }
+
+        [Command("analytics")]
+        [Summary("View your wish analytics.")]
+        [Ratelimit(10)]
+        public async Task Analytics() => await Anal(Context.User);
+
+        [Command("analytics")]
+        [Summary("View someone's wish analytics.")]
+        [Ratelimit(10)]
+        public async Task Anal(
+            [Summary("The user whose analytics you want to see.")][Remainder] IUser user
+            )
+        {
+            var data = await _wishes.GetAnalyticsAsync(user);
+
+            if (data is null)
+            {
+                await ReplyAsync("No records exist for this user.");
+                return;
+            }
+
+            var character = data.First(x => x.Banner == Banner.Character);
+            var weapon = data.First(x => x.Banner == Banner.Weapon);
+            var standard = data.First(x => x.Banner == Banner.Standard);
+            var beginner = data.First(x => x.Banner == Banner.Beginner);
+
+            int characterTotal = character.TotalWishes + standard.TotalWishes + beginner.TotalWishes;
+            int characterThreestar = character.ThreeStarWishes + standard.ThreeStarWishes + beginner.ThreeStarWishes;
+            int characterFourstar = character.FourStarWishes + standard.FourStarWishes + beginner.FourStarWishes;
+            int characterFivestar = character.FiveStarWishes + standard.FiveStarWishes + beginner.FiveStarWishes;
+
+            int total = weapon.TotalWishes + characterTotal;
+            int totalThreestar = weapon.ThreeStarWishes + characterThreestar;
+            int totalFourstar = weapon.FourStarWishes + characterFourstar;
+            int totalFivestar = weapon.FiveStarWishes + characterFivestar;
+
+            var embed = new EmbedBuilder();
+
+            embed.WithTitle($"Stats for {user}")
+                .WithColor(Globals.MainColor)
+                .WithFooter("W - weapons, C - characters.\nBeginner banner is not displayed here (but included for the calculations).")
+                .WithDescription(
+                $"Total wishes: **{total}**\n" +
+                $"Total 3-star: **{totalThreestar}**\n" +
+                $"Total 4-star: **{totalFourstar}**\n" +
+                $"Total 5-star: **{totalFivestar}**\n\n" +
+                $"Odds across character banners\n" +
+                $"4-star: {ZeroTernary(characterFourstar, GetPercentageString(characterFourstar, characterTotal))}\n" +
+                $"5-star: {ZeroTernary(characterFivestar, GetPercentageString(characterFivestar, characterTotal))}\n\n" +
+                $"Combined odds (character banners + weapon banner)\n" +
+                $"4-star: {ZeroTernary(totalFourstar, GetPercentageString(totalFourstar, total))}\n" +
+                $"5-star: {ZeroTernary(totalFivestar, GetPercentageString(totalFivestar, total))}\n")
+                .AddField("Character", ZeroTernary(character.TotalWishes, character.GetGeneralInfo(true, false), "No data."), true)
+                .AddField("Weapon", ZeroTernary(weapon.TotalWishes, weapon.GetGeneralInfo(true, false), "No data."), true)
+                .AddField("Standard", ZeroTernary(standard.TotalWishes, standard.GetGeneralInfo(true, true), "No data."), true)
+                .AddField("Character/Average", ZeroTernary(characterTotal, $"Across character banners:\n" +
+                $"4-star odds: {ZeroTernary(characterFourstar, ComparedToAverage(characterFourstar / (float)characterTotal, 0.13f))}\n" +
+                $"5-star odds: {ZeroTernary(characterFivestar, ComparedToAverage(characterFivestar / (float)characterTotal, 0.016f))}\n\n" +
+                $"4-star average: **13%**\n" +
+                $"5-star average: **1.6%**", "No data across character banners."), true)
+                .AddField("Weapon/Average", ZeroTernary(weapon.TotalWishes,
+                $"For the weapon banner:\n" +
+                $"4-star odds: {ZeroTernary(weapon.FourStarWishes, ComparedToAverage(weapon.FourStarWishes / (float)weapon.TotalWishes, 0.145f))}\n" +
+                $"5-star odds: {ZeroTernary(weapon.FiveStarWishes, ComparedToAverage(weapon.FiveStarWishes / (float)weapon.TotalWishes, 0.0185f))}\n\n" +
+                $"4-star average: **14.5%**\n" +
+                $"5-star average: **1.85%**", "No weapon banner data."), true);
+
+            await ReplyAsync(embed: embed.Build());
+
+            static string ComparedToAverage(float player, float average)
+            {
+                if (player > average)
+                    return $"**{player / average:0.00}x** __higher__ than average";
+                else if (average > player)
+                    return $"**{average / player:0.00}x** __lower__ than average";
+                else
+                    return $"exactly the average";
+            }
+
+            static string GetPercentageString(float fraction, float total)
+            {
+                return $"**{fraction / total:0.00%}** (**1** in **{total / fraction:0.00}**)";
+            }
+
+            static string ZeroTernary(int number, string ifNotZero, string errorMessage = "None to compare")
+            {
+                return number == 0 ? errorMessage : ifNotZero;
+            }
+        }
+
+        [Command("history")]
+        [Summary("View your wish history.")]
+        [Example("This command will display all the 4 stars and 5 stars that you got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard rarity:4,5 pity:<60 order:pity`")]
+        [Ratelimit(10)]
+        public async Task History
+            (Banner banner,
+            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
+            ) => await History(banner, Context.User, filters);
+
+        [Command("history")]
+        [Summary("View someone's wish history.")]
+        [Ratelimit(10)]
+        public async Task History(
+            Banner banner,
+            [Summary("The user whose history you wish to see.")] IUser user,
+            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
+        {
+            QueryCondition condition = null;
+
+            if (filters != null)
+                try
+                {
+                    var parsedFilters = new WishHistoryFilters(filters);
+                    _wishes.ValidateFilters(parsedFilters, banner);
+                    condition = parsedFilters.GetCondition();
+                }
+                catch (ArgumentException e)
+                {
+                    var helpEmbed = new EmbedBuilder();
+
+                    helpEmbed.WithTitle("Invalid filters.")
+                        .WithDescription(e.Message)
+                        .WithColor(Color.Red);
+
+                    await ReplyAsync(embed: helpEmbed.Build());
+                    return;
+                }
+
+            var records = await _wishes.GetRecordsAsync(user, banner, condition);
+
+            if (records == null)
+            {
+                await ReplyAsync("No wishes have been found.");
+                return;
+            }
+
+            var history = new WishHistoryPaged(Interactive, Context, 18, records, banner);
+            await history.DisplayAsync();
         }
 
         private async Task AddWish(WishItem wi, Banner banner, DateTime datetime)

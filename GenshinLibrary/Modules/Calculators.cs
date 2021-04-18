@@ -29,40 +29,6 @@ namespace GenshinLibrary.Modules
         [Command("primogems")]
         [Alias("primogemcalculator", "pc")]
         [Ratelimit(10)]
-        [Summary("Calculates the amount of primogems you can get across a given amount of days.")]
-        [Example("`gl!primogems 50 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
-        public async Task Primogems(
-            [Summary("Amount of days to calculate through.")] int days,
-            [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null) => await Primogems(DateTime.UtcNow.AddDays(days), settings);
-
-        [Command("primogems")]
-        [Alias("primogemcalculator", "pc")]
-        [Ratelimit(10)]
-        [Summary("Calculates the amount of primogems you can get before a given date.")]
-        [Example("`gl!primogems 08.06.2021 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
-        public async Task Primogems(
-            [Summary("The end date to calculate to. Format: MM.DD.YYYY")] DateTime end,
-            [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null
-            )
-        {
-            settings ??= new PrimogemCalculatorSettings();
-
-            if (end.Date - DateTime.UtcNow.Date < TimeSpan.FromDays(1))
-            {
-                await ReplyAsync("Cannot calculate periods shorter than 1 day.");
-                return;
-            }
-
-            if (!await ValidateSettingsAsync(settings))
-                return;
-
-            var calculator = new PrimogemCalculator(DateTime.UtcNow.Date, end.Date, settings);
-            await ReplyAsync(embed: calculator.ConstructEmbed());
-        }
-
-        [Command("primogems")]
-        [Alias("primogemcalculator", "pc")]
-        [Ratelimit(10)]
         [Summary("Calculates the amount of primogems you can get before the end of a given banner in a given version.")]
         [Example("`gl!primogems 1.5 2 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
         public async Task Primogems(
@@ -93,6 +59,40 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
+            await ReplyAsync(embed: calculator.ConstructEmbed());
+        }
+
+        [Command("primogems")]
+        [Alias("primogemcalculator", "pc")]
+        [Ratelimit(10)]
+        [Summary("Calculates the amount of primogems you can get across a given amount of days.")]
+        [Example("`gl!primogems 50 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
+        public async Task Primogems(
+            [Summary("Amount of days to calculate through.")] int days,
+            [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null) => await Primogems(DateTime.UtcNow.AddDays(days), settings);
+
+        [Command("primogems")]
+        [Alias("primogemcalculator", "pc")]
+        [Ratelimit(10)]
+        [Summary("Calculates the amount of primogems you can get before a given date.")]
+        [Example("`gl!primogems 08.06.2021 primogems:1305 events:true abyss:600 currsojourner:44 welkin:34 gnostic:1`")]
+        public async Task Primogems(
+            [Summary("The end date to calculate to. Format: MM.DD.YYYY")] DateTime end,
+            [Summary(SettingsSummary)] PrimogemCalculatorSettings settings = null
+            )
+        {
+            settings ??= new PrimogemCalculatorSettings();
+
+            if (end.Date - DateTime.UtcNow.Date < TimeSpan.FromDays(1))
+            {
+                await ReplyAsync("Cannot calculate periods shorter than 1 day.");
+                return;
+            }
+
+            if (!await ValidateSettingsAsync(settings))
+                return;
+
+            var calculator = new PrimogemCalculator(DateTime.UtcNow.Date, end.Date, settings);
             await ReplyAsync(embed: calculator.ConstructEmbed());
         }
 
