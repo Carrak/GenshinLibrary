@@ -123,12 +123,12 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return $"**{bannerString}** // since **{CurrentVersion.Start + TimeSpan.FromDays(UpdateDuration / BannersPerUpdate) * banner:dd.MM.yyyy}**";
         }
 
-        private IEnumerable<GemTotal> GetTotals()
+        private IEnumerable<RewardTotal> GetTotals()
         {
-            List<GemTotal> totals = new List<GemTotal>();
+            List<RewardTotal> totals = new List<RewardTotal>();
 
             // Current
-            var current = new GemTotal(GenshinEmotes.Primogem, "Current");
+            var current = new RewardTotal(GenshinEmotes.Primogem, "Current");
             if (Settings.Primogems != 0)
                 current.Rewards.Add(new Reward(Currency.Primogems, 1, Settings.Primogems));
             if (Settings.Acquaint != 0)
@@ -140,45 +140,45 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 totals.Add(current);
 
             // Dailies
-            totals.Add(new GemTotal(GenshinEmotes.Daily, "Daily quests", new Reward(Currency.Primogems, Days, 60)));
+            totals.Add(new RewardTotal(GenshinEmotes.Daily, "Daily quests", new Reward(Currency.Primogems, Days, 60)));
 
             // Welkin
             if (Settings.Welkin != 0)
-                totals.Add(new GemTotal(GenshinEmotes.Welkin, "Welkin", new Reward(Currency.Primogems, Math.Min(Days, Settings.Welkin), 90)));
+                totals.Add(new RewardTotal(GenshinEmotes.Welkin, "Welkin", new Reward(Currency.Primogems, Math.Min(Days, Settings.Welkin), 90)));
 
             // Abyss
             if (Settings.Abyss != 0)
             {
                 int abyssPeriods = DateCalculator(StartDate.DateTruncate(TimePartition.Month), i => i + (i.AddMonths(1) - i) / 2);
                 if (abyssPeriods != 0)
-                    totals.Add(new GemTotal(GenshinEmotes.Abyss, "Abyss", new Reward(Currency.Primogems, abyssPeriods, Settings.Abyss)));
+                    totals.Add(new RewardTotal(GenshinEmotes.Abyss, "Abyss", new Reward(Currency.Primogems, abyssPeriods, Settings.Abyss)));
             }
 
             // Stardust shop
             int monthlyResets = DateCalculator(StartDate.DateTruncate(TimePartition.Month), i => i.AddMonths(1));
             if (monthlyResets != 0)
-                totals.Add(new GemTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, monthlyResets, 5), new Reward(Currency.Intertwined, monthlyResets, 5)));
+                totals.Add(new RewardTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, monthlyResets, 5), new Reward(Currency.Intertwined, monthlyResets, 5)));
 
             int codes = DateCalculator(LaunchDay - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
             int reachedUpdateDays = Math.Min((EndDate - Versions[^1].Start).Days + 1, Days);
             int currentUpdateDays = Math.Min((Versions[0].End - StartDate).Days, Days);
 
             // Battlepass
-            if (GetBattlepassTotal(reachedUpdateDays, currentUpdateDays) is GemTotal battlepass && battlepass.Rewards.Count != 0)
+            if (GetBattlepassTotal(reachedUpdateDays, currentUpdateDays) is RewardTotal battlepass && battlepass.Rewards.Count != 0)
                 totals.Add(battlepass);
 
             // Updates
-            if (GetUpdatesTotal(Versions.Count - 1, codes) is GemTotal updates && updates.Rewards.Count != 0)
+            if (GetUpdatesTotal(Versions.Count - 1, codes) is RewardTotal updates && updates.Rewards.Count != 0)
                 totals.Add(updates);
 
             // Events
-            if (Settings.Events && GetEvents(currentUpdateDays, reachedUpdateDays) is GemTotal events)
+            if (Settings.Events && GetEvents(currentUpdateDays, reachedUpdateDays) is RewardTotal events)
                 totals.Add(events);
 
             // Test runs
             int testRuns = DateCalculator(LaunchDay, i => i.AddDays(UpdateDuration / 2));
             if (testRuns != 0)
-                totals.Add(new GemTotal(GenshinEmotes.Primogem, "Test Runs", new Reward(Currency.Primogems, testRuns, 20)));
+                totals.Add(new RewardTotal(GenshinEmotes.Primogem, "Test Runs", new Reward(Currency.Primogems, testRuns, 20)));
 
             // Hoyolab
             if (Settings.Hoyolab != 0)
@@ -191,10 +191,10 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return totals;
         }
 
-        private GemTotal GetEvents(int currentUpdateDays, int reachedUpdateDays)
+        private RewardTotal GetEvents(int currentUpdateDays, int reachedUpdateDays)
         {
             List<string> updateNames = new List<string>();
-            var events = new GemTotal(GenshinEmotes.Events, "Events");
+            var events = new RewardTotal(GenshinEmotes.Events, "Events");
 
             if (currentUpdateDays > 0)
             {
@@ -221,10 +221,10 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return events;
         }
 
-        private GemTotal GetUpdatesTotal(int updates, int codes)
+        private RewardTotal GetUpdatesTotal(int updates, int codes)
         {
             List<string> names = new List<string>();
-            var totals = new GemTotal(GenshinEmotes.Primogem, "Updates");
+            var totals = new RewardTotal(GenshinEmotes.Primogem, "Updates");
 
             if (codes > 0)
             {
@@ -245,10 +245,10 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return totals;
         }
 
-        private GemTotal GetBattlepassTotal(int daysFinal, int daysCurrent)
+        private RewardTotal GetBattlepassTotal(int daysFinal, int daysCurrent)
         {
             List<string> rewardNames = new List<string>();
-            var battlepass = new GemTotal(GenshinEmotes.Sojourner, "Battlepass");
+            var battlepass = new RewardTotal(GenshinEmotes.Sojourner, "Battlepass");
             int updates = Versions.Count - 1;
 
             // Current sojourner/gnostic
@@ -339,9 +339,9 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return battlepass;
         }
 
-        private GemTotal GetHoyolab(int monthlyResets)
+        private RewardTotal GetHoyolab(int monthlyResets)
         {
-            var hoyolab = new GemTotal(GenshinEmotes.Primogem, "Hoyolab Monthly Check-in");
+            var hoyolab = new RewardTotal(GenshinEmotes.Primogem, "Hoyolab Monthly Check-in");
             var days = DateTime.DaysInMonth(StartDate.Year, StartDate.Month);
 
             if (Settings.Hoyolab < 21)

@@ -4,13 +4,13 @@ using System.Linq;
 
 namespace GenshinLibrary.ReactionCallback.PrimogemCalculator
 {
-    public class GemTotal
+    public class RewardTotal
     {
         public string Name { get; set; }
         public Emote Emote { get; }
         public List<Reward> Rewards { get; }
 
-        public GemTotal(Emote emote, string name, params Reward[] totals)
+        public RewardTotal(Emote emote, string name, params Reward[] totals)
         {
             Name = name;
             Emote = emote;
