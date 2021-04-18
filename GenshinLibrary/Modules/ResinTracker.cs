@@ -69,7 +69,9 @@ namespace GenshinLibrary.Modules
             if (resinUpdate != null)
             {
                 currentResin = resinUpdate.GetCurrentResin();
-                embed.WithFooter($"Fully refills in {resinUpdate.TimeBeforeFullRefill():hh\\:mm\\:ss}");
+
+                if (currentResin < 160)
+                    embed.WithFooter($"Fully refills in {resinUpdate.TimeBeforeFullRefill():hh\\:mm\\:ss}");
             }
 
             embed.WithAuthor(Context.User)
