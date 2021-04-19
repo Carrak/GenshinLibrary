@@ -5,6 +5,8 @@ namespace GenshinLibrary.Utility
 {
     public static class EnumerableUtilities
     {
+        private static readonly Random random = new Random();
+
         public static bool ContainsDuplicates<T>(this IEnumerable<T> items)
         {
             return ContainsDuplicates(items, EqualityComparer<T>.Default);
@@ -23,7 +25,7 @@ namespace GenshinLibrary.Utility
             return false;
         }
 
-        public static T RandomElement<T>(this IReadOnlyList<T> items, Random random)
+        public static T RandomElement<T>(this IReadOnlyList<T> items)
         {
             return items[random.Next(0, items.Count)];
         }

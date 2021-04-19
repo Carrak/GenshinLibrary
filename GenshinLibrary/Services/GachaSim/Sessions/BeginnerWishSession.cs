@@ -34,7 +34,7 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
             CurrentFourStarPity++;
 
             if (RollFivestar(Random))
-                return BeginnerWish.FiveStarCharacters.RandomElement(Random);
+                return BeginnerWish.FiveStarCharacters.RandomElement();
 
             if (RollFourstar(Random))
             {
@@ -44,10 +44,10 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
                     return BeginnerWish.Noelle;
                 }
 
-                return BeginnerWish.FourStarCharacters.RandomElement(Random);
+                return BeginnerWish.FourStarCharacters.RandomElement();
             }
 
-            return BeginnerWish.Threestars.RandomElement(Random);
+            return BeginnerWish.Threestars.RandomElement();
         }
     }
 }

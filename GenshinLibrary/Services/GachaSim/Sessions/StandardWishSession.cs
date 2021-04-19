@@ -21,20 +21,20 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
             if (RollFivestar(Random))
             {
                 if (Random.NextDouble() < 0.5f)
-                    return StandardWish.FiveStarCharacters.RandomElement(Random);
+                    return StandardWish.FiveStarCharacters.RandomElement();
                 else
-                    return StandardWish.FiveStarWeapons.RandomElement(Random);
+                    return StandardWish.FiveStarWeapons.RandomElement();
             }
 
             if (RollFourstar(Random))
             {
                 if (Random.NextDouble() < 0.5f)
-                    return StandardWish.FourStarCharacters.RandomElement(Random);
+                    return StandardWish.FourStarCharacters.RandomElement();
                 else
-                    return StandardWish.FourStarWeapons.RandomElement(Random);
+                    return StandardWish.FourStarWeapons.RandomElement();
             }
 
-            return StandardWish.Threestars.RandomElement(Random);
+            return StandardWish.Threestars.RandomElement();
         }
     }
 }

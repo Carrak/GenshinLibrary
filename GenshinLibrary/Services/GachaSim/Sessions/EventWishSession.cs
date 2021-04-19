@@ -25,16 +25,16 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
                 if (FiveStarRateUpGuarantee)
                 {
                     FiveStarRateUpGuarantee = false;
-                    return EventWish.RateUpFivestars.RandomElement(Random);
+                    return EventWish.RateUpFivestars.RandomElement();
                 }
 
                 if (Random.NextDouble() < EventWish.RateUpChance)
                 {
                     FiveStarRateUpGuarantee = true;
-                    return EventWish.StandardFivestars.RandomElement(Random);
+                    return EventWish.StandardFivestars.RandomElement();
                 }
                 else
-                    return EventWish.RateUpFivestars.RandomElement(Random);
+                    return EventWish.RateUpFivestars.RandomElement();
             }
 
             if (RollFourstar(Random))
@@ -42,7 +42,7 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
                 if (FourStarRateUpGuarantee)
                 {
                     FourStarRateUpGuarantee = false;
-                    return EventWish.RateUpFourstars.RandomElement(Random);
+                    return EventWish.RateUpFourstars.RandomElement();
                 }
 
                 if (Random.NextDouble() < EventWish.RateUpChance)
@@ -51,10 +51,10 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
                     return EventWish.StandardFourstars.RandomElement(Random);
                 }
                 else
-                    return EventWish.RateUpFourstars.RandomElement(Random);
+                    return EventWish.RateUpFourstars.RandomElement();
             }
 
-            return EventWish.StandardThreestars.RandomElement(Random);
+            return EventWish.StandardThreestars.RandomElement();
         }
     }
 }
