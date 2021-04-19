@@ -9,8 +9,9 @@ namespace GenshinLibrary.Services.GachaSim
     {
         public IReadOnlyList<WishItem> RateUpFivestars { get; }
         public IReadOnlyList<WishItem> RateUpFourstars { get; }
+        public IReadOnlyList<WishItem> StandardFourstarWeapons { get; }
+        public IReadOnlyList<WishItem> StandardFourstarCharacters { get; }
         public IReadOnlyList<WishItem> StandardFivestars { get; }
-        public IReadOnlyList<WishItem> StandardFourstars { get; }
         public IReadOnlyList<WishItem> StandardThreestars { get; }
 
         public DateTime Date { get; }
@@ -25,28 +26,31 @@ namespace GenshinLibrary.Services.GachaSim
             List<WishItem> rateUpFivestars = new List<WishItem>();
             List<WishItem> rateUpFourstars = new List<WishItem>();
             List<WishItem> standardFivestars = new List<WishItem>();
-            List<WishItem> standardFourstars = new List<WishItem>();
+            List<WishItem> standardFourstarWeapons = new List<WishItem>();
+            List<WishItem> standardFourstarCharacters = new List<WishItem>();
             List<WishItem> standardThreestars = new List<WishItem>();
 
             foreach (var wi in standardPool)
                 switch (wi.Rarity)
                 {
                     case 3: standardThreestars.Add(wi); break;
-                    case 4: standardFourstars.Add(wi); break;
+                    case 4 when wi is Weapon: standardFourstarWeapons.Add(wi); break;
+                    case 4 when wi is Character: standardFourstarCharacters.Add(wi); break;
                     case 5: standardFivestars.Add(wi); break;
                 }
 
             foreach (var wi in rateUpPool)
                 switch (wi.Rarity)
                 {
-                    case 4: rateUpFourstars.Add(wi); standardFourstars.Remove(wi); break;
+                    case 4: rateUpFourstars.Add(wi); standardFourstarWeapons.Remove(wi); standardFourstarCharacters.Remove(wi); break;
                     case 5: rateUpFivestars.Add(wi); standardFivestars.Remove(wi); break;
                 }
 
             RateUpFivestars = rateUpFivestars.AsReadOnly();
             RateUpFourstars = rateUpFourstars.AsReadOnly();
             StandardFivestars = standardFivestars.AsReadOnly();
-            StandardFourstars = standardFourstars.AsReadOnly();
+            StandardFourstarCharacters = standardFourstarCharacters.AsReadOnly();
+            StandardFourstarWeapons = standardFourstarWeapons.AsReadOnly();
             StandardThreestars = standardThreestars.AsReadOnly();
         }
 

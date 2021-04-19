@@ -48,7 +48,10 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
                 if (Random.NextDouble() < EventWish.RateUpChance)
                 {
                     FourStarRateUpGuarantee = true;
-                    return EventWish.StandardFourstars.RandomElement(Random);
+                    if (Random.NextDouble() < 0.5)
+                        return EventWish.StandardFourstarCharacters.RandomElement();
+                    else
+                        return EventWish.StandardFourstarWeapons.RandomElement();
                 }
                 else
                     return EventWish.RateUpFourstars.RandomElement();
