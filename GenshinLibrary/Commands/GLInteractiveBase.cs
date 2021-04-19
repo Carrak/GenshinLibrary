@@ -68,7 +68,7 @@ namespace GenshinLibrary.Commands
                     return Task.CompletedTask;
 
                 // If message matches the condition, set it as the result
-                if (reaction.Emote.ToString() == emote.Name.ToString())
+                if (reaction.Emote.Name == emote.Name)
                     eventTrigger.SetResult(true);
 
                 return Task.CompletedTask;
