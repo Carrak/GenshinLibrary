@@ -46,7 +46,6 @@ namespace GenshinLibrary.Services.GachaSim
                 if (wi.RarityImage is null)
                     throw new Exception($"RarityImage missing for {wi.Name}");
 
-
                 // Current x position
                 int x = startingX + i * (width + indent);
 
@@ -71,21 +70,21 @@ namespace GenshinLibrary.Services.GachaSim
                 g.FillRectangle(gradientBrushBottom, bottom);
 
                 // Draw wish image
-                var size = GetSize(Math.Min(width / (double)wi.WishArt.Width, height / (double)wi.WishArt.Height), wi.WishArt);
+                var size = GetSize(Math.Min(width / (double)wi.WishArt.Width, height / (double)wi.WishArt.Height), wi.WishArt.Width, wi.WishArt.Height);
                 var imageRect = new Rectangle(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2, size.Width, size.Height);
                 g.DrawImage(wi.WishArt, imageRect);
 
                 // Draw outline
-                Pen pen = new Pen(rarityColor, 2);
+                using Pen pen = new Pen(rarityColor, 2);
                 g.DrawRectangle(pen, wishRect);
 
                 // Draw rarity
-                var raritySize = GetSize(0.2, wi.RarityImage);
+                var raritySize = GetSize(0.2, wi.RarityImage.Width, wi.RarityImage.Height);
                 var rarityRect = new Rectangle(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20, raritySize.Width, raritySize.Height);
                 g.DrawImage(wi.RarityImage, rarityRect);
 
                 // Draw icon
-                var resizedIconSize = GetSize(iconSize / (double)wi.Icon.Width, wi.Icon);
+                var resizedIconSize = GetSize(iconSize / (double)wi.Icon.Width, wi.Icon.Width, wi.Icon.Height);
                 var iconRect = new Rectangle(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityRect.Y - iconSize - 5, resizedIconSize.Width, resizedIconSize.Height);
                 g.DrawImage(wi.Icon, iconRect);
             }
@@ -97,9 +96,9 @@ namespace GenshinLibrary.Services.GachaSim
             return stream;
         }
 
-        private static Size GetSize(double ratio, Bitmap bm)
+        private static Size GetSize(double ratio, int width, int height)
         {
-            return new Size((int)(bm.Width * ratio), (int)(bm.Height * ratio));
+            return new Size((int)(width * ratio), (int)(height * ratio));
         }
     }
 }
