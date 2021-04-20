@@ -95,21 +95,13 @@ namespace GenshinLibrary.Modules
             {
                 var wishImage = new WishImage(result);
 
-                var bitmap = new System.Drawing.Bitmap(2000, 2000);//wishImage.GetImage();
-                MemoryStream stream = new MemoryStream();
+                using var bitmap = new System.Drawing.Bitmap(2000, 2000);//wishImage.GetImage();
+                using MemoryStream stream = new MemoryStream();
                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 stream.Seek(0, SeekOrigin.Begin);
 
                 resultEmbed.WithImageUrl($"attachment://{fileName}");
                 await Context.Channel.SendFileAsync(stream, fileName, embed: resultEmbed.Build());
-
-                bitmap.Dispose();
-                bitmap = null;
-                stream.Dispose();
-                stream = null;
-
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
             }
 
         }
