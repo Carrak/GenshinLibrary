@@ -33,6 +33,7 @@ namespace GenshinLibrary
             _support = support;
 
             _client.MessageReceived += HandleMessagesAsync;
+            _commands.CommandExecuted += HandleCommandExecuted;
         }
 
         /// <summary>
@@ -94,6 +95,15 @@ namespace GenshinLibrary
                 if (!result.IsSuccess)
                     await HandleErrorsAsync(context, result, argPosition);
             }
+        }
+
+        private Task HandleCommandExecuted(Optional<CommandInfo> commandInfo, ICommandContext context, IResult result)
+        {
+            if (commandInfo.IsSpecified)
+                Console.WriteLine(new LogMessage(LogSeverity.Info, "Command", $"{context.User} executed the {commandInfo.Value.Name} command in " +
+                    $"{(context.Guild is null ? "DM" : $"{context.Guild.Name} in channel #{context.Channel.Name}")} ({result.IsSuccess})\n" +
+                    $"{(result.IsSuccess ? "" : $"\nCommand execution error: {result.ErrorReason}")}"));
+            return Task.CompletedTask;
         }
 
         /// <summary>
