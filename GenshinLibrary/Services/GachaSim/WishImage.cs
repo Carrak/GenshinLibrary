@@ -24,9 +24,8 @@ namespace GenshinLibrary.Services.GachaSim
 
         public Bitmap GetImage()
         {
-            using var bitmap = new Bitmap(backgroundPath);
+            var bitmap = new Bitmap(backgroundPath);
             return bitmap;
-
             
             using Graphics g = Graphics.FromImage(bitmap);
 
