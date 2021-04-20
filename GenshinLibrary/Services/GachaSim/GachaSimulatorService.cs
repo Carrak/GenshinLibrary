@@ -28,6 +28,8 @@ namespace GenshinLibrary.Services.GachaSim
 
         public GachaSimulatorProfile GetOrCreateProfile(IUser user)
         {
+            return new GachaSimulatorProfile(Banners.Values.First());
+
             if (profiles.TryGetValue<GachaSimulatorProfile>(user.Id, out var profile))
                 return profile;
 
