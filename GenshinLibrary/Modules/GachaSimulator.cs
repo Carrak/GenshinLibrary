@@ -7,6 +7,7 @@ using GenshinLibrary.ReactionCallback;
 using GenshinLibrary.Services.GachaSim;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -93,12 +94,19 @@ namespace GenshinLibrary.Modules
             else
             {
                 var wishImage = new WishImage(result);
-                var image = wishImage.GetImage();
-                resultEmbed.WithImageUrl($"attachment://{fileName}");
-                await Context.Channel.SendFileAsync(image, fileName, embed: resultEmbed.Build());
 
-                image.Dispose();
-                image = null;
+                var bitmap = wishImage.GetImage();
+                Stream stream = new MemoryStream();
+                bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                stream.Seek(0, SeekOrigin.Begin);
+
+                resultEmbed.WithImageUrl($"attachment://{fileName}");
+                await Context.Channel.SendFileAsync(stream, fileName, embed: resultEmbed.Build());
+
+                bitmap.Dispose();
+                stream.Dispose();
+                bitmap = null;
+                stream = null;
             }
 
         }
