@@ -1,4 +1,5 @@
-﻿using Discord.Commands;
+﻿using Discord;
+using Discord.Commands;
 using GenshinLibrary.Attributes;
 using GenshinLibrary.Commands;
 using System;
@@ -36,6 +37,21 @@ namespace GenshinLibrary.Modules
             }
 
             Console.WriteLine(result);
+        }
+
+        [Command("botstats")]
+        public async Task Stats()
+        {
+            var embed = new EmbedBuilder();
+
+            var client = Context.Client;
+
+            embed.WithAuthor(client.CurrentUser)
+                .WithColor(Color.Blue)
+                .AddField("Guilds", client.Guilds.Count, true)
+                .AddField("Users", client.Guilds.Sum(x => x.Users.Count), true);
+
+            await ReplyAsync(embed: embed.Build());
         }
     }
 }
