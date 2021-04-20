@@ -24,7 +24,7 @@ namespace GenshinLibrary.Services.GachaSim
 
         public Stream GetImage()
         {
-            using var bitmap = new Bitmap(background);
+            var bitmap = new Bitmap(background);
             using Graphics g = Graphics.FromImage(bitmap);
 
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -92,6 +92,9 @@ namespace GenshinLibrary.Services.GachaSim
             Stream stream = new MemoryStream();
             bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             stream.Seek(0, SeekOrigin.Begin);
+
+            bitmap.Dispose();
+            bitmap = null;
 
             return stream;
         }
