@@ -93,10 +93,10 @@ namespace GenshinLibrary.Modules
             else
             {
                 var wishImage = new WishImage(result);
-                using var image = wishImage.GetImage();
+                //var image = wishImage.GetImage();
                 //resultEmbed.WithImageUrl($"attachment://{fileName}");
                 //await Context.Channel.SendFileAsync(image, fileName, embed: resultEmbed.Build());
-                image.Close();
+                //image.Dispose();
             }
 
         }
