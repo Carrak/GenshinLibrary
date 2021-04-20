@@ -7,7 +7,6 @@ using GenshinLibrary.ReactionCallback;
 using GenshinLibrary.Services.GachaSim;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -96,7 +95,7 @@ namespace GenshinLibrary.Modules
             {
                 var wishImage = new WishImage(result);
 
-                var bitmap = new Bitmap(2000, 2000);//wishImage.GetImage();
+                var bitmap = new System.Drawing.Bitmap(2000, 2000);//wishImage.GetImage();
                 Stream stream = new MemoryStream();
                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 stream.Seek(0, SeekOrigin.Begin);
