@@ -24,7 +24,7 @@ namespace GenshinLibrary.Services.GachaSim
 
         public Stream GetImage()
         {
-            using var bitmap = new Bitmap(background);
+            using var bitmap = new Bitmap(background.Width, background.Height);
             using Graphics g = Graphics.FromImage(bitmap);
 
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -33,6 +33,8 @@ namespace GenshinLibrary.Services.GachaSim
 
             int startingX = (bitmap.Width - (width + indent) * _items.Length) / 2;
             int y = bitmap.Height / 2 - height / 2;
+
+            g.DrawImage(background, 0, 0);
 
             for (int i = 0; i < _items.Length; i++)
             {
