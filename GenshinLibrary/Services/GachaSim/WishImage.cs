@@ -86,7 +86,6 @@ namespace GenshinLibrary.Services.GachaSim
             bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             stream.Seek(0, SeekOrigin.Begin);
 
-            GC.Collect();
 
             return stream;
         }
