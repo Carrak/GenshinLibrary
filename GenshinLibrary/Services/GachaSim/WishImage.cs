@@ -26,7 +26,7 @@ namespace GenshinLibrary.Services.GachaSim
 
         public Stream GetImage()
         {
-            Image bitmap = Image.Load(backgroundPath);
+            using Image bitmap = Image.Load(backgroundPath);
 
             int startingX = (bitmap.Width - (width + indent) * _items.Length) / 2;
             int y = bitmap.Height / 2 - height / 2;
@@ -35,6 +35,7 @@ namespace GenshinLibrary.Services.GachaSim
             {
                 // Current x position
                 int x = startingX + i * (width + indent);
+
                 // Colour that varies depending on rarity
                 var rarityColor = _items[i].Rarity switch
                 {
@@ -56,7 +57,7 @@ namespace GenshinLibrary.Services.GachaSim
                 bitmap.Mutate(x => x.Fill(gradientBrushBottom, bottom));
 
                 // Draw wish art
-                using Image wishArt = Image.Load(_items[i].WishArtPath);
+                using var wishArt = Image.Load(_items[i].WishArtPath);
                 var size = GetSize(Math.Min(width / (double)wishArt.Width, height / (double)wishArt.Height), wishArt.Width, wishArt.Height);
                 wishArt.Mutate(x => x.Resize(size));
                 bitmap.Mutate(ctx => ctx.DrawImage(wishArt, new Point(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2), 1));
