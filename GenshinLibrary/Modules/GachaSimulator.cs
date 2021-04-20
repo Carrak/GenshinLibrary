@@ -97,7 +97,6 @@ namespace GenshinLibrary.Modules
                 resultEmbed.WithImageUrl($"attachment://{fileName}");
                 await Context.Channel.SendFileAsync(image, fileName, embed: resultEmbed.Build());
                 image.Close();
-                
             }
 
         }

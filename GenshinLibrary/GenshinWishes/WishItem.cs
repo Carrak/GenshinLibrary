@@ -10,9 +10,9 @@ namespace GenshinLibrary.GenshinWishes
         public int Rarity { get; }
         public Banner Banners { get; }
 
-        public Bitmap Icon { get; protected set; }
-        public Bitmap WishArt { get; protected set; }
-        public Bitmap RarityImage { get; protected set; }
+        public abstract string IconPath { get; }
+        public abstract string WishArtPath { get; }
+        public string RarityImagePath { get; protected set; }
 
         protected WishItem(int wid, string name, int rarity, Banner banners)
         {
@@ -20,7 +20,7 @@ namespace GenshinLibrary.GenshinWishes
             Name = name;
             Rarity = rarity;
             Banners = banners;
-            RarityImage = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png");
+            RarityImage = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
         }
 
         public string GetFormattedName(int allowedLength)

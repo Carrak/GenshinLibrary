@@ -13,29 +13,16 @@ namespace GenshinLibrary.GenshinWishes
         public WeaponType WieldedWeapon { get; }
         public Bitmap AvatarImage { get; }
 
+        public override string IconPath {get;}
+        public override string WishArtPath { get; }
+
         [JsonConstructor]
         public Character(int wid, string name, Element vision, WeaponType weapon, int rarity, Banner banners) : base(wid, name, rarity, banners)
         {
             Vision = vision;
             WieldedWeapon = weapon;
-
-            try
-            {
-                Icon = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png");
-            }
-            catch
-            {
-                Console.WriteLine($"Image missing/no access to Icon for {Name}");
-            }
-
-            try
-            {
-                WishArt = new Bitmap($"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}SplashArtsPartial{Path.DirectorySeparatorChar}{Name}.png");
-            }
-            catch
-            {
-                Console.WriteLine($"Image missing/no access to WishArt for {Name}");
-            }
+            WishArtPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}SplashArtsPartial{Path.DirectorySeparatorChar}{Name}.png";
+            IconPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png";
 
             try
             {
