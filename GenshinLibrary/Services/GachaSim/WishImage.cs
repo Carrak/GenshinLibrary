@@ -60,29 +60,29 @@ namespace GenshinLibrary.Services.GachaSim
                 g.FillRectangle(gradientBrushBottom, bottom);
 
                 // Draw wish image
-                using var wishArt = new Bitmap(_items[i].WishArtPath);
+                /*using var wishArt = new Bitmap(_items[i].WishArtPath);
                 var size = GetSize(Math.Min(width / (double)wishArt.Width, height / (double)wishArt.Height), wishArt.Width, wishArt.Height);
                 var imageRect = new Rectangle(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2, size.Width, size.Height);
                 g.DrawImage(wishArt, imageRect);
-                wishArt.Dispose();
+                wishArt.Dispose();*/
 
                 // Draw outline
                 using Pen pen = new Pen(rarityColor, 2);
                 g.DrawRectangle(pen, wishRect);
 
                 // Draw rarity
-                using var rarityImage = new Bitmap(_items[i].RarityImagePath);
+                /*using var rarityImage = new Bitmap(_items[i].RarityImagePath);
                 var raritySize = GetSize(0.2, rarityImage.Width, rarityImage.Height);
                 var rarityRect = new Rectangle(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20, raritySize.Width, raritySize.Height);
                 g.DrawImage(rarityImage, rarityRect);
-                rarityImage.Dispose();
+                rarityImage.Dispose();*/
 
                 // Draw icon
-                using var icon = new Bitmap(_items[i].IconPath);
+                /*using var icon = new Bitmap(_items[i].IconPath);
                 var resizedIconSize = GetSize(iconSize / (double)icon.Width, icon.Width, icon.Height);
                 var iconRect = new Rectangle(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityRect.Y - iconSize - 5, resizedIconSize.Width, resizedIconSize.Height);
                 g.DrawImage(icon, iconRect);
-                icon.Dispose();
+                icon.Dispose();*/
             }
 
             g.Dispose();
