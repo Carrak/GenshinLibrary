@@ -94,11 +94,7 @@ namespace GenshinLibrary.Modules
             }
 
             var wishImage = new WishImage(result);
-
-            using var bitmap = wishImage.GetImage();
-            using MemoryStream stream = new MemoryStream();
-            bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-            stream.Seek(0, SeekOrigin.Begin);
+            using var stream = wishImage.GetImage();
 
             resultEmbed.WithImageUrl($"attachment://{fileName}");
             await Context.Channel.SendFileAsync(stream, fileName, embed: resultEmbed.Build());
