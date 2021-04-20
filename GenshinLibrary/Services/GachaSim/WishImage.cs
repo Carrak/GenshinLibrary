@@ -24,7 +24,7 @@ namespace GenshinLibrary.Services.GachaSim
 
         public Stream GetImage()
         {
-            var bitmap = new Bitmap(background);
+            using var bitmap = new Bitmap(background);
             using Graphics g = Graphics.FromImage(bitmap);
 
             g.SmoothingMode = SmoothingMode.AntiAlias;
@@ -36,21 +36,18 @@ namespace GenshinLibrary.Services.GachaSim
 
             for (int i = 0; i < _items.Length; i++)
             {
-                // Current wish item
-                var wi = _items[i];
-
-                if (wi.WishArt is null)
-                    throw new Exception($"WishArt missing for {wi.Name}");
-                if (wi.Icon is null)
-                    throw new Exception($"Icon missing for {wi.Name}");
-                if (wi.RarityImage is null)
-                    throw new Exception($"RarityImage missing for {wi.Name}");
+                if (_items[i].WishArt is null)
+                    throw new Exception($"WishArt missing for {_items[i].Name}");
+                if (_items[i].Icon is null)
+                    throw new Exception($"Icon missing for {_items[i].Name}");
+                if (_items[i].RarityImage is null)
+                    throw new Exception($"RarityImage missing for {_items[i].Name}");
 
                 // Current x position
                 int x = startingX + i * (width + indent);
 
                 // Colour that varies depending on rarity
-                var rarityColor = wi.Rarity switch
+                var rarityColor = _items[i].Rarity switch
                 {
                     3 => Color.FromArgb(0, 200, 255),
                     4 => Color.FromArgb(240, 110, 240),
@@ -70,23 +67,23 @@ namespace GenshinLibrary.Services.GachaSim
                 g.FillRectangle(gradientBrushBottom, bottom);
 
                 // Draw wish image
-                var size = GetSize(Math.Min(width / (double)wi.WishArt.Width, height / (double)wi.WishArt.Height), wi.WishArt.Width, wi.WishArt.Height);
+                var size = GetSize(Math.Min(width / (double)_items[i].WishArt.Width, height / (double)_items[i].WishArt.Height), _items[i].WishArt.Width, _items[i].WishArt.Height);
                 var imageRect = new Rectangle(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2, size.Width, size.Height);
-                g.DrawImage(wi.WishArt, imageRect);
+                g.DrawImage(_items[i].WishArt, imageRect);
 
                 // Draw outline
                 using Pen pen = new Pen(rarityColor, 2);
                 g.DrawRectangle(pen, wishRect);
 
                 // Draw rarity
-                var raritySize = GetSize(0.2, wi.RarityImage.Width, wi.RarityImage.Height);
+                var raritySize = GetSize(0.2, _items[i].RarityImage.Width, _items[i].RarityImage.Height);
                 var rarityRect = new Rectangle(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20, raritySize.Width, raritySize.Height);
-                g.DrawImage(wi.RarityImage, rarityRect);
+                g.DrawImage(_items[i].RarityImage, rarityRect);
 
                 // Draw icon
-                var resizedIconSize = GetSize(iconSize / (double)wi.Icon.Width, wi.Icon.Width, wi.Icon.Height);
+                var resizedIconSize = GetSize(iconSize / (double)_items[i].Icon.Width, _items[i].Icon.Width, _items[i].Icon.Height);
                 var iconRect = new Rectangle(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityRect.Y - iconSize - 5, resizedIconSize.Width, resizedIconSize.Height);
-                g.DrawImage(wi.Icon, iconRect);
+                g.DrawImage(_items[i].Icon, iconRect);
             }
 
             Stream stream = new MemoryStream();
