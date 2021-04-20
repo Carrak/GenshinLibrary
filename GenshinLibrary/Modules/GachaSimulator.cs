@@ -96,7 +96,7 @@ namespace GenshinLibrary.Modules
                 var wishImage = new WishImage(result);
 
                 var bitmap = new System.Drawing.Bitmap(2000, 2000);//wishImage.GetImage();
-                Stream stream = new MemoryStream();
+                MemoryStream stream = new MemoryStream();
                 bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
                 stream.Seek(0, SeekOrigin.Begin);
 
