@@ -41,7 +41,7 @@ namespace GenshinLibrary.Services.GachaSim
         public WishItem[] Wish(int count)
         {
             WishItem[] wishes = sessions[SelectedBannerBID].Wish(count);
-            //Inventory.AddRange(wishes);
+            Inventory.AddRange(wishes);
             return wishes;
         }
     }

@@ -89,13 +89,15 @@ namespace GenshinLibrary.Modules
                     resultEmbed.AddField("3★ items", string.Join('\n', counts.Threestars.Select(x => FormatWishItemCount(x))));
 
                 await ReplyAsync(embed: resultEmbed.Build());
-
             }
             else
             {
-                using var image = new WishImage(result).GetImage();
+                var wishImage = new WishImage(result);
+                using var image = wishImage.GetImage();
                 resultEmbed.WithImageUrl($"attachment://{fileName}");
                 await Context.Channel.SendFileAsync(image, fileName, embed: resultEmbed.Build());
+                image.Close();
+                
             }
 
         }
