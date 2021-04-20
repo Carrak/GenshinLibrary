@@ -25,7 +25,7 @@ namespace GenshinLibrary.Services.GachaSim
         public Bitmap GetImage()
         {
             var bitmap = new Bitmap(backgroundPath);
-            using Graphics g = Graphics.FromImage(bitmap);
+            Graphics g = Graphics.FromImage(bitmap);
 
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.CompositingQuality = CompositingQuality.HighQuality;
@@ -64,6 +64,7 @@ namespace GenshinLibrary.Services.GachaSim
                 var size = GetSize(Math.Min(width / (double)wishArt.Width, height / (double)wishArt.Height), wishArt.Width, wishArt.Height);
                 var imageRect = new Rectangle(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2, size.Width, size.Height);
                 g.DrawImage(wishArt, imageRect);
+                wishArt.Dispose();
 
                 // Draw outline
                 using Pen pen = new Pen(rarityColor, 2);
@@ -74,13 +75,17 @@ namespace GenshinLibrary.Services.GachaSim
                 var raritySize = GetSize(0.2, rarityImage.Width, rarityImage.Height);
                 var rarityRect = new Rectangle(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20, raritySize.Width, raritySize.Height);
                 g.DrawImage(rarityImage, rarityRect);
+                rarityImage.Dispose();
 
                 // Draw icon
                 using var icon = new Bitmap(_items[i].IconPath);
                 var resizedIconSize = GetSize(iconSize / (double)icon.Width, icon.Width, icon.Height);
                 var iconRect = new Rectangle(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityRect.Y - iconSize - 5, resizedIconSize.Width, resizedIconSize.Height);
                 g.DrawImage(icon, iconRect);
+                icon.Dispose();
             }
+
+            g.Dispose();
 
             return bitmap;
         }
