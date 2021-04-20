@@ -103,10 +103,13 @@ namespace GenshinLibrary.Modules
                 resultEmbed.WithImageUrl($"attachment://{fileName}");
                 await Context.Channel.SendFileAsync(stream, fileName, embed: resultEmbed.Build());
 
-                bitmap.Dispose();
                 stream.Dispose();
+                bitmap.Dispose();
                 bitmap = null;
                 stream = null;
+
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
             }
 
         }
