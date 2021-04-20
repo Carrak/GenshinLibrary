@@ -25,6 +25,9 @@ namespace GenshinLibrary.Services.GachaSim
         public Bitmap GetImage()
         {
             var bitmap = new Bitmap(backgroundPath);
+            return bitmap;
+
+            
             using Graphics g = Graphics.FromImage(bitmap);
 
             g.SmoothingMode = SmoothingMode.AntiAlias;

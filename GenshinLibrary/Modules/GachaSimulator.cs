@@ -104,9 +104,9 @@ namespace GenshinLibrary.Modules
                 await Context.Channel.SendFileAsync(stream, fileName, embed: resultEmbed.Build());
 
                 stream.Dispose();
+                stream = null;
                 bitmap.Dispose();
                 bitmap = null;
-                stream = null;
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
