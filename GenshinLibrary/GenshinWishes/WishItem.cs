@@ -12,7 +12,7 @@ namespace GenshinLibrary.GenshinWishes
 
         public abstract string IconPath { get; }
         public abstract string WishArtPath { get; }
-        public string RarityImagePath { get; protected set; }
+        public string RarityImagePath { get; }
 
         protected WishItem(int wid, string name, int rarity, Banner banners)
         {
@@ -20,7 +20,7 @@ namespace GenshinLibrary.GenshinWishes
             Name = name;
             Rarity = rarity;
             Banners = banners;
-            RarityImage = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
+            RarityImagePath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
         }
 
         public string GetFormattedName(int allowedLength)

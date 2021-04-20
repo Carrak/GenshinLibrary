@@ -38,13 +38,6 @@ namespace GenshinLibrary.Services.GachaSim
 
             for (int i = 0; i < _items.Length; i++)
             {
-                if (_items[i].WishArt is null)
-                    throw new Exception($"WishArt missing for {_items[i].Name}");
-                if (_items[i].Icon is null)
-                    throw new Exception($"Icon missing for {_items[i].Name}");
-                if (_items[i].RarityImage is null)
-                    throw new Exception($"RarityImage missing for {_items[i].Name}");
-
                 // Current x position
                 int x = startingX + i * (width + indent);
 
@@ -69,23 +62,26 @@ namespace GenshinLibrary.Services.GachaSim
                 g.FillRectangle(gradientBrushBottom, bottom);
 
                 // Draw wish image
-                var size = GetSize(Math.Min(width / (double)_items[i].WishArt.Width, height / (double)_items[i].WishArt.Height), _items[i].WishArt.Width, _items[i].WishArt.Height);
+                using var wishArt = new Bitmap(_items[i].WishArtPath);
+                var size = GetSize(Math.Min(width / (double)wishArt.Width, height / (double)wishArt.Height), wishArt.Width, wishArt.Height);
                 var imageRect = new Rectangle(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2, size.Width, size.Height);
-                g.DrawImage(_items[i].WishArt, imageRect);
+                g.DrawImage(wishArt, imageRect);
 
                 // Draw outline
                 using Pen pen = new Pen(rarityColor, 2);
                 g.DrawRectangle(pen, wishRect);
 
                 // Draw rarity
-                var raritySize = GetSize(0.2, _items[i].RarityImage.Width, _items[i].RarityImage.Height);
+                using var rarityImage = new Bitmap(_items[i].RarityImagePath);
+                var raritySize = GetSize(0.2, rarityImage.Width, rarityImage.Height);
                 var rarityRect = new Rectangle(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20, raritySize.Width, raritySize.Height);
-                g.DrawImage(_items[i].RarityImage, rarityRect);
+                g.DrawImage(rarityImage, rarityRect);
 
                 // Draw icon
-                var resizedIconSize = GetSize(iconSize / (double)_items[i].Icon.Width, _items[i].Icon.Width, _items[i].Icon.Height);
+                using var icon = new Bitmap(_items[i].IconPath);
+                var resizedIconSize = GetSize(iconSize / (double)icon.Width, icon.Width, icon.Height);
                 var iconRect = new Rectangle(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityRect.Y - iconSize - 5, resizedIconSize.Width, resizedIconSize.Height);
-                g.DrawImage(_items[i].Icon, iconRect);
+                g.DrawImage(icon, iconRect);
             }
 
             Stream stream = new MemoryStream();
@@ -95,6 +91,7 @@ namespace GenshinLibrary.Services.GachaSim
             bitmap.Dispose();
             g.Dispose();
             GC.Collect();
+
             return stream;
         }
 
