@@ -354,7 +354,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
             if (monthlyResets > 1)
             {
-                hoyolab.Rewards.Add(new Reward(Currency.Primogems, monthlyResets, 60));
+                hoyolab.Rewards.Add(new Reward(Currency.Primogems, monthlyResets-1, 60));
 
                 int lastMonthReward = EndDate.Day / 7 * 20;
                 if (lastMonthReward >= 60)
