@@ -33,6 +33,6 @@ namespace GenshinLibrary.Services.Resin
             return update;
         }
 
-        public ResinUpdate GetValue(IUser user) => _resinUpdates.TryGetValue(user.Id, out var update) ? update : null;
+        public ResinUpdate GetResinUpdate(IUser user) => _resinUpdates.TryGetValue(user.Id, out var update) ? update : null;
     }
 }

@@ -13,8 +13,8 @@ namespace GenshinLibrary.Services.Resin
         public ulong UserID { get; }
         public DateTime UpdatedAt { get; }
         public int Value { get; }
-
         public DateTime FullyRefillsAt { get; }
+        public bool IsFull => GetCurrentResin() == MaxResin;
 
         public ResinUpdate(ulong userId, DateTime updatedAt, int value)
         {
@@ -24,8 +24,10 @@ namespace GenshinLibrary.Services.Resin
             FullyRefillsAt = updatedAt + (MaxResin - value) * TimeSpan.FromMinutes(RechargeRateMinutes);
         }
 
-        public TimeSpan TimeBeforeFullRefill() => FullyRefillsAt - DateTime.UtcNow;
+        public TimeSpan UntilFullRefill() => IsFull ? TimeSpan.Zero : FullyRefillsAt - DateTime.UtcNow;
+        public TimeSpan UntilNext() => IsFull ? TimeSpan.Zero : TimeSpan.FromMinutes(RechargeRateMinutes - (DateTime.UtcNow - UpdatedAt).TotalMinutes % RechargeRateMinutes);
         public int GetCurrentResin() => Math.Min(MaxResin, Value + (int)((DateTime.UtcNow - UpdatedAt) / TimeSpan.FromMinutes(RechargeRateMinutes)));
+
         public static string GetResinString(int value) => $"**{value} / {MaxResin}**";
     }
 }

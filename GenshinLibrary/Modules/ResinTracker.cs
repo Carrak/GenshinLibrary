@@ -20,10 +20,11 @@ namespace GenshinLibrary.Modules
 
         [Command("setresin")]
         [Summary("Update your resin.")]
+        [Alias("sr")]
         [Ratelimit(5)]
         public async Task SetResin(
             [Summary("The value to set.")] int value,
-            [Summary("Current in-game resin countdown timer. Specify this in `0m0s` format.")] TimeSpan? adjustBy = null
+            [Summary("Current in-game resin countdown timer. Specify this in `0m0s` format.")] TimeSpan? nextIn = null
             )
         {
             if (value < 0 || value >= ResinUpdate.MaxResin)
@@ -33,9 +34,9 @@ namespace GenshinLibrary.Modules
             }
 
             var dt = DateTime.UtcNow;
-            if (adjustBy.HasValue)
+            if (nextIn.HasValue)
             {
-                var ts = adjustBy.Value;
+                var ts = nextIn.Value;
                 if (ts > TimeSpan.FromMinutes(8))
                 {
                     await ReplyAsync($"Cannot adjust by more than {ResinUpdate.RechargeRateMinutes} minutes.");
@@ -51,34 +52,67 @@ namespace GenshinLibrary.Modules
             embed.WithAuthor(Context.User)
                 .WithColor(Globals.MainColor)
                 .WithDescription($"Done! Your current resin: {ResinUpdate.GetResinString(resinUpdate.Value)}")
-                .WithFooter($"Fully refills in {resinUpdate.TimeBeforeFullRefill():hh\\:mm\\:ss}");
+                .WithFooter($"Next in {resinUpdate.UntilNext():hh\\:mm\\:ss}\nFully refills in {resinUpdate.UntilFullRefill():hh\\:mm\\:ss}");
 
             await ReplyAsync(embed: embed.Build());
         }
 
         [Command("resin")]
         [Summary("View your resin.")]
+        [Alias("r")]
         [Ratelimit(5)]
         public async Task GetResin()
         {
-            var resinUpdate = _resinTracker.GetValue(Context.User);
+            var resinUpdate = _resinTracker.GetResinUpdate(Context.User);
             var embed = new EmbedBuilder();
 
             int currentResin = ResinUpdate.MaxResin;
 
-            if (resinUpdate != null)
+            if (resinUpdate != null && !resinUpdate.IsFull)
             {
                 currentResin = resinUpdate.GetCurrentResin();
-
-                if (currentResin < 160)
-                    embed.WithFooter($"Fully refills in {resinUpdate.TimeBeforeFullRefill():hh\\:mm\\:ss}");
+                embed.WithFooter($"Next in {resinUpdate.UntilNext():hh\\:mm\\:ss}\nFully refills in {resinUpdate.UntilFullRefill():hh\\:mm\\:ss}");
             }
 
             embed.WithAuthor(Context.User)
                 .WithColor(Globals.MainColor)
                 .WithDescription($"Current resin: {ResinUpdate.GetResinString(currentResin)}");
 
+            Console.WriteLine(resinUpdate.UntilNext());
+
             await ReplyAsync(embed: embed.Build());
+        }
+
+        [Command("subtract")]
+        [Summary("Subtracts a certain value from your current resin.")]
+        [Alias("subtractresin", "subr")]
+        [Ratelimit(5)]
+        public async Task SubtractResin(
+            [Summary("The value to subtract. Must be between 10 and 150.")] int subtract
+            )
+        {
+            if (subtract % 10 != 0 || subtract < 10 || subtract > ResinUpdate.MaxResin - 10)
+            {
+                await ReplyAsync($"Can only subtract a number that divides by 10 and that is between 10 and {ResinUpdate.MaxResin - 10}.");
+                return;
+            }
+
+            var update = _resinTracker.GetResinUpdate(Context.User);
+
+            if (update is null)
+            {
+                await SetResin(ResinUpdate.MaxResin - subtract);
+                return;
+            }
+
+            int currentResin = update.GetCurrentResin();
+            if (currentResin < subtract)
+            {
+                await ReplyAsync($"Current resin ({currentResin}) is less than value to subtract.");
+                return;
+            }
+
+            await SetResin(currentResin - subtract, update.UntilNext());
         }
     }
 }
