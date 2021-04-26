@@ -94,6 +94,8 @@ namespace GenshinLibrary
                 embed.WithTitle("Thank you for inviting the bot!");
                 await guild.SystemChannel.SendMessageAsync(embed: embed.Build());
             }
+
+            await guild.DownloadUsersAsync();
         }
 
         private Task Log(LogMessage arg)
