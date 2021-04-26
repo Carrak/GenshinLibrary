@@ -73,7 +73,7 @@ namespace GenshinLibrary.Modules
                     $"{module.Summary}\n\n" +
                     $"Use `{Globals.DefaultPrefix}help [command name]` to get help on a specific command and see what each parameter means.\n" +
                     $"Parameters in `[]` denote necessary parameteres, whereas parameters in `<>` can be left unspecified.\n" +
-                    $"If you have any questions, you can join our [community server](https://discord.gg/4P23TZFZUN)!")
+                    $"If you have any questions, you can join our [community server](https://discord.gg/4P23TZFZUN)")
                     .WithColor(Globals.MainColor)
                     .AddField("Commands", FormatCommands(module));
 
@@ -94,7 +94,7 @@ namespace GenshinLibrary.Modules
               .WithTitle("GenshinLibrary / Help")
               .WithDescription($"`{prefix}help [command]` - information about a command.\n" +
               $"`{prefix}help [module]` - information about a module and its commands.\n" +
-              $"If you have any questions, you can join our [community server](https://discord.gg/4P23TZFZUN)!")
+              $"If you have any questions, you can join our community server!\n{_support.GetLinks()}")
               .AddField("Modules", string.Join('\n', modules.Select(x => $"`{x.Name}` - {x.Summary.Split('\n')[0]}")));
 
             await ReplyAsync(embed: embed.Build());

@@ -30,13 +30,15 @@ namespace GenshinLibrary
                 "allows easier access to player details and flexible control over them. Pity counters, wish history with filters, " +
                 "personal analytics, resin trackers, profiles, various calculators and a gacha simulator is what we've got in store for you.\n" +
                 "If you're enjoying the bot, please vote for it on [top.gg](https://top.gg/bot/830870729390030960)!\n\n" +
-                "[Community Server](https://discord.gg/4P23TZFZUN) | " +
-                "[Patreon](https://www.patreon.com/genshinlibrary) | " +
-                "[Invite the bot](https://discord.com/oauth2/authorize?client_id=830870729390030960&scope=bot&permissions=379968) | " +
-                "[Vote](https://top.gg/bot/830870729390030960)");
+                $"{GetLinks()}");
 
             return embed;
         }
+
+        public string GetLinks() => "[Community Server](https://discord.gg/4P23TZFZUN) | " +
+                "[Patreon](https://www.patreon.com/genshinlibrary) | " +
+                "[Invite the bot](https://discord.com/oauth2/authorize?client_id=830870729390030960&scope=bot&permissions=379968) | " +
+                "[Vote](https://top.gg/bot/830870729390030960)";
 
         public bool IsNameUnique(ModuleInfo module, CommandInfo command) => module.Commands.Count(x => x.Name == command.Name) > 1;
 
