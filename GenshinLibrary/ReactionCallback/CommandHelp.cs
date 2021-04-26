@@ -40,6 +40,9 @@ namespace GenshinLibrary.ReactionCallback
             if (cmd.Attributes.FirstOrDefault(x => x is ExampleAttribute) is ExampleAttribute ea)
                 embed.AddField("Example", ea.Value);
 
+            if (cmd.Attributes.FirstOrDefault(x => x is GifExampleAttribute) is GifExampleAttribute gea)
+                embed.WithImageUrl(gea.Link);
+
 
             return embed.Build();
         }
