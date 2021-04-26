@@ -78,8 +78,6 @@ namespace GenshinLibrary.Modules
                 .WithColor(Globals.MainColor)
                 .WithDescription($"Current resin: {ResinUpdate.GetResinString(currentResin)}");
 
-            Console.WriteLine(resinUpdate.UntilNext());
-
             await ReplyAsync(embed: embed.Build());
         }
 
