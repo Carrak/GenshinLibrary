@@ -38,7 +38,7 @@ namespace GenshinLibrary
         public string GetLinks() => "[Community Server](https://discord.gg/4P23TZFZUN) | " +
                 "[Patreon](https://www.patreon.com/genshinlibrary) | " +
                 "[Invite the bot](https://discord.com/oauth2/authorize?client_id=830870729390030960&scope=bot&permissions=379968) | " +
-                "[Vote](https://top.gg/bot/830870729390030960)";
+                "[Vote](https://top.gg/bot/830870729390030960/vote)";
 
         public bool IsNameUnique(ModuleInfo module, CommandInfo command) => module.Commands.Count(x => x.Name == command.Name) > 1;
 
