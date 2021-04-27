@@ -95,7 +95,7 @@ namespace GenshinLibrary
                 await guild.SystemChannel.SendMessageAsync(embed: embed.Build());
             }
 
-            await guild.DownloadUsersAsync();
+            _ = Task.Run(async() => await guild.DownloadUsersAsync());
         }
 
         private Task Log(LogMessage arg)
