@@ -193,12 +193,12 @@ namespace GenshinLibrary.Modules
 
         [Command("analytics")]
         [Summary("View your wish analytics.")]
-        [Ratelimit(10)]
+        [Ratelimit(7)]
         public async Task Analytics() => await Anal(Context.User);
 
         [Command("analytics")]
         [Summary("View someone's wish analytics.")]
-        [Ratelimit(10)]
+        [Ratelimit(7)]
         public async Task Anal(
             [Summary("The user whose analytics you want to see.")][Remainder] IUser user
             )
@@ -283,7 +283,7 @@ namespace GenshinLibrary.Modules
         [Command("history")]
         [Summary("View your wish history.")]
         [Example("This command will display all the 4 stars and 5 stars that you got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard rarity:4,5 pity:<60 order:pity`")]
-        [Ratelimit(10)]
+        [Ratelimit(7)]
         public async Task History
             (Banner banner,
             [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
@@ -291,7 +291,7 @@ namespace GenshinLibrary.Modules
 
         [Command("history")]
         [Summary("View someone's wish history.")]
-        [Ratelimit(10)]
+        [Ratelimit(7)]
         public async Task History(
             Banner banner,
             [Summary("The user whose history you wish to see.")] IUser user,
