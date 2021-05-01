@@ -83,18 +83,16 @@ namespace GenshinLibrary.Services.GachaSim
             float weaponFourstarChance = 0.06f;
             int weaponHardpity = 80;
 
-            var wishItems = _wishes.WishItems;
-            var standardWishes = wishItems.Values.Where(x => x.Banners.HasFlag(Banner.Standard));
+            var wishItems = _wishes.WishItems.Values;
+            var standardWishes = wishItems.Where(x => x.Banners.HasFlag(Banner.Standard));
 
             Banners[StandardBID] = new StandardWish(StandardBID, "Standard", standardWishes, baseFivestarChance, baseFourstarChance, baseHardpity);
+            Banners[BeginnerBID] = new BeginnerWish(BeginnerBID, "Beginner", wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)), _wishes.WishItems["Noelle"], baseFivestarChance, baseFourstarChance, baseHardpity);
 
             string[] starterNames = { "Amber", "Kaeya", "Lisa" };
             var standardNoStarters = standardWishes.Where(x => !starterNames.Contains(x.Name));
             var standardNoWeapons = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Weapon));
             var standardNoCharacters = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Character));
-            var beginnerPool = standardNoWeapons.Where(x => !(x.Rarity == 4 && x is Weapon) && x.Name != "Noelle");
-
-            Banners[BeginnerBID] = new BeginnerWish(BeginnerBID, "Beginner", beginnerPool, wishItems["Noelle"], baseFivestarChance, baseFourstarChance, baseHardpity);
 
             IEnumerable<EventWishRaw> eventWishes = await _wishes.GetEventWishesAsync();
             foreach (var eventWish in eventWishes)
