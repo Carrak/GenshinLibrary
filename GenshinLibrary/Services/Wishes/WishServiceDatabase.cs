@@ -234,6 +234,18 @@ namespace GenshinLibrary.Services.Wishes
             await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task RemoveAvatarAsync(IUser user)
+        {
+            string query = @"
+            DELETE FROM avatars WHERE userid = @uid
+            ";
+
+            await using var cmd = _database.GetCommand(query);
+            cmd.Parameters.AddWithValue("uid", (long)user.Id);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
         public async Task<Pities> GetPities(IUser user)
         {
             string query = @"

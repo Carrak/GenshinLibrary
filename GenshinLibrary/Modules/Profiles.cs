@@ -95,5 +95,16 @@ namespace GenshinLibrary.Modules
             else
                 await ReplyAsync("No such character exists.");
         }
+
+        [Command("resetavatar")]
+        [Summary("Set your avatar to default (Aether).")]
+        [Alias("deleteavatar")]
+        [Ratelimit(5)]
+        public async Task ResetAvatar()
+        {
+            await _wishes.RemoveAvatarAsync(Context.User);
+
+            await ReplyAsync("Successfully reset.");
+        }
     }
 }
