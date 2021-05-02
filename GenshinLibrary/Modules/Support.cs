@@ -92,6 +92,7 @@ namespace GenshinLibrary.Modules
             var embed = new EmbedBuilder()
               .WithColor(Globals.MainColor)
               .WithTitle("GenshinLibrary / Help")
+              .WithFooter("For any inquires regarding data deletion or security, please contact me directly: Carrak#8088")
               .WithDescription($"`{prefix}help [command]` - information about a command.\n" +
               $"`{prefix}help [module]` - information about a module and its commands.\n" +
               $"If you have any questions, you can join our community server!\n{_support.GetLinks()}")

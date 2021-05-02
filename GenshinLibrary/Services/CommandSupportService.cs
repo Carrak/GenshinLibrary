@@ -24,6 +24,7 @@ namespace GenshinLibrary
         {
             var embed = new EmbedBuilder()
                 .WithTitle("GenshinLibrary / Info")
+                .WithFooter("For any inquires regarding data deletion or security, please contact me directly: Carrak#8088")
                 .AddField("Getting started", $"Use `{Globals.DefaultPrefix}help` for the list of command modules and more info.")
                 .WithColor(Globals.MainColor)
                 .WithDescription("GenshinLibrary is a tool bot made for Genshin Impact players that " +
