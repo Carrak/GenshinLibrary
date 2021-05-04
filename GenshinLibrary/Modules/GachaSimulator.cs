@@ -7,7 +7,6 @@ using GenshinLibrary.ReactionCallback;
 using GenshinLibrary.Services.GachaSim;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +36,7 @@ namespace GenshinLibrary.Modules
             var profile = _sim.GetOrCreateProfile(Context.User);
             var bannerName = profile.GetCurrentSession().Banner.GetFullName();
             var pityBefore = profile.GetCurrentSession().CurrentFiveStarPity;
+            var wishCountBefore = profile.Inventory.Count;
 
             WishItem[] result;
             try
@@ -50,6 +50,7 @@ namespace GenshinLibrary.Modules
             }
 
             var pityAfter = profile.GetCurrentSession().CurrentFiveStarPity;
+            var wishCountAfter = profile.Inventory.Count;
 
             var rarityColor = result.Max(x => x.Rarity) switch
             {
@@ -61,19 +62,20 @@ namespace GenshinLibrary.Modules
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Wishing {(count == 1 ? "once" : $"{count} times")}... Pity: `{pityBefore}`")
+                .WithFooter($"Total wishes: {wishCountBefore} | Banner: {bannerName}")
                 .WithColor(Color.DarkGrey);
 
             var message = await ReplyAsync(embed: embed.Build());
             await Task.Delay(2500);
 
             embed.WithColor(rarityColor)
+                .WithFooter($"Total wishes: {wishCountAfter} | Banner: {bannerName}")
                 .WithTitle($"Wishing {(count == 1 ? "once" : $"{count} times")}... Pity: `{pityBefore} -> {pityAfter}`");
 
             await message.ModifyAsync(x => x.Embed = embed.Build());
             await Task.Delay(1500);
 
             var resultEmbed = new EmbedBuilder()
-                .WithFooter($"You are wishing on {bannerName}")
                 .WithColor(rarityColor);
 
             if (count > 10)
