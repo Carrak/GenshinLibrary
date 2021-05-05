@@ -28,7 +28,7 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
                     return EventWish.RateUpFivestars.RandomElement();
                 }
 
-                if (Random.NextDouble() < EventWish.RateUpChance)
+                if (Random.NextDouble() >= EventWish.RateUpChance)
                 {
                     FiveStarRateUpGuarantee = true;
                     return EventWish.StandardFivestars.RandomElement();
@@ -45,7 +45,7 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
                     return EventWish.RateUpFourstars.RandomElement();
                 }
 
-                if (Random.NextDouble() < EventWish.RateUpChance)
+                if (Random.NextDouble() >= EventWish.RateUpChance)
                 {
                     FourStarRateUpGuarantee = true;
                     if (Random.NextDouble() < 0.5)
