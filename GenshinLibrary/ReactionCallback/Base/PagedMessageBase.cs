@@ -122,13 +122,15 @@ namespace GenshinLibrary.ReactionCallback.Base
         /// </summary>
         public async Task AddCallbackAsync()
         {
-            await _message.AddReactionsAsync(new Emoji[] { arrowBackward, arrowForward });
+            await _message.AddReactionAsync(arrowBackward);
+            await Task.Delay(300);
+            await _message.AddReactionAsync(arrowForward);
+
             Interactive.AddReactionCallback(_message, this);
 
             _ = Task.Delay(Timeout.Value).ContinueWith(_ =>
             {
                 Interactive.RemoveReactionCallback(_message);
-                _message.RemoveReactionsAsync(Context.Client.CurrentUser, new Emoji[] { arrowBackward, arrowForward });
             });
         }
 
