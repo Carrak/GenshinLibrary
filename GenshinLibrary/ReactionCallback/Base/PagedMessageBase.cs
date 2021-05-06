@@ -168,7 +168,6 @@ namespace GenshinLibrary.ReactionCallback.Base
             else return false;
 
             await _message.ModifyAsync(x => x.Embed = Pages[Page]);
-            await _message.RemoveReactionAsync(reaction.Emote, reaction.User.Value);
 
             return false;
         }
