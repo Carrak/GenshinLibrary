@@ -114,17 +114,20 @@ namespace GenshinLibrary.ReactionCallback.Base
 
             _message = message ?? await Context.Channel.SendMessageAsync(embed: Pages[Page]);
             if (TotalPages > 1)
-                await AddCallbackAsync();
+                AddCallback();
         }
 
         /// <summary>
         ///     Adds reaction callback to <see cref="_message"/> that timeouts after the value of <see cref="Timeout"/>
         /// </summary>
-        public async Task AddCallbackAsync()
+        public void AddCallback()
         {
-            await _message.AddReactionAsync(arrowBackward);
-            await Task.Delay(300);
-            await _message.AddReactionAsync(arrowForward);
+            _ = Task.Run(async() =>
+            {
+                await _message.AddReactionAsync(arrowBackward);
+                await Task.Delay(250);
+                await _message.AddReactionAsync(arrowForward);
+            });
 
             Interactive.AddReactionCallback(_message, this);
 
