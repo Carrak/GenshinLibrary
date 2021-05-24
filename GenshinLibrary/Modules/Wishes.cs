@@ -321,8 +321,64 @@ namespace GenshinLibrary.Modules
                     await ReplyAsync(embed: helpEmbed.Build());
                     return;
                 }
+        [Command("bannerhistory", RunMode = RunMode.Async)]
+        [Alias("bhistory", "bh")]
+        [Summary("View your wishes on a certain character/weapon banner.")]
+        [Example("`gl!banner xiao rarity:4 pity:<60`\nFor more information regarding filters, please refer to `gl!help history`")]
+        [Ratelimit(7)]
+        public async Task BannerHistory(
+            [Remainder, Summary("The name of the rate-up item. E.g. `zhongli`, `xiao`, etc. For names that contain spaces, use quotes: `\"staff of homa\"`")] WishItem wishItem
+            ) => await BannerHistory(wishItem, Context.User,  null);
 
-            var records = await _wishes.GetRecordsAsync(user, banner, condition);
+        [Command("bannerhistory", RunMode = RunMode.Async)]
+        [Alias("bhistory", "bh")]
+        [Summary("View your wishes on a certain character/weapon banner.")]
+        [Example("`gl!banner xiao rarity:4 pity:<60`\nFor more information regarding filters, please refer to `gl!help history`")]
+        [Ratelimit(7)]
+        public async Task BannerHistory(
+            [Summary("The name of the rate-up item. E.g. `zhongli`, `xiao`, etc. For names that contain spaces, use quotes: `\"staff of homa\"`")] WishItem wishItem,
+            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
+            ) => await BannerHistory(wishItem, Context.User, filters);
+
+        [Command("bannerhistory", RunMode = RunMode.Async)]
+        [Alias("bhistory", "bh")]
+        [Summary("View someone's wishes wishes on a certain character/weapon banner.")]
+        [Example("`gl!banner xiao @user rarity:4 pity:<60`\nFor more information regarding filters, please refer to `gl!help history`")]
+        [Ratelimit(7)]
+        public async Task BannerHistory(
+            [Summary("The name of the rate-up item. E.g. `zhongli`, `xiao`, etc. For names that contain spaces, use quotes: `\"staff of homa\"`")] WishItem wishItem,
+            [Summary("The user whose history you wish to see.")] IUser user,
+            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
+            )
+        {
+            if (wishItem.Rarity != 5)
+            {
+                await ReplyAsync("Please search using 5-star characters/weapon names.");
+                return;
+            }
+
+            var selection = _wishes.Banners.Values.Where(x => x is EventWish ew && ew.RateUpFivestars.Contains(wishItem));
+            if (!selection.Any())
+            {
+                await ReplyAsync("This item is not rate-up on any event wishes.");
+                return;
+            }
+
+            WishBanner selectedBanner = await BannerSelectionAsync(selection);
+            if (selectedBanner == null)
+                return;
+
+            var queryCondition = await GetQueryConditionAsync(filters, selectedBanner.BannerType);
+            IEnumerable<CompleteWishItemRecord> records = null;
+            try
+            {
+                records = await _wishes.GetBannerWishesAsync(user, selectedBanner as EventWish, queryCondition);
+            }
+            catch (PostgresException pe)
+            {
+                await ReplyAsync($"{pe.MessageText}");
+                return;
+            }
 
             if (records == null)
             {

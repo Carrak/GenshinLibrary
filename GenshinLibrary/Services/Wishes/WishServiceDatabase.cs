@@ -6,6 +6,7 @@ using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.GachaSim.Banners;
 using GenshinLibrary.Services.Wishes.Filtering;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -211,6 +212,43 @@ namespace GenshinLibrary.Services.Wishes
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
             cmd.Parameters.AddWithValue("banner", banner);
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            if (!reader.HasRows)
+                return null;
+
+            List<CompleteWishItemRecord> records = new List<CompleteWishItemRecord>();
+            while (await reader.ReadAsync())
+            {
+                int wid = reader.GetInt32(0);
+                DateTime dt = reader.GetDateTime(1);
+                int wishid = reader.GetInt32(2);
+                int pity = reader.GetInt32(3);
+
+                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pity, wishid));
+            }
+
+            return records;
+        }
+
+        public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, EventWish eventWish, QueryCondition queryCondition = null)
+        {
+            string query = @$"
+            SELECT wid, datetime, wishid, pity FROM get_banner_wishes(@uid, @bid)
+            ";
+
+            await using var cmd = _database.GetCommand(query);
+
+            if (queryCondition != null && !queryCondition.IsEmpty)
+            {
+                cmd.CommandText += queryCondition.Conditions;
+                foreach (var param in queryCondition.Parameters)
+                    cmd.Parameters.Add(param);
+            }
+
+            cmd.Parameters.AddWithValue("uid", (long)user.Id);
+            cmd.Parameters.AddWithValue("bid", eventWish.BID);
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
