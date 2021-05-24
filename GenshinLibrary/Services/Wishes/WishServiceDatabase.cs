@@ -28,8 +28,8 @@ namespace GenshinLibrary.Services.Wishes
         private async Task InitWishItems()
         {
             string query = @"
-            SELECT json_agg(get_character(wid)) FROM wish_items WHERE type = 'character';
-            SELECT json_agg(get_weapon(wid)) FROM wish_items WHERE type = 'weapon';
+            SELECT json_agg(gl.get_character(wid)) FROM gl.wish_items WHERE type = 'character';
+            SELECT json_agg(gl.get_weapon(wid)) FROM gl.wish_items WHERE type = 'weapon';
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -114,7 +114,7 @@ namespace GenshinLibrary.Services.Wishes
 
         private async Task InitServers()
         {
-            string query = "SELECT get_servers()";
+            string query = "SELECT gl.get_servers()";
 
             await using var cmd = _database.GetCommand(query);
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -127,7 +127,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<Dictionary<Banner, BannerStats>> GetAnalyticsAsync(IUser user)
         {
             string query = @"
-            SELECT get_analytics(@uid);
+            SELECT gl.get_analytics(@uid);
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -152,7 +152,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task RemoveWishesAsync(IEnumerable<CompleteWishItemRecord> records)
         {
             string query = @"
-            DELETE FROM wishes WHERE wishid IN (SELECT * FROM unnest(@wishids))
+            DELETE FROM gl.wishes WHERE wishid IN (SELECT * FROM unnest(@wishids))
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -165,7 +165,7 @@ namespace GenshinLibrary.Services.Wishes
         {
             string query = @"
             SELECT wid, wishid, datetime FROM
-                (SELECT wid, wishid, datetime FROM wishes 
+                (SELECT wid, wishid, datetime FROM gl.wishes 
                 WHERE userid = @uid AND banner = @banner
                 ORDER BY wishid DESC
                 LIMIT @limit) temp_wishes
@@ -198,7 +198,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, QueryCondition queryCondition = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity FROM get_detailed_wishes(@uid, @banner)
+            SELECT wid, datetime, wishid, pity FROM gl.get_detailed_wishes(@uid, @banner)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -235,7 +235,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, EventWish eventWish, QueryCondition queryCondition = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity FROM get_banner_wishes(@uid, @bid)
+            SELECT wid, datetime, wishid, pity FROM gl.get_banner_wishes(@uid, @bid)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -272,7 +272,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task AddWishAsync(IUser user, WishItem item, Banner banner, DateTime datetime)
         {
             string query = @"
-            INSERT INTO wishes (userid, wid, banner, datetime) VALUES (@uid, @wid, @banner, @dt); 
+            INSERT INTO gl.wishes (userid, wid, banner, datetime) VALUES (@uid, @wid, @banner, @dt); 
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -288,7 +288,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task AddWishesAsync(IUser user, Banner banner, IEnumerable<WishItemRecord> records)
         {
             string query = @"
-            INSERT INTO wishes (userid, banner, datetime, wid)
+            INSERT INTO gl.wishes (userid, banner, datetime, wid)
             SELECT @uid, @banner, * FROM unnest(@arrdt, @arritems);
             ";
 
@@ -305,7 +305,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<Profile> GetProfileAsync(IUser user)
         {
             string query = @"
-            SELECT get_profile(@uid);
+            SELECT gl.get_profile(@uid);
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -331,7 +331,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task SetAvatarAsync(IUser user, Character character)
         {
             string query = @"
-            INSERT INTO avatars (userid, wid) VALUES (@uid, @wid)
+            INSERT INTO gl.avatars (userid, wid) VALUES (@uid, @wid)
             ON CONFLICT (userid) DO
                 UPDATE SET wid = @wid
             ";
@@ -346,7 +346,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task RemoveAvatarAsync(IUser user)
         {
             string query = @"
-            DELETE FROM avatars WHERE userid = @uid
+            DELETE FROM gl.avatars WHERE userid = @uid
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -358,7 +358,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task SetServerAsync(IUser user, int serverId)
         {
             string query = @"
-            INSERT INTO server_users (userid, sid) VALUES (@uid, @sid)
+            INSERT INTO gl.server_users (userid, sid) VALUES (@uid, @sid)
             ON CONFLICT (userid) DO
                 UPDATE SET sid = @sid
             ";
@@ -373,7 +373,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<Pities> GetPities(IUser user)
         {
             string query = @"
-            SELECT get_pities(@uid);
+            SELECT gl.get_pities(@uid);
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -389,7 +389,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<EventWishRaw>> GetEventWishesAsync()
         {
             string query = @"
-            SELECT get_event_wishes()
+            SELECT gl.get_event_wishes()
             ";
 
             await using var cmd = _database.GetCommand(query);

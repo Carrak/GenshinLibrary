@@ -8,7 +8,7 @@ namespace GenshinLibrary.Services.Resin
         public async Task<IEnumerable<ResinUpdate>> GetUpdatesAsync()
         {
             string query = @"
-            SELECT userid, updated_at, value FROM resin_updates
+            SELECT userid, updated_at, value FROM gl.resin_updates
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -24,7 +24,7 @@ namespace GenshinLibrary.Services.Resin
         public async Task UpdateResinAsync(ResinUpdate ru)
         {
             string query = @"
-            INSERT INTO resin_updates (userid, updated_at, value) VALUES (@uid, @updated_at, @value)
+            INSERT INTO gl.resin_updates (userid, updated_at, value) VALUES (@uid, @updated_at, @value)
             ON CONFLICT (userid) DO
                 UPDATE SET updated_at = @updated_at, value = @value
             ";
