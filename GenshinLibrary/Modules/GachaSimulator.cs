@@ -108,37 +108,8 @@ namespace GenshinLibrary.Modules
         [Ratelimit(5)]
         public async Task SelectBanner(Banner banner)
         {
-            WishBanner selectedBanner = null;
-            List<WishBanner> selection = _sim.Banners.Values.Where(x => x.BannerType == banner).ToList();
-
-            if (selection.Count > 1)
-            {
-                var selectionPaged = new EventWishesPaged(Interactive, Context, selection.Cast<EventWish>(), 3);
-                await selectionPaged.DisplayAsync();
-
-                int number = -1;
-                if (await NextMessageWithConditionAsync(Context, x =>
-                {
-                    if (int.TryParse(x.Content, out var num))
-                    {
-                        number = num;
-                        return true;
-                    }
-                    return false;
-                }) != null)
-                {
-                    number--;
-                    if (number < 0 || number > selection.Count)
-                    {
-                        await ReplyAsync("Number invalid.");
-                        return;
-                    }
-
-                    selectedBanner = selection[number];
-                }
-            }
-            else
-                selectedBanner = selection[0];
+            List<WishBanner> selection = _wishes.Banners.Values.Where(x => x.BannerType == banner).ToList();
+            WishBanner selectedBanner = await BannerSelectionAsync(selection);
 
             if (selectedBanner != null)
             {

@@ -87,5 +87,42 @@ namespace GenshinLibrary.Commands
             else
                 return false;
         }
+
+        public async Task<WishBanner> BannerSelectionAsync(IEnumerable<WishBanner> selection)
+        {
+            int count = selection.Count();
+
+            if (count > 1)
+            {
+                var eventWishes = selection.Cast<EventWish>().OrderByDescending(x => x.Date);
+                var selectionPaged = new EventWishesPaged(Interactive, Context, eventWishes, 3);
+                await selectionPaged.DisplayAsync();
+
+                int number = -1;
+                if (await NextMessageWithConditionAsync(Context, x =>
+                {
+                    if (int.TryParse(x.Content, out var num))
+                    {
+                        number = num;
+                        return true;
+                    }
+                    return false;
+                }) != null)
+                {
+                    number--;
+                    if (number < 0 || number > count)
+                    {
+                        await ReplyAsync("Number invalid.");
+                        return null;
+                    }
+
+                    return eventWishes.ElementAt(number);
+                }
+            }
+            else
+                return selection.First();
+
+            return null;
+        }
     }
 }
