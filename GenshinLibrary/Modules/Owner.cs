@@ -22,7 +22,7 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("commands")]
-        public async Task Commands()
+        public Task Commands()
         {
             string header = "| Command | Description |\n|-|-|";
             string result = $"{header}";
@@ -37,6 +37,7 @@ namespace GenshinLibrary.Modules
             }
 
             Console.WriteLine(result);
+            return Task.CompletedTask;
         }
 
         [Command("botstats")]
