@@ -1,10 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
+using GenshinLibrary.Analytics;
 using GenshinLibrary.Commands;
 using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.Services;
 using GenshinLibrary.Services.Wishes;
+using Npgsql;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,7 +39,18 @@ namespace GenshinLibrary.Modules
             [Summary("The user whose profile you want to see")][Remainder] IUser user
             )
         {
-            var analytics = await _wishes.GetAnalyticsAsync(user);
+            var embed = new EmbedBuilder();
+            Dictionary<Banner, BannerStats> analytics = null;
+
+            try
+            {
+                analytics = await _wishes.GetAnalyticsAsync(user);
+            }
+            catch (PostgresException pe)
+            {
+                embed.WithFooter("Set your server using gl!setserver to view wish stats in profile.");
+            }
+
             var pities = await _wishes.GetPities(user);
             var profile = await _wishes.GetProfileAsync(user);
 
@@ -45,7 +59,6 @@ namespace GenshinLibrary.Modules
             var color = profile.Character is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.Character.Vision);
             var image = profile.GetAvatar();
 
-            var embed = new EmbedBuilder();
 
             string name = user.ToString();
             if (_patreon.IsPatron(user))
@@ -59,22 +72,28 @@ namespace GenshinLibrary.Modules
 
             if (analytics != null)
             {
-                var total = analytics.Sum(x => x.TotalWishes);
-                var fivestar = analytics.Sum(x => x.FiveStarWishes);
-                var fourstar = analytics.Sum(x => x.FourStarWishes);
-                var threestar = analytics.Sum(x => x.ThreeStarWishes);
+                var analyticsValues = analytics.Values;
+                var total = analyticsValues.Sum(x => x.TotalWishes);
+                var fivestar = analyticsValues.Sum(x => x.FiveStarWishes);
+                var fourstar = analyticsValues.Sum(x => x.FourStarWishes);
+                var threestar = analyticsValues.Sum(x => x.ThreeStarWishes);
 
                 if (total != 0)
                     embed.AddField("Stats",
                         $"Wishes: **{total}**\n" +
-                        $"3-star: **{threestar}** // **{threestar / (float)total:0.00%}**\n" +
-                        $"4-star: **{fourstar}** // **{fourstar / (float)total:0.00%}**\n" +
-                        $"5-star: **{fivestar}** // **{fivestar / (float)total:0.00%}**\n"
+                        $"3★: **{threestar}** | **{threestar / (float)total:0.00%}**\n" +
+                        $"4★: **{fourstar}** | **{fourstar / (float)total:0.00%}**\n" +
+                        $"5★: **{fivestar}** | **{fivestar / (float)total:0.00%}**\n"
                         );
             }
 
             if (pities != null)
-                embed.AddField("Pities", pities.ToString());
+                embed.AddField("Pities", pities.ToString(), true);
+
+            if (analytics != null)
+                embed.AddField("Rate Ups",
+                    $"{(analytics[Banner.Character] as EventBannerStats).RateUpGuarantees()}\n" +
+                    $"{(analytics[Banner.Weapon] as EventBannerStats).RateUpGuarantees()}", true);
 
             await Context.Channel.SendFileAsync(image, fileName, embed: embed.Build());
         }
