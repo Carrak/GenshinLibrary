@@ -35,7 +35,7 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
         {
             var roll = random.NextDouble();
 
-            var result = CurrentFiveStarPity == Banner.FiveStarHardPity ||
+            var result = CurrentFiveStarPity >= Banner.FiveStarHardPity ||
                    CurrentFiveStarPity > Banner.FiveStarSoftPity && roll < Banner.SoftPityChance ||
                    roll < Banner.FiveStarChance;
 
@@ -49,7 +49,7 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
         {
             var roll = random.NextDouble();
 
-            var result = CurrentFourStarPity == Banner.FourStarHardPity ||
+            var result = CurrentFourStarPity >= Banner.FourStarHardPity ||
                    CurrentFourStarPity > Banner.FourStarSoftPity && roll < Banner.SoftPityChance ||
                    roll < Banner.FourStarChance;
 
