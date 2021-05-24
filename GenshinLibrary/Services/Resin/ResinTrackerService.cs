@@ -11,7 +11,7 @@ namespace GenshinLibrary.Services.Resin
     public partial class ResinTrackerService
     {
         private readonly DatabaseService _database;
-        private Dictionary<ulong, ResinUpdate> _resinUpdates { get; } = new Dictionary<ulong, ResinUpdate>();
+        private Dictionary<ulong, ResinUpdate> ResinUpdates { get; } = new Dictionary<ulong, ResinUpdate>();
 
         public ResinTrackerService(DatabaseService database)
         {
@@ -22,17 +22,17 @@ namespace GenshinLibrary.Services.Resin
         {
             var resinUpdates = await GetUpdatesAsync();
             foreach (var ru in resinUpdates)
-                _resinUpdates[ru.UserID] = ru;
+                ResinUpdates[ru.UserID] = ru;
         }
 
         public async Task<ResinUpdate> SetValueAsync(IUser user, DateTime dt, int value)
         {
             var update = new ResinUpdate(user.Id, dt, value);
-            _resinUpdates[user.Id] = update;
+            ResinUpdates[user.Id] = update;
             await UpdateResinAsync(update);
             return update;
         }
 
-        public ResinUpdate GetResinUpdate(IUser user) => _resinUpdates.TryGetValue(user.Id, out var update) ? update : null;
+        public ResinUpdate GetResinUpdate(IUser user) => ResinUpdates.TryGetValue(user.Id, out var update) ? update : null;
     }
 }
