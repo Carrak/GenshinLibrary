@@ -17,6 +17,7 @@ namespace GenshinLibrary.GenshinWishes
         public static readonly Emote Sojourner = Emote.Parse("<:Sojourner:826142297154125864>");
         public static readonly Emote Gnostic = Emote.Parse("<:Gnostic:826142282792829008>");
         public static readonly Emote Battlepass = Emote.Parse("<:Battlepass:826514967129620480>");
+        public static readonly Emote Resin = Emote.Parse("<:Resin:846420332649906216>");
 
         public static readonly Emote Pyro = Emote.Parse("<:Pyro:820689358088568832>");
         public static readonly Emote Cryo = Emote.Parse("<:Cryo:820689413813698610>");
