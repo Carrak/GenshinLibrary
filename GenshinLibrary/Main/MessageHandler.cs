@@ -57,7 +57,11 @@ namespace GenshinLibrary
                     {
                         var parseResult = ParseResult.FromSuccess(new List<TypeReaderResult>() { TypeReaderResult.FromSuccess(module.Name) }, new List<TypeReaderResult>());
                         await helpCommand.ExecuteAsync(ctx, parseResult, _services);
-                    }, command => { });
+                    }, 
+                    command => 
+                    { 
+                        command.AddPrecondition(new RatelimitAttribute(5)); 
+                    });
             });
 
             foreach (var cmd in _commands.Commands.Where(x => !x.Module.Attributes.Any(atr => atr is HelpIgnoreAttribute)))
