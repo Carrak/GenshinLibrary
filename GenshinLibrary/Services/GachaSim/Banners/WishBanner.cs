@@ -1,5 +1,6 @@
 ﻿using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.Services.GachaSim.Sessions;
+using System.Collections.Generic;
 
 namespace GenshinLibrary.Services.GachaSim
 {
@@ -18,8 +19,11 @@ namespace GenshinLibrary.Services.GachaSim
         public int FiveStarSoftPity => FiveStarHardPity - 15;
         public int FourStarSoftPity => FourStarHardPity - 3;
 
-        protected WishBanner(int bid, string name, Banner bannerType, float fiveStarChance, float fourStarChance, int fiveStarHardPity)
+        public IEnumerable<WishItem> Pool { get; }
+
+        protected WishBanner(IEnumerable<WishItem> pool, int bid, string name, Banner bannerType, float fiveStarChance, float fourStarChance, int fiveStarHardPity)
         {
+            Pool = pool;
             BID = bid;
             Name = name;
             BannerType = bannerType;

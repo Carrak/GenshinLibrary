@@ -12,7 +12,7 @@ namespace GenshinLibrary.Services.GachaSim.Banners
         public IReadOnlyList<WishItem> FourStarWeapons { get; }
         public IReadOnlyList<WishItem> Threestars { get; }
 
-        public StandardWish(int bid, string name, IEnumerable<WishItem> pool, float fiveStarChance, float fourStarChance, int fiveStarHardPity) : base(bid, name, Banner.Standard, fiveStarChance, fourStarChance, fiveStarHardPity)
+        public StandardWish(int bid, string name, IEnumerable<WishItem> pool, float fiveStarChance, float fourStarChance, int fiveStarHardPity) : base(pool, bid, name, Banner.Standard, fiveStarChance, fourStarChance, fiveStarHardPity)
         {
             List<WishItem> threestars = new List<WishItem>();
             List<WishItem> fourstarWeapons = new List<WishItem>();

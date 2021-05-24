@@ -13,7 +13,7 @@ namespace GenshinLibrary.Services.GachaSim.Banners
         public WishItem Noelle { get; }
 
         public BeginnerWish(int bid, string name, IEnumerable<WishItem> pool, WishItem noelle, float fiveStarChance, float fourStarChance, int fiveStarHardPity)
-            : base(bid, name, Banner.Beginner, fiveStarChance, fourStarChance, fiveStarHardPity)
+            : base(pool, bid, name, Banner.Beginner, fiveStarChance, fourStarChance, fiveStarHardPity)
         {
             Noelle = noelle;
 
