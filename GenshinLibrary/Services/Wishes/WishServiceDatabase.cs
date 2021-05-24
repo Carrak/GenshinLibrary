@@ -58,6 +58,7 @@ namespace GenshinLibrary.Services.Wishes
         }
 
         public async Task<IEnumerable<BannerStats>> GetAnalyticsAsync(IUser user)
+        public async Task<Dictionary<Banner, BannerStats>> GetAnalyticsAsync(IUser user)
         {
             string query = @"
             SELECT get_analytics(@uid);
@@ -72,8 +73,13 @@ namespace GenshinLibrary.Services.Wishes
             if (await reader.IsDBNullAsync(0))
                 return null;
 
-            IEnumerable<BannerStats> banners = JsonConvert.DeserializeObject<IEnumerable<BannerStats>>(reader.GetString(0));
-
+            JObject json = JObject.Parse(reader.GetString(0));
+            Dictionary<Banner, BannerStats> banners = new Dictionary<Banner, BannerStats>();
+            banners[Banner.Beginner] = JsonConvert.DeserializeObject<BannerStats>(json["beginner"].ToString());
+            banners[Banner.Standard] = JsonConvert.DeserializeObject<BannerStats>(json["standard"].ToString());
+            banners[Banner.Character] = JsonConvert.DeserializeObject<EventBannerStats>(json["character"].ToString());
+            banners[Banner.Weapon] = JsonConvert.DeserializeObject<EventBannerStats>(json["weapon"].ToString());
+            
             return banners;
         }
 

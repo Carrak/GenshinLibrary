@@ -203,7 +203,17 @@ namespace GenshinLibrary.Modules
             [Summary("The user whose analytics you want to see.")][Remainder] IUser user
             )
         {
-            var data = await _wishes.GetAnalyticsAsync(user);
+
+            Dictionary<Banner, BannerStats> data;
+            try
+            {
+                data = await _wishes.GetAnalyticsAsync(user);
+            }
+            catch (PostgresException pe)
+            {
+                await ReplyAsync($"{pe.MessageText}");
+                return;
+            }
 
             if (data is null)
             {
@@ -211,10 +221,10 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var character = data.First(x => x.Banner == Banner.Character);
-            var weapon = data.First(x => x.Banner == Banner.Weapon);
-            var standard = data.First(x => x.Banner == Banner.Standard);
-            var beginner = data.First(x => x.Banner == Banner.Beginner);
+            var beginner = data[Banner.Beginner];
+            var standard = data[Banner.Standard];
+            var character = data[Banner.Character] as EventBannerStats;
+            var weapon = data[Banner.Weapon] as EventBannerStats;
 
             int characterTotal = character.TotalWishes + standard.TotalWishes + beginner.TotalWishes;
             int characterThreestar = character.ThreeStarWishes + standard.ThreeStarWishes + beginner.ThreeStarWishes;
@@ -227,44 +237,43 @@ namespace GenshinLibrary.Modules
             int totalFivestar = weapon.FiveStarWishes + characterFivestar;
 
             var embed = new EmbedBuilder();
+            string errorMessage = "None to compare";
 
             embed.WithTitle($"Stats for {user}")
                 .WithColor(Globals.MainColor)
                 .WithFooter("W - weapons, C - characters.\nBeginner banner is not displayed here (but included for the calculations).")
                 .WithDescription(
                 $"Total wishes: **{total}**\n" +
-                $"Total 3-star: **{totalThreestar}**\n" +
-                $"Total 4-star: **{totalFourstar}**\n" +
-                $"Total 5-star: **{totalFivestar}**\n\n" +
+                $"Total 3★: **{totalThreestar}**\n" +
+                $"Total 4★: **{totalFourstar}**\n" +
+                $"Total 5★: **{totalFivestar}**\n\n" +
                 $"Odds across character banners\n" +
-                $"4-star: {ZeroTernary(characterFourstar, GetPercentageString(characterFourstar, characterTotal))}\n" +
-                $"5-star: {ZeroTernary(characterFivestar, GetPercentageString(characterFivestar, characterTotal))}\n\n" +
+                $"4★: {(characterFourstar == 0 ? errorMessage : GetPercentageString(characterFourstar, characterTotal))}\n" +
+                $"5★: {(characterFivestar == 0 ? errorMessage : GetPercentageString(characterFivestar, characterTotal))}\n\n" +
                 $"Combined odds (character banners + weapon banner)\n" +
-                $"4-star: {ZeroTernary(totalFourstar, GetPercentageString(totalFourstar, total))}\n" +
-                $"5-star: {ZeroTernary(totalFivestar, GetPercentageString(totalFivestar, total))}\n")
-                .AddField("Character", ZeroTernary(character.TotalWishes, character.GetGeneralInfo(true, false), "No data."), true)
-                .AddField("Weapon", ZeroTernary(weapon.TotalWishes, weapon.GetGeneralInfo(true, false), "No data."), true)
-                .AddField("Standard", ZeroTernary(standard.TotalWishes, standard.GetGeneralInfo(true, true), "No data."), true)
-                .AddField("Character/Average", ZeroTernary(characterTotal, $"Across character banners:\n" +
-                $"4-star odds: {ZeroTernary(characterFourstar, ComparedToAverage(characterFourstar / (float)characterTotal, 0.13f))}\n" +
-                $"5-star odds: {ZeroTernary(characterFivestar, ComparedToAverage(characterFivestar / (float)characterTotal, 0.016f))}\n\n" +
-                $"4-star average: **13%**\n" +
-                $"5-star average: **1.6%**", "No data across character banners."), true)
-                .AddField("Weapon/Average", ZeroTernary(weapon.TotalWishes,
-                $"For the weapon banner:\n" +
-                $"4-star odds: {ZeroTernary(weapon.FourStarWishes, ComparedToAverage(weapon.FourStarWishes / (float)weapon.TotalWishes, 0.145f))}\n" +
-                $"5-star odds: {ZeroTernary(weapon.FiveStarWishes, ComparedToAverage(weapon.FiveStarWishes / (float)weapon.TotalWishes, 0.0185f))}\n\n" +
-                $"4-star average: **14.5%**\n" +
-                $"5-star average: **1.85%**", "No weapon banner data."), true);
+                $"4★: {(totalFourstar == 0 ? errorMessage : GetPercentageString(totalFourstar, total))}\n" +
+                $"5★: {(totalFivestar == 0 ? errorMessage : GetPercentageString(totalFivestar, total))}\n")
+                .AddField("Character", character.TotalWishes == 0 ? errorMessage : character.GetGeneralInfo(true, false), true)
+                .AddField("Weapon", weapon.TotalWishes == 0 ? errorMessage : weapon.GetGeneralInfo(true, false), true)
+                .AddField("Standard", standard.TotalWishes == 0 ? errorMessage : standard.GetGeneralInfo(true, true), true)
+                .AddField("Character/Extras", characterTotal == 0 ? errorMessage : $"Odds across **all** character banners:\n" +
+                $"4★: {(characterFourstar == 0 ? errorMessage : ComparedToAverage(characterFourstar / (float)characterTotal, 0.13f))}\n" +
+                $"5★: {(characterFivestar == 0 ? errorMessage : ComparedToAverage(characterFivestar / (float)characterTotal, 0.016f))}\n\n" +
+                $"{character.RateUpStats()}", true)
+                .AddField("Weapon/Extras", weapon.TotalWishes == 0 ? errorMessage :
+                $"Odds for the weapon banner:\n" +
+                $"4★: {(weapon.FourStarWishes == 0 ? errorMessage : ComparedToAverage(weapon.FourStarWishes / (float)weapon.TotalWishes, 0.145f))}\n" +
+                $"5★: {(weapon.FiveStarWishes == 0 ? errorMessage : ComparedToAverage(weapon.FiveStarWishes / (float)weapon.TotalWishes, 0.0185f))}\n\n" +
+                $"{weapon.RateUpStats()}", true);                
 
             await ReplyAsync(embed: embed.Build());
 
             static string ComparedToAverage(float player, float average)
             {
                 if (player > average)
-                    return $"**{player / average:0.00}x** __higher__ than average";
+                    return $"**{player / average:0.00}x** __higher__ than average (**{average:0.00%}**)";
                 else if (average > player)
-                    return $"**{average / player:0.00}x** __lower__ than average";
+                    return $"**{average / player:0.00}x** __lower__ than average (**{average:0.00%}**)";
                 else
                     return $"exactly the average";
             }
@@ -272,11 +281,6 @@ namespace GenshinLibrary.Modules
             static string GetPercentageString(float fraction, float total)
             {
                 return $"**{fraction / total:0.00%}** (**1** in **{total / fraction:0.00}**)";
-            }
-
-            static string ZeroTernary(int number, string ifNotZero, string errorMessage = "None to compare")
-            {
-                return number == 0 ? errorMessage : ifNotZero;
             }
         }
 
