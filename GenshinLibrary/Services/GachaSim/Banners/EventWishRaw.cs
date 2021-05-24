@@ -11,8 +11,10 @@ namespace GenshinLibrary.Services.GachaSim.Banners
         public int BID { get; set; }
         [JsonProperty("name")]
         public string Name { get; set; }
-        [JsonProperty("date")]
-        public DateTime Date { get; set; }
+        [JsonProperty("date_started")]
+        public DateTime DateStarted { get; set; }
+        [JsonProperty("date_ended")]
+        public DateTime DateEnded { get; set; }
         [JsonProperty("type")]
         public Banner Type;
         [JsonProperty("rateup_pool")]
