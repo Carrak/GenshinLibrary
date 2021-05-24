@@ -334,6 +334,45 @@ namespace GenshinLibrary.Modules
             await history.DisplayAsync();
         }
 
+        [Command("setserver", RunMode = RunMode.Async)]
+        [Summary("Set your in-game server to get access to wishes by banners and more analytics.\nThis is necessary to separate wishes, so to adjust the timezone correctly and match them by banners." +
+            "That, on the other hand, allows to tell what is rate-up and what isn't, hence providing more data to work with.")]
+        [Ratelimit(7)]
+        public async Task SetServer()
+        {
+            var servers = _wishes.Servers.Values.ToArray();
+
+            var embed = new EmbedBuilder()
+                .WithColor(Globals.MainColor)
+                .WithTitle("Available servers")
+                .WithFooter($"Reply with just the index of the selected server.")
+                .WithDescription(string.Join('\n', servers.Select((x, index) => $"**{index+1}. {x.ServerName} ({x.ServerTimezone})**")));
+
+            await ReplyAsync(embed: embed.Build());
+
+            int index = -1;
+            if (await NextMessageWithConditionAsync(Context, x =>
+            {
+                if (int.TryParse(x.Content, out var num))
+                {
+                    index = num;
+                    return true;
+                }
+                return false;
+            }) != null)
+            {
+                index--;
+                if (index < 0 || index > servers.Length)
+                {
+                    await ReplyAsync("Number invalid.");
+                    return;
+                }
+
+                await _wishes.SetServerAsync(Context.User, servers[index].ServerID);
+                await ReplyAsync($"Successfully changed your server to **{servers[index].ServerName}**");
+            }
+        }
+
         private async Task AddWish(WishItem wi, Banner banner, DateTime datetime)
         {
             if (!CheckWish(wi, banner))

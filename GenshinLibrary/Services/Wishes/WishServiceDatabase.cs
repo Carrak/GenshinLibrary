@@ -317,6 +317,21 @@ namespace GenshinLibrary.Services.Wishes
             await cmd.ExecuteNonQueryAsync();
         }
 
+        public async Task SetServerAsync(IUser user, int serverId)
+        {
+            string query = @"
+            INSERT INTO server_users (userid, sid) VALUES (@uid, @sid)
+            ON CONFLICT (userid) DO
+                UPDATE SET sid = @sid
+            ";
+
+            await using var cmd = _database.GetCommand(query);
+            cmd.Parameters.AddWithValue("uid", (long)user.Id);
+            cmd.Parameters.AddWithValue("sid", serverId);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
+
         public async Task<Pities> GetPities(IUser user)
         {
             string query = @"
