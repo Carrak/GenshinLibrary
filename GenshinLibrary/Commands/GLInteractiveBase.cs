@@ -1,10 +1,12 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
-using Discord.Net;
 using Discord.Rest;
 using Discord.WebSocket;
+using GenshinLibrary.ReactionCallback;
+using GenshinLibrary.Services.GachaSim;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GenshinLibrary.Commands
