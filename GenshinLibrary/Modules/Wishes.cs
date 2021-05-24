@@ -1,10 +1,14 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.Rest;
+using Discord.WebSocket;
+using GenshinLibrary.Analytics;
 using GenshinLibrary.Attributes;
 using GenshinLibrary.Commands;
 using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.ReactionCallback;
+using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.Wishes;
 using GenshinLibrary.Services.Wishes.Filtering;
 using GenshinLibrary.StringTable;
@@ -122,29 +126,18 @@ namespace GenshinLibrary.Modules
         public async Task AddWish(
             Banner banner,
             [Summary("Date of the wish.")] DateTime datetime,
-            [Summary("The name of the received item.")][Remainder] string name)
+            [Summary("The name of the received item.")][Remainder] WishItem wishItem)
         {
-            if (_wishes.WishItems.TryGetValue(name, out var wishItem))
+            try
             {
-                try
-                {
-                    await AddWish(wishItem, banner, datetime);
-                }
-                catch (PostgresException pe)
-                {
-                    await ReplyAsync(pe.MessageText);
-                    return;
-                }
+                await AddWish(wishItem, banner, datetime);
             }
-            else
+            catch (PostgresException pe)
             {
-                var suggestion = _wishes.GetBestSuggestion(name, banner);
-                var message = await ReplyAsync($"No such item has been found. Did you mean `{suggestion.Name}`?");
-                await message.AddReactionAsync(checkmark);
+                await ReplyAsync(pe.MessageText);
+                return;
+            }
 
-                if (await NextReactionAsync(checkmark, message, Context.User))
-                    await AddWish(suggestion, banner, datetime);
-            }
         }
 
         [Command("removerecent", RunMode = RunMode.Async)]
@@ -285,6 +278,7 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("history")]
+        [Alias("h")]
         [Summary("View your wish history.")]
         [Example("This command will display all the 4 stars and 5 stars that you got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard rarity:4,5 pity:<60 order:pity`")]
         [Ratelimit(7)]
@@ -294,33 +288,28 @@ namespace GenshinLibrary.Modules
             ) => await History(banner, Context.User, filters);
 
         [Command("history")]
+        [Alias("h")]
         [Summary("View someone's wish history.")]
+        [Example("This command will display all the 4 stars and 5 stars that @user got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard @user rarity:4,5 pity:<60 order:pity`")]
         [Ratelimit(7)]
         public async Task History(
             Banner banner,
             [Summary("The user whose history you wish to see.")] IUser user,
             [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
         {
-            QueryCondition condition = null;
+            QueryCondition condition = await GetQueryConditionAsync(filters, banner);
+            var records = await _wishes.GetRecordsAsync(user, banner, condition);
 
-            if (filters != null)
-                try
-                {
-                    var parsedFilters = new WishHistoryFilters(filters);
-                    _wishes.ValidateFilters(parsedFilters, banner);
-                    condition = parsedFilters.GetCondition();
-                }
-                catch (ArgumentException e)
-                {
-                    var helpEmbed = new EmbedBuilder();
+            if (records == null)
+            {
+                await ReplyAsync("No wishes have been found.");
+                return;
+            }
 
-                    helpEmbed.WithTitle("Invalid filters.")
-                        .WithDescription(e.Message)
-                        .WithColor(Color.Red);
+            var history = new WishHistoryPaged(Interactive, Context, 18, records, $"{banner} banner");
+            await history.DisplayAsync();
+        }
 
-                    await ReplyAsync(embed: helpEmbed.Build());
-                    return;
-                }
         [Command("bannerhistory", RunMode = RunMode.Async)]
         [Alias("bhistory", "bh")]
         [Summary("View your wishes on a certain character/weapon banner.")]
@@ -386,7 +375,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var history = new WishHistoryPaged(Interactive, Context, 18, records, banner);
+            var history = new WishHistoryPaged(Interactive, Context, 18, records, selectedBanner.GetFullName());
             await history.DisplayAsync();
         }
 
@@ -461,6 +450,29 @@ namespace GenshinLibrary.Modules
                 table.AddRow($"{wir.WishItem.Rarity}*", wir.WishItem.GetFormattedName(32), wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
 
             return table;
+        }
+
+        private async Task<QueryCondition> GetQueryConditionAsync(WishHistoryFilterValues filters, Banner banner)
+        {
+            if (filters != null)
+                try
+                {
+                    var parsedFilters = new WishHistoryFilters(filters);
+                    _wishes.ValidateFilters(parsedFilters, banner);
+                    return parsedFilters.GetCondition();
+                }
+                catch (ArgumentException e)
+                {
+                    var helpEmbed = new EmbedBuilder();
+
+                    helpEmbed.WithTitle("Invalid filters.")
+                        .WithDescription(e.Message)
+                        .WithColor(Color.Red);
+
+                    await ReplyAsync(embed: helpEmbed.Build());
+                }
+
+            return null;
         }
     }
 }
