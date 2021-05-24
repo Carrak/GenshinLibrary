@@ -18,7 +18,7 @@ namespace GenshinLibrary.ReactionCallback
         {
             var embed = new EmbedBuilder()
                 .WithColor(Globals.MainColor)
-                .WithFooter($"Reply with just the number of the selected banner.\nPage {Page + 1} / {TotalPages}")
+                .WithFooter($"Reply with just the index of the selected banner.\nPage {Page + 1} / {TotalPages}")
                 .WithTitle($"Select one of the following banners");
 
             int count = 0;
