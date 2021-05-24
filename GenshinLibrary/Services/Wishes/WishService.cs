@@ -25,9 +25,9 @@ namespace GenshinLibrary.Services.Wishes
             _database = database;
         }
 
-        public WishItem GetBestSuggestion(string name, Banner banner)
+        public WishItem GetBestSuggestion(string name)
         {
-            var wishitems = WishItems.Values.Where(x => x.Banners.HasFlag(banner)).ToList();
+            var wishitems = WishItems.Values.ToList();
             var minWishItem = wishitems[0];
             var minDistance = Levenshtein.Distance(name, minWishItem.Name);
 
@@ -83,7 +83,7 @@ namespace GenshinLibrary.Services.Wishes
                         filters.NameFilter.Constraints[i].Value = wi.Name;
                     }
                     else
-                        throw new ArgumentException($"`name` No item called `{name.Value}` has been found. Did you mean `{GetBestSuggestion(name.Value, banner).Name}`?");
+                        throw new ArgumentException($"`name` No item called `{name.Value}` has been found. Did you mean `{GetBestSuggestion(name.Value).Name}`?");
                 }
 
             return filters;
