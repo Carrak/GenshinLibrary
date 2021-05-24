@@ -43,6 +43,7 @@ namespace GenshinLibrary
         public async Task InstallCommandsAsync()
         {
             _commands.AddTypeReader<Color>(new ColorTypeReader());
+            _commands.AddTypeReader<WishItem>(new WishItemTypeReader());
             _commands.AddTypeReader<Banner>(new BannerTypeReader());
             await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
