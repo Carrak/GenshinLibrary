@@ -1,11 +1,11 @@
 ﻿using GenshinLibrary.GenshinWishes;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.IO;
 using System.Linq;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace GenshinLibrary.Services.GachaSim
 {
@@ -31,7 +31,7 @@ namespace GenshinLibrary.Services.GachaSim
             int startingX = (bitmap.Width - (width + indent) * _items.Length) / 2;
             int y = bitmap.Height / 2 - height / 2;
 
-            for(int i = 0; i < _items.Length; i++)
+            for (int i = 0; i < _items.Length; i++)
             {
                 // Current x position
                 int x = startingX + i * (width + indent);
@@ -51,8 +51,8 @@ namespace GenshinLibrary.Services.GachaSim
                 // Draw gradient bg
                 var top = new Rectangle(wishRect.X, wishRect.Y, wishRect.Width, wishRect.Height / 2);
                 var bottom = new Rectangle(wishRect.X, wishRect.Y + wishRect.Height / 2 - 1, wishRect.Width, wishRect.Height / 2);
-                LinearGradientBrush gradientBrushTop = new LinearGradientBrush(new Point(top.Left + top.Width/2, top.Top), new Point(top.Left + top.Width / 2, top.Bottom), GradientRepetitionMode.Repeat, new ColorStop(0, Color.Gray), new ColorStop(1, rarityColor));
-                LinearGradientBrush gradientBrushBottom = new LinearGradientBrush(new Point(bottom.Left + bottom.Width/2, bottom.Bottom), new Point(bottom.Left + bottom.Width / 2, bottom.Top), GradientRepetitionMode.Repeat, new ColorStop(0, Color.Gray), new ColorStop(1, rarityColor));
+                LinearGradientBrush gradientBrushTop = new LinearGradientBrush(new Point(top.Left + top.Width / 2, top.Top), new Point(top.Left + top.Width / 2, top.Bottom), GradientRepetitionMode.Repeat, new ColorStop(0, Color.Gray), new ColorStop(1, rarityColor));
+                LinearGradientBrush gradientBrushBottom = new LinearGradientBrush(new Point(bottom.Left + bottom.Width / 2, bottom.Bottom), new Point(bottom.Left + bottom.Width / 2, bottom.Top), GradientRepetitionMode.Repeat, new ColorStop(0, Color.Gray), new ColorStop(1, rarityColor));
                 bitmap.Mutate(x => x.Fill(gradientBrushTop, top));
                 bitmap.Mutate(x => x.Fill(gradientBrushBottom, bottom));
 
@@ -72,12 +72,12 @@ namespace GenshinLibrary.Services.GachaSim
                 rarityImage.Mutate(x => x.Resize(raritySize));
                 var rarityPoint = new Point(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20);
                 bitmap.Mutate(ctx => ctx.DrawImage(rarityImage, new Point(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20), 1));
-
                 // Draw icon
                 using var icon = Image.Load(_items[i].IconPath);
                 var resizedIconSize = GetSize(iconSize / (double)icon.Width, icon.Width, icon.Height);
                 icon.Mutate(x => x.Resize(resizedIconSize));
                 bitmap.Mutate(ctx => ctx.DrawImage(icon, new Point(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityPoint.Y - resizedIconSize.Height - 5), 1));
+
             }
 
             MemoryStream stream = new MemoryStream();

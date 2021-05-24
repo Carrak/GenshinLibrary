@@ -57,10 +57,10 @@ namespace GenshinLibrary
                     {
                         var parseResult = ParseResult.FromSuccess(new List<TypeReaderResult>() { TypeReaderResult.FromSuccess(module.Name) }, new List<TypeReaderResult>());
                         await helpCommand.ExecuteAsync(ctx, parseResult, _services);
-                    }, 
-                    command => 
-                    { 
-                        command.AddPrecondition(new RatelimitAttribute(5)); 
+                    },
+                    command =>
+                    {
+                        command.AddPrecondition(new RatelimitAttribute(5));
                     });
             });
 

@@ -122,7 +122,7 @@ namespace GenshinLibrary.ReactionCallback.Base
         /// </summary>
         public void AddCallback()
         {
-            _ = Task.Run(async() =>
+            _ = Task.Run(async () =>
             {
                 await _message.AddReactionAsync(arrowBackward);
                 await Task.Delay(250);

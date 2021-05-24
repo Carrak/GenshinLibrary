@@ -38,7 +38,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             var versions = new List<Version>();
             Version version = null;
 
-            foreach(var ver in GetVersions(start, 5))
+            foreach (var ver in GetVersions(start, 5))
             {
                 versions.Add(ver);
                 if (ver.VersionName == versionName)
@@ -54,7 +54,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             if (banner < 1 || banner > BannersPerUpdate)
                 throw new ArgumentException($"Invalid banner value. Specify a number from 1 to {BannersPerUpdate}");
 
-            TimeSpan bannerDuration = (version.End - version.Start)/BannersPerUpdate;
+            TimeSpan bannerDuration = (version.End - version.Start) / BannersPerUpdate;
             Versions = versions;
             Settings = settings;
             StartDate = start;
@@ -354,7 +354,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
             if (monthlyResets > 1)
             {
-                hoyolab.Rewards.Add(new Reward(Currency.Primogems, monthlyResets-1, 60));
+                hoyolab.Rewards.Add(new Reward(Currency.Primogems, monthlyResets - 1, 60));
 
                 int lastMonthReward = EndDate.Day / 7 * 20;
                 if (lastMonthReward >= 60)

@@ -16,7 +16,7 @@ namespace GenshinLibrary.TypeReaders
             var dict = ImmutableDictionary.CreateBuilder<string, Banner>(StringComparer.InvariantCultureIgnoreCase);
 
             var names = Enum.GetNames(typeof(Banner));
-            foreach(var name in names)
+            foreach (var name in names)
             {
                 var value = (Banner)Enum.Parse(typeof(Banner), name);
                 dict[name[0].ToString()] = value;

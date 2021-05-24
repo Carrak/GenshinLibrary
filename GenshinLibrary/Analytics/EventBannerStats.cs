@@ -44,7 +44,7 @@ namespace GenshinLibrary.Analytics
                 $"4★: **{RateUpFourStar}** / **{NonRateUpFourStar}** {(FourStarWishes != 0 ? $"(**{RateUpFourStar / (float)FourStarWishes:0.00%}**)" : "")}\n" +
                 $"5★: **{RateUpFiveStar}** / **{NonRateUpFiveStar}** {(FiveStarWishes != 0 ? $"(**{RateUpFiveStar / (float)FiveStarWishes:0.00%}**)" : "")}\n";
         }
-        
+
         public string RateUpGuarantees()
         {
             return $"{Banner}\n5★: {GetSign(FiveStarRateupGuarantee)} | 4★: {GetSign(FourStarRateupGuarantee)}";

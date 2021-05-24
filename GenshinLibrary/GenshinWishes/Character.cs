@@ -13,7 +13,7 @@ namespace GenshinLibrary.GenshinWishes
         public WeaponType WieldedWeapon { get; }
         public Bitmap AvatarImage { get; }
 
-        public override string IconPath {get;}
+        public override string IconPath { get; }
         public override string WishArtPath { get; }
 
         [JsonConstructor]

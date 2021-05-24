@@ -1,7 +1,5 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.Rest;
-using Discord.WebSocket;
 using GenshinLibrary.Analytics;
 using GenshinLibrary.Attributes;
 using GenshinLibrary.Commands;
@@ -257,7 +255,7 @@ namespace GenshinLibrary.Modules
                 $"Odds for the weapon banner:\n" +
                 $"4★: {(weapon.FourStarWishes == 0 ? errorMessage : ComparedToAverage(weapon.FourStarWishes / (float)weapon.TotalWishes, 0.145f))}\n" +
                 $"5★: {(weapon.FiveStarWishes == 0 ? errorMessage : ComparedToAverage(weapon.FiveStarWishes / (float)weapon.TotalWishes, 0.0185f))}\n\n" +
-                $"{weapon.RateUpStats()}", true);                
+                $"{weapon.RateUpStats()}", true);
 
             await ReplyAsync(embed: embed.Build());
 
@@ -317,7 +315,7 @@ namespace GenshinLibrary.Modules
         [Ratelimit(7)]
         public async Task BannerHistory(
             [Remainder, Summary("The name of the rate-up item. E.g. `zhongli`, `xiao`, etc. For names that contain spaces, use quotes: `\"staff of homa\"`")] WishItem wishItem
-            ) => await BannerHistory(wishItem, Context.User,  null);
+            ) => await BannerHistory(wishItem, Context.User, null);
 
         [Command("bannerhistory", RunMode = RunMode.Async)]
         [Alias("bhistory", "bh")]
@@ -391,7 +389,7 @@ namespace GenshinLibrary.Modules
                 .WithColor(Globals.MainColor)
                 .WithTitle("Available servers")
                 .WithFooter($"Reply with just the index of the selected server.")
-                .WithDescription(string.Join('\n', servers.Select((x, index) => $"**{index+1}. {x.ServerName} ({x.ServerTimezone})**")));
+                .WithDescription(string.Join('\n', servers.Select((x, index) => $"**{index + 1}. {x.ServerName} ({x.ServerTimezone})**")));
 
             await ReplyAsync(embed: embed.Build());
 
