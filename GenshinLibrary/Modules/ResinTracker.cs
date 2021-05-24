@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using GenshinLibrary.Commands;
+using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.Services.Resin;
 using System;
@@ -51,10 +52,10 @@ namespace GenshinLibrary.Modules
             var embed = new EmbedBuilder();
             embed.WithAuthor(Context.User)
                 .WithColor(Globals.MainColor)
-                .WithDescription($"Done! Your current resin: {ResinUpdate.GetResinString(resinUpdate.Value)}")
+                .WithDescription($"{GenshinEmotes.Resin} {ResinUpdate.GetResinString(resinUpdate.Value)}")
                 .WithFooter($"Next in {resinUpdate.UntilNext():hh\\:mm\\:ss}\nFully refills in {resinUpdate.UntilFullRefill():hh\\:mm\\:ss}");
 
-            await ReplyAsync(embed: embed.Build());
+            await ReplyAsync("Done!", embed: embed.Build());
         }
 
         [Command("resin")]
@@ -76,7 +77,7 @@ namespace GenshinLibrary.Modules
 
             embed.WithAuthor(Context.User)
                 .WithColor(Globals.MainColor)
-                .WithDescription($"Current resin: {ResinUpdate.GetResinString(currentResin)}");
+                .WithDescription($"{GenshinEmotes.Resin} {ResinUpdate.GetResinString(currentResin)}");
 
             await ReplyAsync(embed: embed.Build());
         }
