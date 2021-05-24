@@ -1,5 +1,6 @@
 ﻿using Fastenshtein;
 using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.Wishes.Filtering;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,13 @@ namespace GenshinLibrary.Services.Wishes
     {
         public IReadOnlyDictionary<string, WishItem> WishItems { get; private set; }
         public IReadOnlyDictionary<int, WishItem> WishItemsByWID { get; private set; }
+        public IReadOnlyDictionary<int, WishBanner> Banners { get; private set; }
+        public IReadOnlyDictionary<int, ServerInfo> Servers { get; private set; }
 
         private readonly DatabaseService _database;
+
+        public readonly int BeginnerBID = -1;
+        public readonly int StandardBID = 0;
 
         public WishService(DatabaseService database)
         {

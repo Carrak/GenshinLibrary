@@ -5,6 +5,7 @@ using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.ReactionCallback;
 using GenshinLibrary.Services.GachaSim;
+using GenshinLibrary.Services.Wishes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +18,14 @@ namespace GenshinLibrary.Modules
     [Summary("Gacha simulator for you to play around with :)\nIf not used for 24 hours, your wish inventory resets.")]
     public class GachaSimulator : GLInteractiveBase
     {
+        private readonly WishService _wishes;
         private readonly GachaSimulatorService _sim;
 
         private readonly string fileName = "result.png";
 
-        public GachaSimulator(GachaSimulatorService sim)
+        public GachaSimulator(WishService wishes, GachaSimulatorService sim)
         {
+            _wishes = wishes;
             _sim = sim;
         }
 

@@ -72,7 +72,6 @@ namespace GenshinLibrary
             // Init services
             await _services.GetRequiredService<MessageHandler>().InstallCommandsAsync();
             await _services.GetRequiredService<WishService>().InitAsync();
-            await _services.GetRequiredService<GachaSimulatorService>().InitAsync();
             await _services.GetRequiredService<ResinTrackerService>().InitAsync();
 
             // Login and start

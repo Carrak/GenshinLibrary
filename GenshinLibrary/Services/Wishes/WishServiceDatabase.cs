@@ -2,12 +2,14 @@
 using GenshinLibrary.Analytics;
 using GenshinLibrary.GenshinWishes;
 using GenshinLibrary.GenshinWishes.Profiles;
+using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.GachaSim.Banners;
 using GenshinLibrary.Services.Wishes.Filtering;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +18,13 @@ namespace GenshinLibrary.Services.Wishes
     partial class WishService
     {
         public async Task InitAsync()
+        {
+            await InitWishItems();
+            await InitEventWishesAsync();
+            await InitServers();
+        }
+
+        private async Task InitWishItems()
         {
             string query = @"
             SELECT json_agg(get_character(wid)) FROM wish_items WHERE type = 'character';
@@ -57,7 +66,63 @@ namespace GenshinLibrary.Services.Wishes
             }
         }
 
-        public async Task<IEnumerable<BannerStats>> GetAnalyticsAsync(IUser user)
+        private async Task InitEventWishesAsync()
+        {
+            foreach (var wi in WishItems.Values.Distinct())
+                if (!File.Exists(wi.WishArtPath))
+                    Console.WriteLine($"{wi.Name} does not have a wish art image.");
+
+            float baseFivestarChance = 0.006f;
+            float baseFourstarChance = 0.051f;
+            int baseHardpity = 90;
+
+            float weaponFivestarChance = 0.007f;
+            float weaponFourstarChance = 0.06f;
+            int weaponHardpity = 80;
+
+            var wishItems = WishItems.Values;
+            var standardWishes = wishItems.Where(x => x.Banners.HasFlag(Banner.Standard));
+
+            var banners = ImmutableDictionary.CreateBuilder<int, WishBanner>();
+
+            banners[StandardBID] = new StandardWish(StandardBID, "Standard", standardWishes, baseFivestarChance, baseFourstarChance, baseHardpity);
+            banners[BeginnerBID] = new BeginnerWish(BeginnerBID, "Beginner", wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)), WishItems["Noelle"], baseFivestarChance, baseFourstarChance, baseHardpity);
+
+            string[] starterNames = { "Amber", "Kaeya", "Lisa" };
+            var standardNoStarters = standardWishes.Where(x => !starterNames.Contains(x.Name));
+            var standardNoWeapons = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Weapon));
+            var standardNoCharacters = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Character));
+
+            IEnumerable<EventWishRaw> eventWishes = await GetEventWishesAsync();
+            foreach (var eventWish in eventWishes)
+            {
+                var rateupPool = eventWish.RateUpWIDs.Select(x => WishItemsByWID[x]);
+                switch (eventWish.Type)
+                {
+                    case Banner.Character:
+                        banners[eventWish.BID] = new EventWish(eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.5f, eventWish.Type, rateupPool, standardNoWeapons, baseFivestarChance, baseFourstarChance, baseHardpity);
+                        break;
+                    case Banner.Weapon:
+                        banners[eventWish.BID] = new EventWish(eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.75f, eventWish.Type, rateupPool, standardNoCharacters, weaponFivestarChance, weaponFourstarChance, weaponHardpity);
+                        break;
+                }
+            }
+
+            Banners = banners.ToImmutable();
+        }
+
+        private async Task InitServers()
+        {
+            string query = "SELECT get_servers()";
+
+            await using var cmd = _database.GetCommand(query);
+            await using var reader = await cmd.ExecuteReaderAsync();
+
+            await reader.ReadAsync();
+
+            Servers = JsonConvert.DeserializeObject<IEnumerable<ServerInfo>>(reader.GetString(0)).ToDictionary(x => x.ServerID);
+        }
+
         public async Task<Dictionary<Banner, BannerStats>> GetAnalyticsAsync(IUser user)
         {
             string query = @"

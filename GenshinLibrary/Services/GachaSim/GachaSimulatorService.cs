@@ -1,13 +1,8 @@
 ﻿using Discord;
 using GenshinLibrary.GenshinWishes;
-using GenshinLibrary.Services.GachaSim.Banners;
 using GenshinLibrary.Services.Wishes;
 using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GenshinLibrary.Services.GachaSim
 {
@@ -15,11 +10,6 @@ namespace GenshinLibrary.Services.GachaSim
     {
         private readonly WishService _wishes;
         private readonly MemoryCache profiles = new MemoryCache(new MemoryCacheOptions());
-
-        public Dictionary<int, WishBanner> Banners = new Dictionary<int, WishBanner>();
-
-        public readonly int BeginnerBID = -1;
-        public readonly int StandardBID = 0;
 
         public GachaSimulatorService(WishService wishes)
         {
@@ -31,7 +21,7 @@ namespace GenshinLibrary.Services.GachaSim
             if (profiles.TryGetValue<GachaSimulatorProfile>(user.Id, out var profile))
                 return profile;
 
-            var newProfile = new GachaSimulatorProfile(Banners.Values.First());
+            var newProfile = new GachaSimulatorProfile(_wishes.Banners[_wishes.StandardBID]);
             SetOrUpdate(user, newProfile);
 
             return newProfile;
@@ -67,47 +57,6 @@ namespace GenshinLibrary.Services.GachaSim
             var wishes = profile.Wish(count);
             SetOrUpdate(user, profile);
             return wishes;
-        }
-
-        public async Task InitAsync()
-        {
-            foreach(var wi in _wishes.WishItems.Values.Distinct())
-                if (!File.Exists(wi.WishArtPath))
-                    Console.WriteLine($"{wi.Name} does not have a wish art image.");
-
-            float baseFivestarChance = 0.006f;
-            float baseFourstarChance = 0.051f;
-            int baseHardpity = 90;
-
-            float weaponFivestarChance = 0.007f;
-            float weaponFourstarChance = 0.06f;
-            int weaponHardpity = 80;
-
-            var wishItems = _wishes.WishItems.Values;
-            var standardWishes = wishItems.Where(x => x.Banners.HasFlag(Banner.Standard));
-
-            Banners[StandardBID] = new StandardWish(StandardBID, "Standard", standardWishes, baseFivestarChance, baseFourstarChance, baseHardpity);
-            Banners[BeginnerBID] = new BeginnerWish(BeginnerBID, "Beginner", wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)), _wishes.WishItems["Noelle"], baseFivestarChance, baseFourstarChance, baseHardpity);
-
-            string[] starterNames = { "Amber", "Kaeya", "Lisa" };
-            var standardNoStarters = standardWishes.Where(x => !starterNames.Contains(x.Name));
-            var standardNoWeapons = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Weapon));
-            var standardNoCharacters = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Character));
-
-            IEnumerable<EventWishRaw> eventWishes = await _wishes.GetEventWishesAsync();
-            foreach (var eventWish in eventWishes)
-            {
-                var rateupPool = eventWish.RateUpWIDs.Select(x => _wishes.WishItemsByWID[x]);
-                switch (eventWish.Type)
-                {
-                    case Banner.Character:
-                        Banners[eventWish.BID] = new EventWish(eventWish.BID, eventWish.Name, eventWish.Date, 0.5f, eventWish.Type, rateupPool, standardNoWeapons, baseFivestarChance, baseFourstarChance, baseHardpity);
-                        break;
-                    case Banner.Weapon:
-                        Banners[eventWish.BID] = new EventWish(eventWish.BID, eventWish.Name, eventWish.Date, 0.75f, eventWish.Type, rateupPool, standardNoCharacters, weaponFivestarChance, weaponFourstarChance, weaponHardpity);
-                        break;
-                }
-            }
         }
     }
 }
