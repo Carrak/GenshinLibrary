@@ -90,6 +90,13 @@ namespace GenshinLibrary
             int argPosition = 0;
             if (message.HasStringPrefix(prefix + " ", ref argPosition, StringComparison.OrdinalIgnoreCase) || message.HasStringPrefix(prefix, ref argPosition, StringComparison.OrdinalIgnoreCase))
             {
+                if (Globals.Maintenance)
+                {
+                    var app = await context.Client.GetApplicationInfoAsync();
+                    if (context.User.Id != app.Owner.Id)
+                        return;
+                }
+
                 var result = await _commands.ExecuteAsync(context, argPosition, _services, MultiMatchHandling.Best);
 
                 if (!result.IsSuccess)

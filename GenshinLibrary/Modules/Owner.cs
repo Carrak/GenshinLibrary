@@ -53,5 +53,12 @@ namespace GenshinLibrary.Modules
 
             await ReplyAsync(embed: embed.Build());
         }
+
+        [Command("maintenance")]
+        public async Task Maintenance(bool value)
+        {
+            Globals.Maintenance = value;
+            await ReplyAsync($"Maintenance: {value}");
+        }
     }
 }
