@@ -11,7 +11,7 @@ namespace GenshinLibrary.ReactionCallback
 {
     class WishHistoryPaged : FragmentedPagedMessage<CompleteWishItemRecord>
     {
-        private readonly Banner _banner;
+        private readonly string _bannerName;
         private readonly int count;
         private const int maxNameLength = 27;
 
@@ -19,9 +19,9 @@ namespace GenshinLibrary.ReactionCallback
             SocketCommandContext context,
             int displayPerPage,
             IEnumerable<CompleteWishItemRecord> records,
-            Banner banner) : base(interactive, context, records, displayPerPage)
+            string bannerName) : base(interactive, context, records, displayPerPage)
         {
-            _banner = banner;
+            _bannerName = bannerName;
             count = records.Count();
         }
 
@@ -38,7 +38,7 @@ namespace GenshinLibrary.ReactionCallback
 
             var embed = new EmbedBuilder();
             embed.WithColor(Globals.MainColor)
-                .WithTitle($"Wish history for the {_banner} banner")
+                .WithTitle($"Wish history for {_bannerName}")
                 .WithDescription($"Total items: **{count}**\n{table.GetTable()}");
 
             embed = SetDefaultFooter(embed);
