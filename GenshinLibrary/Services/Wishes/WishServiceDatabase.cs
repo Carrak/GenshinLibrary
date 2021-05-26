@@ -86,8 +86,9 @@ namespace GenshinLibrary.Services.Wishes
 
             var banners = ImmutableDictionary.CreateBuilder<int, WishBanner>();
 
+            var noelle = WishItems["Noelle"];
             banners[StandardBID] = new StandardWish(StandardBID, "Standard", standardWishes, baseFivestarChance, baseFourstarChance, baseHardpity);
-            banners[BeginnerBID] = new BeginnerWish(BeginnerBID, "Beginner", wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)), WishItems["Noelle"], baseFivestarChance, baseFourstarChance, baseHardpity);
+            banners[BeginnerBID] = new BeginnerWish(BeginnerBID, "Beginner", wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)).Where(x => x.WID != noelle.WID), noelle, baseFivestarChance, baseFourstarChance, baseHardpity);
 
             string[] starterNames = { "Amber", "Kaeya", "Lisa" };
             var standardNoStarters = standardWishes.Where(x => !starterNames.Contains(x.Name));
