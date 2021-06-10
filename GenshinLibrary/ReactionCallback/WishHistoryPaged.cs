@@ -27,13 +27,12 @@ namespace GenshinLibrary.ReactionCallback
 
         protected override Embed ConstructEmbed(IEnumerable<CompleteWishItemRecord> currentPage)
         {
-            var table = new TextTable("Pity", "Rarity", "Name", "DateTime");
+            var table = new TextTable("Pity", "Name", "DateTime");
 
             foreach (var wir in currentPage)
             {
                 var name = wir.WishItem.GetFormattedName(maxNameLength);
-
-                table.AddRow(wir.Pity.ToString(), $"{wir.WishItem.Rarity}*", name, wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+                table.AddRow(wir.Pity.ToString(), name, wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
             }
 
             var embed = new EmbedBuilder();
