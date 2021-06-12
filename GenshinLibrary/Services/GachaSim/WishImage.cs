@@ -1,4 +1,5 @@
-﻿using GenshinLibrary.GenshinWishes;
+﻿using GenshinLibrary.Models;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -17,11 +18,11 @@ namespace GenshinLibrary.Services.GachaSim
         private static readonly int indent = 8;
         private static readonly int iconSize = 55;
 
-        private readonly WishItem[] _items;
+        private readonly GachaSimWishItemRecord[] _items;
 
-        public WishImage(WishItem[] items)
+        public WishImage(GachaSimWishItemRecord[] items)
         {
-            _items = items.OrderByDescending(x => x.Rarity).ThenByDescending(x => x is Character).ToArray();
+            _items = items.OrderByDescending(x => x.WishItem.Rarity).ThenByDescending(x => x.WishItem is Character).ToArray();
         }
 
         public Stream GetImage()
@@ -37,7 +38,7 @@ namespace GenshinLibrary.Services.GachaSim
                 int x = startingX + i * (width + indent);
 
                 // Colour that varies depending on rarity
-                var rarityColor = _items[i].Rarity switch
+                var rarityColor = _items[i].WishItem.Rarity switch
                 {
                     3 => new Color(new Argb32(0, 200, 255)),
                     4 => new Color(new Argb32(240, 110, 240)),
@@ -57,7 +58,7 @@ namespace GenshinLibrary.Services.GachaSim
                 bitmap.Mutate(x => x.Fill(gradientBrushBottom, bottom));
 
                 // Draw wish art
-                using var wishArt = Image.Load(_items[i].WishArtPath);
+                using var wishArt = Image.Load(_items[i].WishItem.WishArtPath);
                 var size = GetSize(Math.Min(width / (double)wishArt.Width, height / (double)wishArt.Height), wishArt.Width, wishArt.Height);
                 wishArt.Mutate(x => x.Resize(size));
                 bitmap.Mutate(ctx => ctx.DrawImage(wishArt, new Point(x + wishRect.Width / 2 - size.Width / 2, y + wishRect.Height / 2 - size.Height / 2), 1));
@@ -67,17 +68,30 @@ namespace GenshinLibrary.Services.GachaSim
                 bitmap.Mutate(x => x.Draw(pen, wishRect));
 
                 // Draw rarity image
-                using var rarityImage = Image.Load(_items[i].RarityImagePath);
+                using var rarityImage = Image.Load(_items[i].WishItem.RarityImagePath);
                 var raritySize = GetSize(0.2, rarityImage.Width, rarityImage.Height);
                 rarityImage.Mutate(x => x.Resize(raritySize));
                 var rarityPoint = new Point(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20);
                 bitmap.Mutate(ctx => ctx.DrawImage(rarityImage, new Point(x + wishRect.Width / 2 - raritySize.Width / 2, wishRect.Bottom - 20), 1));
+
                 // Draw icon
-                using var icon = Image.Load(_items[i].IconPath);
+                using var icon = Image.Load(_items[i].WishItem.IconPath);
                 var resizedIconSize = GetSize(iconSize / (double)icon.Width, icon.Width, icon.Height);
                 icon.Mutate(x => x.Resize(resizedIconSize));
                 bitmap.Mutate(ctx => ctx.DrawImage(icon, new Point(x + wishRect.Width / 2 - resizedIconSize.Width / 2, rarityPoint.Y - resizedIconSize.Height - 5), 1));
 
+                // Draw pity if needed
+                if (_items[i].WishItem.Rarity != 3)
+                {
+                    int pity = _items[i].WishItem.Rarity switch
+                    {
+                        4 => _items[i].FourStarPity,
+                        5 => _items[i].FiveStarPity,
+                        _ => throw new NotImplementedException()
+                    };
+
+                    bitmap.Mutate(ctx => ctx.DrawText($"Pity: {pity+1}", new Font(SystemFonts.Find("Century Gothic"), 14), new Color(new Argb32(255, 255, 255, 192)), new PointF(wishRect.Left+5, wishRect.Y+5)));
+                }
             }
 
             MemoryStream stream = new MemoryStream();
