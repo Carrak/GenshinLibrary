@@ -90,7 +90,7 @@ namespace GenshinLibrary.Services.GachaSim
                         _ => throw new NotImplementedException()
                     };
 
-                    bitmap.Mutate(ctx => ctx.DrawText($"Pity: {pity+1}", new Font(SystemFonts.Find("Century Gothic"), 14), new Color(new Argb32(255, 255, 255, 192)), new PointF(wishRect.Left+5, wishRect.Y+5)));
+                    bitmap.Mutate(ctx => ctx.DrawText($"Pity: {pity+1}", new Font(SystemFonts.Find("Impact"), 14), new Color(new Argb32(255, 255, 255, 160)), new PointF(wishRect.Left+5, wishRect.Y+5)));
                 }
             }
 
