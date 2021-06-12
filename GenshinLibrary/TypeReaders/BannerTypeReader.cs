@@ -1,5 +1,5 @@
 ﻿using Discord.Commands;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

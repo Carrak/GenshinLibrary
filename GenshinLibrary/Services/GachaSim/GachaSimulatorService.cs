@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.Services.Wishes;
 using Microsoft.Extensions.Caching.Memory;
 using System;

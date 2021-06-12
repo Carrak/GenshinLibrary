@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace GenshinLibrary.GenshinWishes
+namespace GenshinLibrary.Models
 {
     public class Pities
     {

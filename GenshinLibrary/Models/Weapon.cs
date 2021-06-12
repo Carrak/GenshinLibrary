@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
 
-namespace GenshinLibrary.GenshinWishes
+namespace GenshinLibrary.Models
 {
     public class Weapon : WishItem
     {

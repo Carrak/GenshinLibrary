@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace GenshinLibrary.GenshinWishes.Profiles
+namespace GenshinLibrary.Models.Profiles
 {
     public class Profile
     {

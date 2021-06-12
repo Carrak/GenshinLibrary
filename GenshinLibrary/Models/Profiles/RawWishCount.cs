@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace GenshinLibrary.GenshinWishes.Profiles
+namespace GenshinLibrary.Models.Profiles
 {
     public class RawWishCount
     {

@@ -1,4 +1,4 @@
-﻿using GenshinLibrary.GenshinWishes;
+﻿using GenshinLibrary.Models;
 using System;
 
 namespace GenshinLibrary.Services.GachaSim.Sessions

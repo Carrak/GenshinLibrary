@@ -3,7 +3,7 @@ using System;
 using System.Drawing;
 using System.IO;
 
-namespace GenshinLibrary.GenshinWishes
+namespace GenshinLibrary.Models
 {
     public class Character : WishItem
     {

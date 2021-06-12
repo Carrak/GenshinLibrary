@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Commands;
 using GenshinLibrary.Commands;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.Wishes;

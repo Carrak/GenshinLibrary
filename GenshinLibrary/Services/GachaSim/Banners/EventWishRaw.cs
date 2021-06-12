@@ -1,4 +1,4 @@
-﻿using GenshinLibrary.GenshinWishes;
+﻿using GenshinLibrary.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

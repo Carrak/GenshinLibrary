@@ -1,7 +1,7 @@
 ﻿using Discord;
 using GenshinLibrary.Analytics;
-using GenshinLibrary.GenshinWishes;
-using GenshinLibrary.GenshinWishes.Profiles;
+using GenshinLibrary.Models;
+using GenshinLibrary.Models.Profiles;
 using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.GachaSim.Banners;
 using GenshinLibrary.Services.Wishes.Filtering;

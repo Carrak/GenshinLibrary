@@ -1,5 +1,5 @@
 ﻿using Discord;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.ReactionCallback.PrimogemCalculator;
 using GenshinLibrary.Utility;
 using System;

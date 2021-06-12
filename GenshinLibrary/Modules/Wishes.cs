@@ -3,7 +3,7 @@ using Discord.Commands;
 using GenshinLibrary.Analytics;
 using GenshinLibrary.Attributes;
 using GenshinLibrary.Commands;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.ReactionCallback;
 using GenshinLibrary.Services.GachaSim;

@@ -4,7 +4,7 @@ using Discord.Net;
 using Discord.WebSocket;
 using GenshinLibrary.Attributes;
 using GenshinLibrary.Commands;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.TypeReaders;
 using System;

@@ -1,4 +1,4 @@
-﻿using GenshinLibrary.GenshinWishes;
+﻿using GenshinLibrary.Models;
 using GenshinLibrary.Services.GachaSim.Banners;
 using GenshinLibrary.Utility;
 using System;

@@ -1,4 +1,4 @@
-﻿namespace GenshinLibrary.GenshinWishes.Profiles
+﻿namespace GenshinLibrary.Models.Profiles
 {
     public class WishCount
     {

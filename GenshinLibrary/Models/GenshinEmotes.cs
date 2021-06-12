@@ -1,7 +1,7 @@
 ﻿using Discord;
 using System;
 
-namespace GenshinLibrary.GenshinWishes
+namespace GenshinLibrary.Models
 {
     public static class GenshinEmotes
     {

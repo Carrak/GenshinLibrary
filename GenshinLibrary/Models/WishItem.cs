@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace GenshinLibrary.GenshinWishes
+namespace GenshinLibrary.Models
 {
     public abstract class WishItem
     {

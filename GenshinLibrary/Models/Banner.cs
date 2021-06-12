@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GenshinLibrary.GenshinWishes
+namespace GenshinLibrary.Models
 {
     [Flags]
     public enum Banner

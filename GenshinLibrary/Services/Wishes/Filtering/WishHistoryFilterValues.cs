@@ -1,6 +1,6 @@
 ﻿using Discord.Commands;
 
-namespace GenshinLibrary.GenshinWishes
+namespace GenshinLibrary.Models
 {
     [NamedArgumentType]
     public class WishHistoryFilterValues

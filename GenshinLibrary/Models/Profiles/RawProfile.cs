@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace GenshinLibrary.GenshinWishes.Profiles
+namespace GenshinLibrary.Models.Profiles
 {
     public class RawProfile
     {

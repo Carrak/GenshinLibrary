@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.ReactionCallback.Base;
 using GenshinLibrary.StringTable;
 using System.Collections.Generic;

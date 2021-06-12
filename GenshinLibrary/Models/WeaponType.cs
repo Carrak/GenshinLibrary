@@ -1,4 +1,4 @@
-﻿namespace GenshinLibrary.GenshinWishes
+﻿namespace GenshinLibrary.Models
 {
     public enum WeaponType
     {

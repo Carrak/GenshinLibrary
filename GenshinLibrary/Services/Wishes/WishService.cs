@@ -1,5 +1,5 @@
 ﻿using Fastenshtein;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.Wishes.Filtering;
 using System;
