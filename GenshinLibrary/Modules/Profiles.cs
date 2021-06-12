@@ -2,7 +2,7 @@
 using Discord.Commands;
 using GenshinLibrary.Analytics;
 using GenshinLibrary.Commands;
-using GenshinLibrary.GenshinWishes;
+using GenshinLibrary.Models;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.Services;
 using GenshinLibrary.Services.Wishes;
@@ -46,7 +46,7 @@ namespace GenshinLibrary.Modules
             {
                 analytics = await _wishes.GetAnalyticsAsync(user);
             }
-            catch (PostgresException pe)
+            catch (PostgresException)
             {
                 embed.WithFooter("Set your server using gl!setserver to view wish stats in profile.");
             }
