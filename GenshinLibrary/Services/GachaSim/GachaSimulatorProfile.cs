@@ -6,7 +6,7 @@ namespace GenshinLibrary.Services.GachaSim
 {
     public class GachaSimulatorProfile
     {
-        public List<WishItem> Inventory { get; } = new List<WishItem>();
+        public List<GachaSimWishItemRecord> Inventory { get; } = new List<GachaSimWishItemRecord>();
         private Dictionary<int, WishSession> sessions { get; } = new Dictionary<int, WishSession>();
         private int SelectedBannerBID { get; set; }
 
@@ -38,9 +38,9 @@ namespace GenshinLibrary.Services.GachaSim
             return sessions[SelectedBannerBID];
         }
 
-        public WishItem[] Wish(int count)
+        public GachaSimWishItemRecord[] Wish(int count)
         {
-            WishItem[] wishes = sessions[SelectedBannerBID].Wish(count);
+            GachaSimWishItemRecord[] wishes = sessions[SelectedBannerBID].Wish(count);
             Inventory.AddRange(wishes);
             return wishes;
         }

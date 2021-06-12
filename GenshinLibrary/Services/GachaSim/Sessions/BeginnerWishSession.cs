@@ -16,10 +16,10 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
         {
         }
 
-        public override WishItem[] Wish(int count)
+        public override GachaSimWishItemRecord[] Wish(int count)
         {
             if (count != 10)
-                throw new Exception("Can only do 10-pulls on Beginne.");
+                throw new Exception("Can only do 10-pulls on Beginner.");
 
             if (Counter == 20)
                 throw new Exception("Already wished 20 times.");

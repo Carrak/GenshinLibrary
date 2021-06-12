@@ -51,7 +51,7 @@ namespace GenshinLibrary.Services.GachaSim
             SetOrUpdate(user, profile);
         }
 
-        public WishItem[] Wish(IUser user, int count)
+        public GachaSimWishItemRecord[] Wish(IUser user, int count)
         {
             var profile = GetOrCreateProfile(user);
             var wishes = profile.Wish(count);

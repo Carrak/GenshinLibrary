@@ -9,11 +9,11 @@ namespace GenshinLibrary.Services.GachaSim
         public IReadOnlyList<WishItemCount> Fourstars { get; }
         public IReadOnlyList<WishItemCount> Threestars { get; }
 
-        public WishCounts(IEnumerable<WishItem> wishItems)
+        public WishCounts(IEnumerable<GachaSimWishItemRecord> wishItems)
         {
             Dictionary<WishItem, int> counts = new Dictionary<WishItem, int>();
             foreach (var wi in wishItems)
-                counts[wi] = counts.TryGetValue(wi, out var count) ? ++count : 1;
+                counts[wi.WishItem] = counts.TryGetValue(wi.WishItem, out var count) ? ++count : 1;
 
             List<WishItemCount> threestars = new List<WishItemCount>();
             List<WishItemCount> fourstars = new List<WishItemCount>();

@@ -40,7 +40,7 @@ namespace GenshinLibrary.Modules
             var pityBefore = profile.GetCurrentSession().CurrentFiveStarPity;
             var wishCountBefore = profile.Inventory.Count;
 
-            WishItem[] result;
+            GachaSimWishItemRecord[] result;
             try
             {
                 result = _sim.Wish(Context.User, count);
@@ -54,7 +54,7 @@ namespace GenshinLibrary.Modules
             var pityAfter = profile.GetCurrentSession().CurrentFiveStarPity;
             var wishCountAfter = profile.Inventory.Count;
 
-            var rarityColor = result.Max(x => x.Rarity) switch
+            var rarityColor = result.Max(x => x.WishItem.Rarity) switch
             {
                 3 => Color.Blue,
                 4 => Color.Purple,

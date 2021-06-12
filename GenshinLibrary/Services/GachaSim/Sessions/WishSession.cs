@@ -18,16 +18,19 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
 
         protected abstract WishItem GetWishItem();
 
-        public virtual WishItem[] Wish(int count)
+        public virtual GachaSimWishItemRecord[] Wish(int count)
         {
             if (count > 100)
                 throw new Exception("Cannot wish more than 100 times per once.");
             if (count < 1)
                 throw new Exception("Cannot wish 0 or less times.");
 
-            WishItem[] items = new WishItem[count];
+            GachaSimWishItemRecord[] items = new GachaSimWishItemRecord[count];
             for (int i = 0; i < count; i++)
-                items[i] = GetWishItem();
+            {
+                items[i] = new GachaSimWishItemRecord(CurrentFiveStarPity, CurrentFourStarPity, DateTime.UtcNow, GetWishItem());
+            }
+
             return items;
         }
 
