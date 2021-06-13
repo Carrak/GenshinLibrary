@@ -445,7 +445,7 @@ namespace GenshinLibrary.Modules
         {
             var table = new TextTable("Type", "Name", "DateTime");
             foreach (var wir in wishRecords)
-                table.AddRow(wir.WishItem.GetType().Name, wir.WishItem.GetFormattedName(32), wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+                table.AddRow(wir.WishItem.GetType().Name, wir.WishItem.GetFormattedName(29), wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
 
             return table;
         }
