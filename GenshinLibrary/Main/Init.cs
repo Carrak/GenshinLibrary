@@ -62,6 +62,7 @@ namespace GenshinLibrary
             _client.Log += Log;
             _client.JoinedGuild += OnJoin;
             _client.LeftGuild += OnLeave;
+            _client.Ready += Ready;
 
             // Retrieve the config
             JObject config = JObject.Parse(File.ReadAllText($"{Globals.ProjectDirectory}genlibconfig.json"));
@@ -85,11 +86,14 @@ namespace GenshinLibrary
             // Set status
             await _client.SetGameAsync("gl!help");
 
-            // Init DBL auth
-            _dbl = new AuthDiscordBotListApi(_client.CurrentUser.Id, config["topgg-token"].ToString());
-
             // Make sure it doesn't die
             await Task.Delay(-1);
+        }
+
+        private async Task Ready()
+        {
+            // Init DBL auth
+            _dbl = new AuthDiscordBotListApi(_client.CurrentUser.Id, config["topgg-token"].ToString());
         }
 
         private async Task OnJoin(SocketGuild guild)
