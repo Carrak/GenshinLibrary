@@ -78,15 +78,15 @@ namespace GenshinLibrary
             await _services.GetRequiredService<WishService>().InitAsync();
             await _services.GetRequiredService<ResinTrackerService>().InitAsync();
 
-            // Init DBL auth
-            _dbl = new AuthDiscordBotListApi(_client.CurrentUser.Id, config["topgg-token"].ToString());
-
             // Login and start
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
             // Set status
             await _client.SetGameAsync("gl!help");
+
+            // Init DBL auth
+            _dbl = new AuthDiscordBotListApi(_client.CurrentUser.Id, config["topgg-token"].ToString());
 
             // Make sure it doesn't die
             await Task.Delay(-1);
