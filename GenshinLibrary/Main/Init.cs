@@ -2,6 +2,7 @@
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
+using DiscordBotsList.Api;
 using GenshinLibrary.Main;
 using GenshinLibrary.Services;
 using GenshinLibrary.Services.GachaSim;
@@ -25,6 +26,8 @@ namespace GenshinLibrary
         private static IServiceProvider _services;
 
         private CommandSupportService _support;
+        private AuthDiscordBotListApi _dbl;
+
 
         private async Task RunBotAsync()
         {
@@ -58,6 +61,7 @@ namespace GenshinLibrary
             // Register events
             _client.Log += Log;
             _client.JoinedGuild += OnJoin;
+            _client.LeftGuild += OnLeave;
 
             // Retrieve the config
             JObject config = JObject.Parse(File.ReadAllText($"{Globals.ProjectDirectory}genlibconfig.json"));
@@ -73,6 +77,9 @@ namespace GenshinLibrary
             await _services.GetRequiredService<MessageHandler>().InstallCommandsAsync();
             await _services.GetRequiredService<WishService>().InitAsync();
             await _services.GetRequiredService<ResinTrackerService>().InitAsync();
+
+            // Init DBL auth
+            _dbl = new AuthDiscordBotListApi(_client.CurrentUser.Id, config["topgg-token"].ToString());
 
             // Login and start
             await _client.LoginAsync(TokenType.Bot, token);
@@ -95,6 +102,13 @@ namespace GenshinLibrary
             }
 
             _ = Task.Run(async () => await guild.DownloadUsersAsync());
+
+            await _dbl.UpdateStats(_client.Guilds.Count);
+        }
+
+        private async Task OnLeave(SocketGuild guild)
+        {
+            await _dbl.UpdateStats(_client.Guilds.Count);
         }
 
         private Task Log(LogMessage arg)
