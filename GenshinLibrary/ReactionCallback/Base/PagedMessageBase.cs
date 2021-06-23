@@ -145,6 +145,12 @@ namespace GenshinLibrary.ReactionCallback.Base
             Interactive.RemoveReactionCallback(_message);
         }
 
+        public async Task DeleteMessageAsync()
+        {
+            await _message.DeleteAsync();
+            Interactive.RemoveReactionCallback(_message);
+        }
+
         /// <summary>
         ///     Triggers when a reaction is added to <see cref="_message"/> 
         ///     and modifies the message if the reaction is 
