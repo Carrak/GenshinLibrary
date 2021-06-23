@@ -108,11 +108,11 @@ namespace GenshinLibrary.ReactionCallback.Base
         /// <summary>
         ///     Sets the message and adds reaction callback if necessary.
         /// </summary>
-        public async Task DisplayAsync(IUserMessage message = null)
+        public async Task DisplayAsync()
         {
             CreatePages();
 
-            _message = message ?? await Context.Channel.SendMessageAsync(embed: Pages[Page]);
+            _message = await Context.Channel.SendMessageAsync(embed: Pages[Page]);
             if (TotalPages > 1)
                 AddCallback();
         }
