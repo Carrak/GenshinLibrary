@@ -106,13 +106,7 @@ namespace GenshinLibrary.Main
                 return;
             }
 
-            var component = new ComponentBuilder()
-                .WithButton("Server invite", "server_invite", ButtonStyle.Link, url: "https://discord.gg/4P23TZFZUN")
-                .WithButton("Bot invite", "bot_invite", ButtonStyle.Link, url: "https://discord.com/oauth2/authorize?client_id=830870729390030960&scope=bot&permissions=298048")
-                .WithButton("Patreon", "patreon", ButtonStyle.Link, url: "https://www.patreon.com/genshinlibrary")
-                .Build();
-
-            await customMessage.Message.ModifyAsync(x => { x.Content = customMessage.Text; x.Embed = customMessage.Embed?.Build(); x.Components = component; });
+            await customMessage.Message.ModifyAsync(x => { x.Content = customMessage.Text; x.Embed = customMessage.Embed?.Build(); });
             await Context.Message.AddReactionAsync(success);
             customMessage = new CustomMessage();
         }
