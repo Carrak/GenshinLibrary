@@ -63,7 +63,7 @@ namespace GenshinLibrary.Commands
             timeout ??= TimeSpan.FromSeconds(60);
 
             // Temporary message handler
-            Task Handler(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
+            Task Handler(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> channel, SocketReaction reaction)
             {
                 // Ensure the message is in the same channel and by the same user
                 if (reaction.User.Value.Id != user.Id || cachedMessage.Id != message.Id)
