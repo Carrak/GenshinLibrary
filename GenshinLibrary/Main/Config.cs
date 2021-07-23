@@ -11,5 +11,7 @@ namespace GenshinLibrary
         public string Connection { get; set; }
         [JsonProperty("current_version")]
         public Version Version { get; set; }
+        [JsonProperty("topgg-token")]
+        public string TopGGToken { get; set; }
     }
 }
