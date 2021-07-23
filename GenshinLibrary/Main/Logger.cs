@@ -1,7 +1,7 @@
 ﻿using Discord;
 using System;
 
-namespace GenshinLibrary.Main
+namespace GenshinLibrary
 {
     static class Logger
     {
