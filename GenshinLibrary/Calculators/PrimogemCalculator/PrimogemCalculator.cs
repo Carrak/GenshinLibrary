@@ -9,7 +9,6 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 {
     class PrimogemCalculator
     {
-        public static readonly DateTime LaunchDay = new DateTime(2020, 9, 30);
         public static readonly int UpdateDuration = 42;
         public static readonly int FatePrice = 160;
         public static readonly int EventAverage = 2200;
@@ -26,19 +25,22 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
         public PrimogemCalculator(DateTime start, DateTime end, PrimogemCalculatorSettings settings = null)
         {
+            var currentVersion = Globals.GetConfig().Version;
+
             Settings = settings;
             StartDate = start;
             EndDate = end;
-            Versions = GetVersions(start, end);
-            CurrentVersion = Versions[^1];
+            Versions = GetVersions(currentVersion, 5);
+            CurrentVersion = currentVersion;
         }
 
         public PrimogemCalculator(DateTime start, string versionName, int banner, PrimogemCalculatorSettings settings = null)
         {
+            var currentVersion = Globals.GetConfig().Version;
             var versions = new List<Version>();
             Version version = null;
 
-            foreach (var ver in GetVersions(start, 5))
+            foreach (var ver in GetVersions(currentVersion, 5))
             {
                 versions.Add(ver);
                 if (ver.VersionName == versionName)
@@ -159,7 +161,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             if (monthlyResets != 0)
                 totals.Add(new RewardTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, monthlyResets, 5), new Reward(Currency.Intertwined, monthlyResets, 5)));
 
-            int codes = DateCalculator(LaunchDay - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
+            int codes = DateCalculator(CurrentVersion.Start - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
             int reachedUpdateDays = Math.Min((EndDate - Versions[^1].Start).Days + 1, Days);
             int currentUpdateDays = Math.Min((Versions[0].End - StartDate).Days, Days);
 
@@ -176,7 +178,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 totals.Add(events);
 
             // Test runs
-            int testRuns = DateCalculator(LaunchDay, i => i.AddDays(UpdateDuration / 2));
+            int testRuns = DateCalculator(CurrentVersion.Start, i => i.AddDays(UpdateDuration / 2));
             if (testRuns != 0)
                 totals.Add(new RewardTotal(GenshinEmotes.Primogem, "Test Runs", new Reward(Currency.Primogems, testRuns, 20)));
 
@@ -372,39 +374,20 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return hoyolab;
         }
 
-        private List<Version> GetVersions(DateTime start, DateTime end)
+        private List<Version> GetVersions(Version current, int count)
         {
             List<Version> versions = new List<Version>();
             int version = 0;
 
-            for (DateTime i = LaunchDay; i <= end; i = Increment(i))
+            for (DateTime i = current.Start; version < count; i = Increment(i))
             {
                 var next = Increment(i);
-                if (next >= start)
-                    versions.Add(new Version(i, next, $"{1 + version / 10}.{version % 10}"));
+                versions.Add(new Version(i, next, $"{current.Major + (current.Minor + version) / 10}.{(current.Minor + version) % 10}"));
                 version++;
             }
 
-            return versions;
-            static DateTime Increment(DateTime dt) => dt.AddDays(UpdateDuration);
-        }
-
-        private List<Version> GetVersions(DateTime start, int count)
-        {
-            List<Version> versions = new List<Version>();
-            int version = 0;
-
-            for (DateTime i = LaunchDay; count >= 0; i = Increment(i))
-            {
-                var next = Increment(i);
-                if (next >= start)
-                {
-                    versions.Add(new Version(i, next, $"{1 + version / 10}.{version % 10}"));
-                    count--;
-                }
-                version++;
-            }
-
+            foreach(var x in versions)
+                Console.WriteLine(x);
             return versions;
             static DateTime Increment(DateTime dt) => dt.AddDays(UpdateDuration);
         }
