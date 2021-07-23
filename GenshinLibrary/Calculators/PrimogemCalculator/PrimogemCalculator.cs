@@ -4,6 +4,7 @@ using GenshinLibrary.ReactionCallback.PrimogemCalculator;
 using GenshinLibrary.Utility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GenshinLibrary.Calculators.PrimogemCalculator
 {
@@ -30,8 +31,8 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             Settings = settings;
             StartDate = start;
             EndDate = end;
-            Versions = GetVersions(currentVersion, 5);
-            CurrentVersion = currentVersion;
+            Versions = GetVersions(currentVersion, end);
+            CurrentVersion = Versions.FirstOrDefault(x => end > x.Start && end <= x.End);
         }
 
         public PrimogemCalculator(DateTime start, string versionName, int banner, PrimogemCalculatorSettings settings = null)
@@ -386,8 +387,22 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 version++;
             }
 
-            foreach(var x in versions)
-                Console.WriteLine(x);
+            return versions;
+            static DateTime Increment(DateTime dt) => dt.AddDays(UpdateDuration);
+        }
+
+        private List<Version> GetVersions(Version current, DateTime end)
+        {
+            List<Version> versions = new List<Version>();
+            int version = 0;
+
+            for (DateTime i = current.Start; i < end; i = Increment(i))
+            {
+                var next = Increment(i);
+                versions.Add(new Version(i, next, $"{current.Major + (current.Minor + version) / 10}.{(current.Minor + version) % 10}"));
+                version++;
+            }
+
             return versions;
             static DateTime Increment(DateTime dt) => dt.AddDays(UpdateDuration);
         }
