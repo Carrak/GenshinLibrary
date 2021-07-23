@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
 
@@ -14,5 +15,11 @@ namespace GenshinLibrary
         public static ulong TierTwoRoleID = 831133658576322610;
         public static ulong TierOneRoleID = 831133541134762045;
         public static ulong GenshinLibraryGuildID = 830707093131624457;
+
+        public static Config GetConfig()
+        {
+            string text = File.ReadAllText($"{ProjectDirectory}genlibconfig.json");
+            return JsonConvert.DeserializeObject<Config>(text);
+        }
     }
 }
