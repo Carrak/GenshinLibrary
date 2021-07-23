@@ -3,15 +3,12 @@ using Discord.Addons.Interactive;
 using Discord.Commands;
 using Discord.WebSocket;
 using DiscordBotsList.Api;
-using GenshinLibrary.Main;
 using GenshinLibrary.Services;
 using GenshinLibrary.Services.GachaSim;
 using GenshinLibrary.Services.Resin;
 using GenshinLibrary.Services.Wishes;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json.Linq;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace GenshinLibrary
@@ -27,7 +24,6 @@ namespace GenshinLibrary
 
         private CommandSupportService _support;
         private AuthDiscordBotListApi _dbl;
-
 
         private async Task RunBotAsync()
         {
@@ -64,17 +60,17 @@ namespace GenshinLibrary
             _client.LeftGuild += OnLeave;
 
             // Retrieve the config
-            JObject config = JObject.Parse(File.ReadAllText($"{Globals.ProjectDirectory}genlibconfig.json"));
+            var config = Globals.GetConfig();
 
             // Init DBL auth
             _dbl = new AuthDiscordBotListApi(830870729390030960, config["topgg-token"].ToString());
 
             // Retrieve connection string and init db connection
             Logger.Log("Database", "Connecting to database");
-            await _services.GetRequiredService<DatabaseService>().InitAsync(config["connection"].ToString());
+            await _services.GetRequiredService<DatabaseService>().InitAsync(config.Connection);
 
             // Retrieve token
-            string token = config["token"].ToString();
+            string token = config.Token;
 
             // Init services
             await _services.GetRequiredService<MessageHandler>().InstallCommandsAsync();
