@@ -25,37 +25,27 @@ namespace GenshinLibrary.Services.Wishes
             _database = database;
         }
 
-        public WishItem GetBestSuggestion(string name)
+        public WishItem GetBestSuggestion(string name, float threshold = 0.7f)
         {
-            var wishitems = WishItems.Values.ToList();
-            var minWishItem = wishitems[0];
-            var minDistance = Levenshtein.Distance(name, minWishItem.Name);
-
-            for (int i = 1; i < wishitems.Count; i++)
-            {
-                var wishitem = wishitems[i];
-
-                var distance = Levenshtein.Distance(name, wishitem.Name);
-                if (distance < minDistance)
-                {
-                    minWishItem = wishitem;
-                    minDistance = distance;
-                }
-            }
+            var wishitems = WishItems.ToList();
+            WishItem minWishItem = null;
+            float maxScore = 0;
 
             for (int i = 0; i < wishitems.Count; i++)
             {
-                var wishitem = wishitems[i];
+                var keyValuePair = wishitems[i];
 
-                var distance = AutoCompleteLevenshtein.Distance(name, wishitem.Name);
-                if (distance < minDistance)
+                var score = GetLevenshteinScore(name, keyValuePair.Key);
+                if (score >= threshold && score > maxScore)
                 {
-                    minWishItem = wishitem;
-                    minDistance = distance;
+                    minWishItem = keyValuePair.Value;
+                    maxScore = score;
                 }
             }
 
             return minWishItem;
+
+            float GetLevenshteinScore(string s1, string s2) => 1 - (float)Levenshtein.Distance(s1.ToLower(), s2.ToLower()) / Math.Max(s1.Length, s2.Length); 
         }
 
         public WishHistoryFilters ValidateFilters(WishHistoryFilters filters, Banner banner)
