@@ -103,16 +103,16 @@ namespace GenshinLibrary.Modules
         [Alias("avatar", "changeavatar")]
         [Ratelimit(5)]
         public async Task SetAvatar(
-            [Summary("The name of the character to set as the avatar.")][Remainder] string character
+            [Summary("The name of the character to set as the avatar.")][Remainder] WishItem wi
             )
         {
-            if (_wishes.WishItems.TryGetValue(character, out WishItem wi) && wi is Character foundCharacter)
+            if (wi is Character c)
             {
-                await _wishes.SetAvatarAsync(Context.User, foundCharacter);
+                await _wishes.SetAvatarAsync(Context.User, c);
                 await ReplyAsync("Successfully changed!");
             }
             else
-                await ReplyAsync("No such character exists.");
+                await ReplyAsync("Given wish item is not a character.");
         }
 
         [Command("resetavatar")]
