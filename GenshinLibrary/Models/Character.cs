@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 
@@ -17,7 +18,7 @@ namespace GenshinLibrary.Models
         public override string WishArtPath { get; }
 
         [JsonConstructor]
-        public Character(int wid, string name, Element vision, WeaponType weapon, int rarity, Banner banners) : base(wid, name, rarity, banners)
+        public Character(int wid, string name, Element vision, WeaponType weapon, int rarity, Banner banners, IEnumerable<string> aliases) : base(wid, name, rarity, banners, aliases)
         {
             Vision = vision;
             WieldedWeapon = weapon;

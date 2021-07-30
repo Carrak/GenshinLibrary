@@ -64,6 +64,10 @@ namespace GenshinLibrary.Services.Wishes
 
                 if (wi.Rarity == 4 || wi.Rarity == 5)
                     wishitems[$"{wi.Name} ({wi.Rarity}-Star)"] = wi;
+
+                if (wi.Aliases != null)
+                    foreach (var alias in wi.Aliases)
+                        wishitems[alias] = wi;
             }
         }
 
