@@ -19,12 +19,10 @@ namespace GenshinLibrary.Modules
     public class Profiles : GLInteractiveBase
     {
         private readonly WishService _wishes;
-        private readonly PatreonService _patreon;
 
-        public Profiles(WishService wishService, PatreonService patreon)
+        public Profiles(WishService wishService)
         {
             _wishes = wishService;
-            _patreon = patreon;
         }
 
         [Command("profile")]
@@ -61,8 +59,6 @@ namespace GenshinLibrary.Modules
 
 
             string name = user.ToString();
-            if (_patreon.IsPatron(user))
-                name = $"{name} | {_patreon.PatreonLogo} Supporter";
 
             embed.WithColor(color)
                 .WithTitle(name)

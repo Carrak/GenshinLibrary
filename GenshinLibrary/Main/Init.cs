@@ -48,7 +48,6 @@ namespace GenshinLibrary
                 .AddSingleton<ResinTrackerService>()
                 .AddSingleton<WishService>()
                 .AddSingleton<GachaSimulatorService>()
-                .AddSingleton<PatreonService>()
                 .BuildServiceProvider();
 
             // Set services
