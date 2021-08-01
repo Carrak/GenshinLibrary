@@ -79,7 +79,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 .WithDescription(
                 $"Period: **{StartDate:dd.MM.yyyy}** - **{EndDate:dd.MM.yyyy}** (**{Days}** days)\n" +
                 $"Version: {CurrentVersion.Info()}\n" +
-                $"Banner: {GetCurrentBanner()}"
+                $"Banner: {GetCurrentBannerString()}"
                 )
                 .WithFooter(footer);
 
@@ -113,7 +113,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return embed.Build();
         }
 
-        private string GetCurrentBanner()
+        private string GetCurrentBannerString()
         {
             int banner = (int)((EndDate - CurrentVersion.Start) / (CurrentVersion.End - CurrentVersion.Start) * BannersPerUpdate);
             string bannerString = banner switch
