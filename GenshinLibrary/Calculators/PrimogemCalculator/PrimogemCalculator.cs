@@ -396,7 +396,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             List<Version> versions = new List<Version>();
             int version = 0;
 
-            for (DateTime i = current.Start; i < end; i = Increment(i))
+            for (DateTime i = current.Start; i <= end; i = Increment(i))
             {
                 var next = Increment(i);
                 versions.Add(new Version(i, next, $"{current.Major + (current.Minor + version) / 10}.{(current.Minor + version) % 10}"));
