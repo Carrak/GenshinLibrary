@@ -32,7 +32,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             StartDate = start;
             EndDate = end;
             Versions = GetVersions(currentVersion, end);
-            CurrentVersion = Versions.FirstOrDefault(x => end > x.Start && end <= x.End);
+            CurrentVersion = Versions[^1];
         }
 
         public PrimogemCalculator(DateTime start, string versionName, int banner, PrimogemCalculatorSettings settings = null)
