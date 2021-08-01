@@ -123,7 +123,9 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 _ => throw new NotImplementedException()
             };
 
-            return $"**{bannerString}** // since **{CurrentVersion.Start + TimeSpan.FromDays(UpdateDuration / BannersPerUpdate) * banner:dd.MM.yyyy}**";
+            var daysPerBanner = UpdateDuration / BannersPerUpdate;
+            var bannerStart = CurrentVersion.Start + TimeSpan.FromDays(UpdateDuration / BannersPerUpdate) * banner;
+            return $"**{bannerString}** // **{bannerStart:dd.MM.yyyy}** - **{bannerStart.AddDays(daysPerBanner):dd.MM.yyyy}**";
         }
 
         private IEnumerable<RewardTotal> GetTotals()
