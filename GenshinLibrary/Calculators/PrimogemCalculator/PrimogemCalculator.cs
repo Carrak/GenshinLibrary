@@ -21,6 +21,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
         private DateTime EndDate { get; }
         private PrimogemCalculatorSettings Settings { get; }
         private Version CurrentVersion { get; }
+        private Version ReachedVersion { get; }
 
         private List<Version> Versions { get; } = new List<Version>();
 
@@ -32,7 +33,8 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             StartDate = start;
             EndDate = end;
             Versions = GetVersions(currentVersion, end);
-            CurrentVersion = Versions[^1];
+            CurrentVersion = Versions[0];
+            ReachedVersion = Versions[^1];
         }
 
         public PrimogemCalculator(DateTime start, string versionName, int banner, PrimogemCalculatorSettings settings = null)
@@ -40,8 +42,9 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             var currentVersion = Globals.GetConfig().Version;
             var versions = new List<Version>();
             Version version = null;
+            var tempVersions = GetVersions(currentVersion, 5);
 
-            foreach (var ver in GetVersions(currentVersion, 5))
+            foreach (var ver in tempVersions)
             {
                 versions.Add(ver);
                 if (ver.VersionName == versionName)
@@ -62,7 +65,8 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             Settings = settings;
             StartDate = start;
             EndDate = version.Start + bannerDuration * banner - TimeSpan.FromDays(1);
-            CurrentVersion = version;
+            CurrentVersion = tempVersions[0];
+            ReachedVersion = version;
         }
 
         public Embed ConstructEmbed()
@@ -78,7 +82,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 .WithTitle($"Primogem calculator")
                 .WithDescription(
                 $"Period: **{StartDate:dd.MM.yyyy}** - **{EndDate:dd.MM.yyyy}** (**{Days}** days)\n" +
-                $"Version: {CurrentVersion.Info()}\n" +
+                $"Version: {ReachedVersion.Info()}\n" +
                 $"Banner: {GetCurrentBannerString()}"
                 )
                 .WithFooter(footer);
@@ -115,7 +119,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
         private string GetCurrentBannerString()
         {
-            int banner = (int)((EndDate - CurrentVersion.Start) / (CurrentVersion.End - CurrentVersion.Start) * BannersPerUpdate);
+            int banner = (int)((EndDate - ReachedVersion.Start) / (ReachedVersion.End - ReachedVersion.Start) * BannersPerUpdate);
             string bannerString = banner switch
             {
                 0 => "1st",
@@ -124,7 +128,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             };
 
             var daysPerBanner = UpdateDuration / BannersPerUpdate;
-            var bannerStart = CurrentVersion.Start + TimeSpan.FromDays(UpdateDuration / BannersPerUpdate) * banner;
+            var bannerStart = ReachedVersion.Start + TimeSpan.FromDays(UpdateDuration / BannersPerUpdate) * banner;
             return $"**{bannerString}** // **{bannerStart:dd.MM.yyyy}** - **{bannerStart.AddDays(daysPerBanner):dd.MM.yyyy}**";
         }
 
@@ -164,9 +168,9 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             if (monthlyResets != 0)
                 totals.Add(new RewardTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, monthlyResets, 5), new Reward(Currency.Intertwined, monthlyResets, 5)));
 
-            int codes = DateCalculator(CurrentVersion.Start - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
-            int reachedUpdateDays = Math.Min((EndDate - Versions[^1].Start).Days + 1, Days);
-            int currentUpdateDays = Math.Min((Versions[0].End - StartDate).Days, Days);
+            int codes = DateCalculator(ReachedVersion.Start - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
+            int reachedUpdateDays = Math.Min((EndDate - ReachedVersion.Start).Days + 1, Days);
+            int currentUpdateDays = Math.Min((CurrentVersion.End - StartDate).Days, Days);
 
             // Battlepass
             if (GetBattlepassTotal(reachedUpdateDays, currentUpdateDays) is RewardTotal battlepass && battlepass.Rewards.Count != 0)
@@ -219,7 +223,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             if (Versions.Count > 1)
             {
                 events.Rewards.Add(new Reward(Currency.Primogems, 1, EventAverage * reachedUpdateDays / UpdateDuration));
-                updateNames.Add($"{CurrentVersion}");
+                updateNames.Add($"{ReachedVersion}");
             }
 
             events.Name += $" ({string.Join(", ", updateNames)})";
