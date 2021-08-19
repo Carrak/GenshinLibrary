@@ -168,7 +168,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             if (monthlyResets != 0)
                 totals.Add(new RewardTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, monthlyResets, 5), new Reward(Currency.Intertwined, monthlyResets, 5)));
 
-            int codes = DateCalculator(ReachedVersion.Start - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
+            int codes = DateCalculator(CurrentVersion.Start - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
             int reachedUpdateDays = Math.Min((EndDate - ReachedVersion.Start).Days + 1, Days);
             int currentUpdateDays = Math.Min((CurrentVersion.End - StartDate).Days, Days);
 
