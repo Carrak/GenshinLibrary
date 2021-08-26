@@ -25,7 +25,7 @@ namespace GenshinLibrary.Services.Resin
         }
 
         public TimeSpan UntilFullRefill() => IsFull ? TimeSpan.Zero : FullyRefillsAt - DateTime.UtcNow;
-        public TimeSpan UntilNext() => IsFull ? TimeSpan.Zero : TimeSpan.FromMinutes(RechargeRateMinutes - (DateTime.UtcNow - UpdatedAt).TotalMinutes % RechargeRateMinutes);
+        public TimeSpan UntilNext() => IsFull ? TimeSpan.FromMinutes(RechargeRateMinutes) : TimeSpan.FromMinutes(RechargeRateMinutes - (DateTime.UtcNow - UpdatedAt).TotalMinutes % RechargeRateMinutes);
         public int GetCurrentResin() => Math.Min(MaxResin, Value + (int)((DateTime.UtcNow - UpdatedAt) / TimeSpan.FromMinutes(RechargeRateMinutes)));
 
         public static string GetResinString(int value) => $"**{value} / {MaxResin}**";
