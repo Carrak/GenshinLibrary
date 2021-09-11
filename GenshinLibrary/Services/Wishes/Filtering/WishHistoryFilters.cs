@@ -12,6 +12,7 @@ namespace GenshinLibrary.Services.Wishes.Filtering
         public Filter<string> NameFilter { get; }
         public Filter<int> PityFilter { get; }
         public string Order { get; }
+        public bool SeparatePity { get; }
 
         public WishHistoryFilters(WishHistoryFilterValues values)
         {
@@ -28,6 +29,7 @@ namespace GenshinLibrary.Services.Wishes.Filtering
                 PityFilter = new Filter<int>("pity", values.Pity, FilterType.Varying);
 
             Order = values.Order;
+            SeparatePity = values.Sp;
         }
 
         public QueryCondition GetCondition()

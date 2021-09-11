@@ -10,5 +10,6 @@ namespace GenshinLibrary.Models
         public string Name { get; set; }
         public string Pity { get; set; }
         public string Order { get; set; }
+        public bool Sp { get; set; }
     }
 }

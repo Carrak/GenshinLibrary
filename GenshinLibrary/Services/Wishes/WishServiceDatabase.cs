@@ -203,7 +203,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, WishHistoryFilters filters = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity FROM gl.get_detailed_wishes(@uid, @banner)
+            SELECT wid, datetime, wishid, pity FROM gl.get_detailed_wishes(@uid, @banner, @sp)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -217,6 +217,7 @@ namespace GenshinLibrary.Services.Wishes
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
             cmd.Parameters.AddWithValue("banner", banner);
+            cmd.Parameters.AddWithValue("sp", filters?.SeparatePity ?? false);
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
@@ -240,7 +241,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, EventWish eventWish, WishHistoryFilters filters = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity FROM gl.get_banner_wishes(@uid, @bid)
+            SELECT wid, datetime, wishid, pity FROM gl.get_banner_wishes(@uid, @bid, @sp)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -254,6 +255,7 @@ namespace GenshinLibrary.Services.Wishes
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
             cmd.Parameters.AddWithValue("bid", eventWish.BID);
+            cmd.Parameters.AddWithValue("sp", filters?.SeparatePity ?? false);
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
