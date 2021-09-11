@@ -200,7 +200,7 @@ namespace GenshinLibrary.Services.Wishes
             return records;
         }
 
-        public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, QueryCondition queryCondition = null)
+        public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, WishHistoryFilters filters = null)
         {
             string query = @$"
             SELECT wid, datetime, wishid, pity FROM gl.get_detailed_wishes(@uid, @banner)
@@ -208,7 +208,7 @@ namespace GenshinLibrary.Services.Wishes
 
             await using var cmd = _database.GetCommand(query);
 
-            if (queryCondition != null && !queryCondition.IsEmpty)
+            if (filters?.GetCondition() is QueryCondition queryCondition && queryCondition != null && !queryCondition.IsEmpty)
             {
                 cmd.CommandText += queryCondition.Conditions;
                 foreach (var param in queryCondition.Parameters)
@@ -237,7 +237,7 @@ namespace GenshinLibrary.Services.Wishes
             return records;
         }
 
-        public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, EventWish eventWish, QueryCondition queryCondition = null)
+        public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, EventWish eventWish, WishHistoryFilters filters = null)
         {
             string query = @$"
             SELECT wid, datetime, wishid, pity FROM gl.get_banner_wishes(@uid, @bid)
@@ -245,7 +245,7 @@ namespace GenshinLibrary.Services.Wishes
 
             await using var cmd = _database.GetCommand(query);
 
-            if (queryCondition != null && !queryCondition.IsEmpty)
+            if (filters?.GetCondition() is QueryCondition queryCondition && queryCondition != null && !queryCondition.IsEmpty)
             {
                 cmd.CommandText += queryCondition.Conditions;
                 foreach (var param in queryCondition.Parameters)
