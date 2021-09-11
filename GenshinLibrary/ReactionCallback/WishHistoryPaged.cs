@@ -32,7 +32,7 @@ namespace GenshinLibrary.ReactionCallback
             foreach (var wir in currentPage)
             {
                 var name = wir.WishItem.GetFormattedName(maxNameLength);
-                table.AddRow(wir.Pity.ToString(), name, wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+                table.AddRow(wir.Pity == -1 ? "-" : wir.Pity.ToString(), name, wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
             }
 
             var embed = new EmbedBuilder();
