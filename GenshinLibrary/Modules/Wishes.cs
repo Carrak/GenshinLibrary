@@ -295,8 +295,8 @@ namespace GenshinLibrary.Modules
             [Summary("The user whose history you wish to see.")] IUser user,
             [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
         {
-            QueryCondition condition = await GetQueryConditionAsync(filters, banner);
-            var records = await _wishes.GetRecordsAsync(user, banner, condition);
+            var parsedFilters = await GetWishHistoryFilters(filters, banner);
+            var records = await _wishes.GetRecordsAsync(user, banner, parsedFilters);
 
             if (records == null)
             {
@@ -355,11 +355,11 @@ namespace GenshinLibrary.Modules
             if (selectedBanner == null)
                 return;
 
-            var queryCondition = await GetQueryConditionAsync(filters, selectedBanner.BannerType);
+            var parsedFilters = await GetWishHistoryFilters(filters, selectedBanner.BannerType);
             IEnumerable<CompleteWishItemRecord> records = null;
             try
             {
-                records = await _wishes.GetBannerWishesAsync(user, selectedBanner as EventWish, queryCondition);
+                records = await _wishes.GetBannerWishesAsync(user, selectedBanner as EventWish, parsedFilters);
             }
             catch (PostgresException pe)
             {
@@ -450,14 +450,14 @@ namespace GenshinLibrary.Modules
             return table;
         }
 
-        private async Task<QueryCondition> GetQueryConditionAsync(WishHistoryFilterValues filters, Banner banner)
+        private async Task<WishHistoryFilters> GetWishHistoryFilters(WishHistoryFilterValues filters, Banner banner)
         {
             if (filters != null)
                 try
                 {
                     var parsedFilters = new WishHistoryFilters(filters);
                     _wishes.ValidateFilters(parsedFilters, banner);
-                    return parsedFilters.GetCondition();
+                    return parsedFilters;
                 }
                 catch (ArgumentException e)
                 {
