@@ -26,7 +26,8 @@ namespace GenshinLibrary.Modules
             "**Rarity** - filter by rarity.\n" +
             "**Pity** - filter by pity.\n" +
             "**DateTime** - filter by date received.\n" +
-            "**Name** - filter by item name.\n\n" +
+            "**Name** - filter by item name.\n" +
+            "**SeparatePity** - display according pity only on 4- and 5- drops. Specify this filter as `sp:true`\n\n" +
             "Filters are specified in the following format:\n" +
             "`[filter]:[operator][value]`\n" +
             "Where `[operator]` is either an equality (`=`, `!=`) or an inequality (`<`, `>`, `<=`, `>=`) operator.\nYou can specify several filter values of one type by separating them with a comma.\nOperator can be unspecified if it's `=`.\n\n" +
