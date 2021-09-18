@@ -61,5 +61,11 @@ namespace GenshinLibrary.Modules
             Globals.Maintenance = value;
             await ReplyAsync($"Maintenance: {value}");
         }
+
+        [Command("status")]
+        public async Task Status([Remainder] string status)
+        {
+            await Context.Client.SetGameAsync(status);
+        }
     }
 }
