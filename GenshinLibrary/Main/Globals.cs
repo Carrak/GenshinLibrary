@@ -12,8 +12,6 @@ namespace GenshinLibrary
         public static string ProjectDirectory { get; } = Directory.GetParent(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)).Parent.Parent.FullName + Path.DirectorySeparatorChar;
         public static bool Maintenance { get; set; }
 
-        public static ulong TierTwoRoleID = 831133658576322610;
-        public static ulong TierOneRoleID = 831133541134762045;
         public static ulong GenshinLibraryGuildID = 830707093131624457;
 
         public static Config GetConfig()
