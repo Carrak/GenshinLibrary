@@ -18,8 +18,8 @@ namespace GenshinLibrary.Services.GachaSim
         public DateTime Date { get; }
         public float RateUpChance { get; }
 
-        public EventWish(int bid, string name, DateTime date, float rateUpChance, Banner bannerType, IEnumerable<WishItem> rateUpPool, IEnumerable<WishItem> standardPool, float fiveStarChance, float fourStarChance, int pity)
-            : base(rateUpPool.Concat(standardPool), bid, name, bannerType, fiveStarChance, fourStarChance, pity)
+        public EventWish(bool gachaSimAvailable, int bid, string name, DateTime date, float rateUpChance, Banner bannerType, IEnumerable<WishItem> rateUpPool, IEnumerable<WishItem> standardPool, float fiveStarChance, float fourStarChance, int pity)
+            : base(gachaSimAvailable, rateUpPool.Concat(standardPool), bid, name, bannerType, fiveStarChance, fourStarChance, pity)
         {
             Date = date;
             RateUpChance = rateUpChance;

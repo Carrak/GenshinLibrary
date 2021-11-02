@@ -6,6 +6,7 @@ namespace GenshinLibrary.Services.GachaSim
 {
     public abstract class WishBanner
     {
+        public bool GachaSimAvailable { get; }
         public int BID { get; }
         public string Name { get; }
         public Banner BannerType { get; }
@@ -21,8 +22,9 @@ namespace GenshinLibrary.Services.GachaSim
 
         public IEnumerable<WishItem> Pool { get; }
 
-        protected WishBanner(IEnumerable<WishItem> pool, int bid, string name, Banner bannerType, float fiveStarChance, float fourStarChance, int fiveStarHardPity)
+        protected WishBanner(bool gachaSimAvailable, IEnumerable<WishItem> pool, int bid, string name, Banner bannerType, float fiveStarChance, float fourStarChance, int fiveStarHardPity)
         {
+            GachaSimAvailable = gachaSimAvailable;
             Pool = pool;
             BID = bid;
             Name = name;

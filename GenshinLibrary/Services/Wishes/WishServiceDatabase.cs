@@ -86,16 +86,17 @@ namespace GenshinLibrary.Services.Wishes
             int weaponHardpity = 80;
 
             var wishItems = WishItems.Values;
-            var standardWishes = wishItems.Where(x => x.Banners.HasFlag(Banner.Standard));
+            var standardItems = wishItems.Where(x => x.Banners.HasFlag(Banner.Standard));
 
             var banners = ImmutableDictionary.CreateBuilder<int, WishBanner>();
 
             var noelle = WishItems["Noelle"];
-            banners[StandardBID] = new StandardWish(StandardBID, "Standard", standardWishes, baseFivestarChance, baseFourstarChance, baseHardpity);
-            banners[BeginnerBID] = new BeginnerWish(BeginnerBID, "Beginner", wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)).Where(x => x.WID != noelle.WID), noelle, baseFivestarChance, baseFourstarChance, baseHardpity);
+            var beginnerItems = wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)).Where(x => x.WID != noelle.WID);
+            banners[StandardBID] = new StandardWish(GachaSimAvailable(standardItems), StandardBID, "Standard", standardItems, baseFivestarChance, baseFourstarChance, baseHardpity);
+            banners[BeginnerBID] = new BeginnerWish(GachaSimAvailable(beginnerItems), BeginnerBID, "Beginner", beginnerItems, noelle, baseFivestarChance, baseFourstarChance, baseHardpity);
 
             string[] starterNames = { "Amber", "Kaeya", "Lisa" };
-            var standardNoStarters = standardWishes.Where(x => !starterNames.Contains(x.Name));
+            var standardNoStarters = standardItems.Where(x => !starterNames.Contains(x.Name));
             var standardNoWeapons = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Weapon));
             var standardNoCharacters = standardNoStarters.Where(x => !(x.Rarity == 5 && x is Character));
 
@@ -103,19 +104,23 @@ namespace GenshinLibrary.Services.Wishes
             foreach (var eventWish in eventWishes)
             {
                 var rateupPool = eventWish.RateUpWIDs.Select(x => WishItemsByWID[x]);
+                bool gachaSimAvailable = GachaSimAvailable(rateupPool);
+
                 switch (eventWish.Type)
                 {
                     case Banner.Character:
-                        banners[eventWish.BID] = new EventWish(eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.5f, eventWish.Type, rateupPool, standardNoWeapons, baseFivestarChance, baseFourstarChance, baseHardpity);
+                        banners[eventWish.BID] = new EventWish(gachaSimAvailable, eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.5f, eventWish.Type, rateupPool, standardNoWeapons, baseFivestarChance, baseFourstarChance, baseHardpity);
                         break;
                     case Banner.Weapon:
-                        banners[eventWish.BID] = new EventWish(eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.75f, eventWish.Type, rateupPool, standardNoCharacters, weaponFivestarChance, weaponFourstarChance, weaponHardpity);
+                        banners[eventWish.BID] = new EventWish(gachaSimAvailable, eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.75f, eventWish.Type, rateupPool, standardNoCharacters, weaponFivestarChance, weaponFourstarChance, weaponHardpity);
                         break;
                 }
             }
 
             Banners = banners.ToImmutable();
         }
+
+        private bool GachaSimAvailable(IEnumerable<WishItem> wishItems) => !wishItems.Any(x => !File.Exists(x.WishArtPath));
 
         private async Task InitServers()
         {
