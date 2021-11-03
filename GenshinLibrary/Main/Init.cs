@@ -63,7 +63,7 @@ namespace GenshinLibrary
 
             // Init DBL auth
             _dbl = new AuthDiscordBotListApi(830870729390030960, config.TopGGToken);
-            
+
             // Retrieve connection string and init db connection
             Logger.Log("Database", "Connecting to database");
             await _services.GetRequiredService<DatabaseService>().InitAsync(config.Connection);

@@ -1,5 +1,4 @@
-﻿using GenshinLibrary.Main;
-using Npgsql;
+﻿using Npgsql;
 using System.Data;
 using System.Threading.Tasks;
 

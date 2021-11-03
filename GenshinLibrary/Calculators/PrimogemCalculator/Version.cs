@@ -13,7 +13,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
         [JsonConstructor]
         public Version(
-            [JsonProperty("start")] DateTime start, 
+            [JsonProperty("start")] DateTime start,
             [JsonProperty("end")] DateTime end,
             [JsonProperty("version_name")] string versionName)
         {

@@ -4,7 +4,6 @@ using GenshinLibrary.ReactionCallback.PrimogemCalculator;
 using GenshinLibrary.Utility;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace GenshinLibrary.Calculators.PrimogemCalculator
 {

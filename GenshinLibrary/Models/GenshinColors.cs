@@ -35,7 +35,8 @@ namespace GenshinLibrary.Models
 
         public static Color GetRarityColor(int rarity)
         {
-            return rarity switch {
+            return rarity switch
+            {
                 3 => Color.Blue,
                 4 => Color.Purple,
                 5 => Color.Gold,

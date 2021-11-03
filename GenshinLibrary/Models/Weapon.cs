@@ -7,6 +7,7 @@ namespace GenshinLibrary.Models
     public class Weapon : WishItem
     {
         public WeaponType Type { get; }
+
         public override string IconPath { get; }
         public override string WishArtPath { get; }
 

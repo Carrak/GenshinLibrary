@@ -1,5 +1,4 @@
-﻿using GenshinLibrary.Models;
-using GenshinLibrary.Services.GachaSim.Sessions;
+﻿using GenshinLibrary.Services.GachaSim.Sessions;
 using System.Collections.Generic;
 
 namespace GenshinLibrary.Services.GachaSim

@@ -1,6 +1,4 @@
-﻿using GenshinLibrary.Services.Wishes.Filtering;
-
-namespace GenshinLibrary.Services.Wishes
+﻿namespace GenshinLibrary.Services.Wishes
 {
     public class ValidationResult
     {

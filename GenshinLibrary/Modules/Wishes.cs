@@ -443,7 +443,7 @@ namespace GenshinLibrary.Modules
         [Summary("Provides a user's wish summary of a certain character or weapon.")]
         public async Task Summary(
             [Summary("User to look up.")] IUser user,
-            [Summary("Character or weapon.")] [Remainder] WishItem wishItem
+            [Summary("Character or weapon.")][Remainder] WishItem wishItem
             )
         {
             var summary = await _wishes.GetSummaryAsync(user, wishItem);
@@ -470,7 +470,7 @@ namespace GenshinLibrary.Modules
                 imagePath = w.WishArtPath;
                 title = $"{w.Name} R{summary.Count}";
             }
-            else 
+            else
                 throw new Exception("Invalid type.");
 
             string fileName = "avatar.png";
@@ -492,7 +492,7 @@ namespace GenshinLibrary.Modules
         [Command("summary")]
         [Summary("Provides your wish summary of a certain character or weapon.")]
         public async Task Summary(
-            [Summary("Character or weapon.")] [Remainder] WishItem wishItem
+            [Summary("Character or weapon.")][Remainder] WishItem wishItem
             ) => await Summary(Context.User, wishItem);
 
         private async Task AddWish(WishItem wi, Banner banner, DateTime datetime)

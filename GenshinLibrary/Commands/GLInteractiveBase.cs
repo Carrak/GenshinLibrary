@@ -118,13 +118,13 @@ namespace GenshinLibrary.Commands
                         return null;
                     }
 
-                    _ = Task.Run(async() => await selectionPaged.DeleteMessageAsync());
+                    _ = Task.Run(async () => await selectionPaged.DeleteMessageAsync());
                     return eventWishes.ElementAt(number);
                 }
 
                 return null;
             }
-            
+
             return selection.First();
         }
     }
