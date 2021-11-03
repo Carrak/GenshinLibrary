@@ -25,7 +25,7 @@ namespace GenshinLibrary.Services.Wishes
             _database = database;
         }
 
-        public WishItem GetBestSuggestion(string name, float threshold = 0.7f)
+        public WishItem GetBestSuggestion(string name, float threshold = 0.6f)
         {
             var wishitems = WishItems.ToList();
             WishItem minWishItem = null;
