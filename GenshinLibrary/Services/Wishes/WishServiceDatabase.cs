@@ -412,5 +412,24 @@ namespace GenshinLibrary.Services.Wishes
             IEnumerable<EventWishRaw> eventWishes = JsonConvert.DeserializeObject<IEnumerable<EventWishRaw>>(reader.GetString(0));
             return eventWishes;
         }
+
+        public async Task<WishItemSummary> GetSummaryAsync(IUser user, WishItem wi)
+        {
+            string query = @"
+            SELECT gl.get_wish_item_summary(@uid, @wid)
+            ";
+
+            await using var cmd = _database.GetCommand(query);
+            cmd.Parameters.AddWithValue("uid", (long)user.Id);
+            cmd.Parameters.AddWithValue("wid", wi.WID);
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            await reader.ReadAsync();
+
+            if (await reader.IsDBNullAsync(0))
+                return null;
+
+            return JsonConvert.DeserializeObject<WishItemSummary>(reader.GetString(0));
+        }
     }
 }

@@ -14,6 +14,7 @@ using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -437,6 +438,62 @@ namespace GenshinLibrary.Modules
                 await ReplyAsync($"Successfully changed your server to **{servers[index].ServerName}**");
             }
         }
+
+        [Command("summary")]
+        [Summary("Provides a user's wish summary of a certain character or weapon.")]
+        public async Task Summary(
+            [Summary("User to look up.")] IUser user,
+            [Summary("Character or weapon.")] [Remainder] WishItem wishItem
+            )
+        {
+            var summary = await _wishes.GetSummaryAsync(user, wishItem);
+
+            if (summary is null)
+            {
+                await ReplyAsync("The user not obtained this character/weapon yet!");
+                return;
+            }
+
+            Discord.Color color;
+            string imagePath;
+            string title;
+
+            if (wishItem is Character c)
+            {
+                color = GenshinColors.GetElementColor(c.Vision);
+                imagePath = c.AvatarImagePath;
+                title = $"{c.Name} C{summary.Count - 1}";
+            }
+            else if (wishItem is Weapon w)
+            {
+                color = GenshinColors.GetRarityColor(w.Rarity);
+                imagePath = w.WishArtPath;
+                title = $"{w.Name} R{summary.Count}";
+            }
+            else 
+                throw new Exception("Invalid type.");
+
+            string fileName = "avatar.png";
+            using var bitmap = new System.Drawing.Bitmap(imagePath);
+            using var image = new MemoryStream();
+            bitmap.Save(image, System.Drawing.Imaging.ImageFormat.Png);
+            image.Position = 0;
+
+            var embed = new EmbedBuilder()
+                .WithTitle(title)
+                .WithColor(color)
+                .WithThumbnailUrl($"attachment://{fileName}")
+                .WithDescription($"Total count: **{summary.Count}**")
+                .AddField("Banners", string.Join('\n', summary.GroupedCounts.OrderBy(x => x.Count).Select(x => $"{x.Banner}: **{x.Count}**")));
+
+            await Context.Channel.SendFileAsync(image, fileName, embed: embed.Build());
+        }
+
+        [Command("summary")]
+        [Summary("Provides your wish summary of a certain character or weapon.")]
+        public async Task Summary(
+            [Summary("Character or weapon.")] [Remainder] WishItem wishItem
+            ) => await Summary(Context.User, wishItem);
 
         private async Task AddWish(WishItem wi, Banner banner, DateTime datetime)
         {
