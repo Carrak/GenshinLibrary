@@ -54,13 +54,7 @@ namespace GenshinLibrary.Modules
             var pityAfter = profile.GetCurrentSession().CurrentFiveStarPity;
             var wishCountAfter = profile.Inventory.Count;
 
-            var rarityColor = result.Max(x => x.WishItem.Rarity) switch
-            {
-                3 => Color.Blue,
-                4 => Color.Purple,
-                5 => Color.Gold,
-                _ => throw new NotImplementedException()
-            };
+            var rarityColor = GenshinColors.GetRarityColor(result.Max(x => x.WishItem.Rarity));
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Wishing {(count == 1 ? "once" : $"{count} times")}... Pity: `{pityBefore}`")
