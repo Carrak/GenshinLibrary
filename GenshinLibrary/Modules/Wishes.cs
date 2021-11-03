@@ -440,6 +440,7 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("summary")]
+        [Ratelimit(5)]
         [Summary("Provides a user's wish summary of a certain character or weapon.")]
         public async Task Summary(
             [Summary("User to look up.")] IUser user,
@@ -454,7 +455,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            Discord.Color color;
+            Color color;
             string imagePath;
             string title;
 
@@ -490,6 +491,7 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("summary")]
+        [Ratelimit(5)]
         [Summary("Provides your wish summary of a certain character or weapon.")]
         public async Task Summary(
             [Summary("Character or weapon.")][Remainder] WishItem wishItem
