@@ -14,6 +14,10 @@ namespace GenshinLibrary.Models
         public static readonly Color Pyro = new Color(255, 170, 114);
         public static readonly Color NoElement = new Color(197, 197, 197);
 
+        public static readonly Color ThreeStar = Color.Blue;
+        public static readonly Color FourStar = Color.Purple;
+        public static readonly Color FiveStar = Color.Gold;
+
         public static Color GetElementColor(Element vision)
         {
             return vision switch
@@ -25,6 +29,16 @@ namespace GenshinLibrary.Models
                 Element.Geo => Geo,
                 Element.Hydro => Hydro,
                 Element.Pyro => Pyro,
+                _ => throw new NotImplementedException()
+            };
+        }
+
+        public static Color GetRarityColor(int rarity)
+        {
+            return rarity switch {
+                3 => Color.Blue,
+                4 => Color.Purple,
+                5 => Color.Gold,
                 _ => throw new NotImplementedException()
             };
         }
