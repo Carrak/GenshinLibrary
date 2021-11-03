@@ -296,9 +296,19 @@ namespace GenshinLibrary.Modules
             [Summary("The user whose history you wish to see.")] IUser user,
             [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
         {
-            var parsedFilters = await GetWishHistoryFilters(filters, banner);
-            var records = await _wishes.GetRecordsAsync(user, banner, parsedFilters);
+            WishHistoryFilters parsedFilters = null;
+            if (filters != null)
+            {
+                parsedFilters = new WishHistoryFilters(filters);
+                var result = _wishes.ValidateFilters(parsedFilters, banner);
+                if (!result.IsSuccess)
+                {
+                    await ReplyAsync(embed: GetInvalidFiltersEmbed(result.ErrorMessage));
+                    return;
+                }
+            }
 
+            var records = await _wishes.GetRecordsAsync(user, banner, parsedFilters);
             if (records == null)
             {
                 await ReplyAsync("No wishes have been found.");
@@ -356,7 +366,18 @@ namespace GenshinLibrary.Modules
             if (selectedBanner == null)
                 return;
 
-            var parsedFilters = await GetWishHistoryFilters(filters, selectedBanner.BannerType);
+            WishHistoryFilters parsedFilters = null;
+            if (filters != null)
+            {
+                parsedFilters = new WishHistoryFilters(filters);
+                var result = _wishes.ValidateFilters(parsedFilters, selectedBanner.BannerType);
+                if (!result.IsSuccess)
+                {
+                    await ReplyAsync(embed: GetInvalidFiltersEmbed(result.ErrorMessage));
+                    return;
+                }
+            }
+
             IEnumerable<CompleteWishItemRecord> records = null;
             try
             {
@@ -451,27 +472,13 @@ namespace GenshinLibrary.Modules
             return table;
         }
 
-        private async Task<WishHistoryFilters> GetWishHistoryFilters(WishHistoryFilterValues filters, Banner banner)
+        private Embed GetInvalidFiltersEmbed(string message)
         {
-            if (filters != null)
-                try
-                {
-                    var parsedFilters = new WishHistoryFilters(filters);
-                    _wishes.ValidateFilters(parsedFilters, banner);
-                    return parsedFilters;
-                }
-                catch (ArgumentException e)
-                {
-                    var helpEmbed = new EmbedBuilder();
-
-                    helpEmbed.WithTitle("Invalid filters.")
-                        .WithDescription(e.Message)
-                        .WithColor(Color.Red);
-
-                    await ReplyAsync(embed: helpEmbed.Build());
-                }
-
-            return null;
+            return new EmbedBuilder()
+                .WithTitle("Invalid filters.")
+                .WithDescription(message)
+                .WithColor(Color.Red)
+                .Build();
         }
     }
 }
