@@ -440,6 +440,7 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("summary")]
+        [Alias("s")]
         [Ratelimit(5)]
         [Summary("Provides a user's wish summary of a certain character or weapon.")]
         public async Task Summary(
@@ -491,6 +492,7 @@ namespace GenshinLibrary.Modules
         }
 
         [Command("summary")]
+        [Alias("s")]
         [Ratelimit(5)]
         [Summary("Provides your wish summary of a certain character or weapon.")]
         public async Task Summary(
