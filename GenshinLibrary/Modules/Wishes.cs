@@ -458,19 +458,16 @@ namespace GenshinLibrary.Modules
 
             Color color;
             string imagePath;
-            string title;
 
             if (wishItem is Character c)
             {
                 color = GenshinColors.GetElementColor(c.Vision);
                 imagePath = c.AvatarImagePath;
-                title = $"{c.Name} C{summary.Count - 1}";
             }
             else if (wishItem is Weapon w)
             {
                 color = GenshinColors.GetRarityColor(w.Rarity);
                 imagePath = w.WishArtPath;
-                title = $"{w.Name} R{summary.Count}";
             }
             else
                 throw new Exception("Invalid type.");
@@ -482,7 +479,7 @@ namespace GenshinLibrary.Modules
             image.Position = 0;
 
             var embed = new EmbedBuilder()
-                .WithTitle(title)
+                .WithTitle(wishItem.Name)
                 .WithColor(color)
                 .WithThumbnailUrl($"attachment://{fileName}")
                 .WithDescription($"Total count: **{summary.Count}**")
