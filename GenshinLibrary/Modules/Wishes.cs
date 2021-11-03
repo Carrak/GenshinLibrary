@@ -485,7 +485,7 @@ namespace GenshinLibrary.Modules
                 .WithColor(color)
                 .WithThumbnailUrl($"attachment://{fileName}")
                 .WithDescription($"Total count: **{summary.Count}**")
-                .AddField("Banners", string.Join('\n', summary.GroupedCounts.OrderBy(x => x.Count).Select(x => $"{x.Banner}: **{x.Count}**")));
+                .AddField("Banners", string.Join('\n', summary.GroupedCounts.OrderByDescending(x => x.Count).Select(x => $"{x.Banner}: **{x.Count}**")));
 
             await Context.Channel.SendFileAsync(image, fileName, embed: embed.Build());
         }
