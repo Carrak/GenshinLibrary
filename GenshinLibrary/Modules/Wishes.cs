@@ -458,10 +458,7 @@ namespace GenshinLibrary.Modules
             await ReplyAsync(embed: embed.Build());
         }
 
-        private bool CheckWish(WishItem wishItem, Banner banner)
-        {
-            return wishItem.Banners.HasFlag(banner);
-        }
+        private bool CheckWish(WishItem wishItem, Banner banner) => wishItem.Banners.HasFlag(banner);
 
         private TextTable GetTable(params WishItemRecord[] wishRecords)
         {
