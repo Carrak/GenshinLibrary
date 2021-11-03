@@ -4,10 +4,11 @@ using GenshinLibrary.Analytics;
 using GenshinLibrary.Commands;
 using GenshinLibrary.Models;
 using GenshinLibrary.Preconditions;
-using GenshinLibrary.Services;
 using GenshinLibrary.Services.Wishes;
 using Npgsql;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -53,15 +54,13 @@ namespace GenshinLibrary.Modules
             var profile = await _wishes.GetProfileAsync(user);
 
             string fileName = "avatar.png";
+            using var bitmap = new Bitmap(profile.ProfileCharacter?.AvatarImagePath ?? Character.DefaultAvatarPath);
+            using var image = new MemoryStream();
+            bitmap.Save(image, System.Drawing.Imaging.ImageFormat.Png);
+            image.Position = 0;
 
-            var color = profile.Character is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.Character.Vision);
-            var image = profile.GetAvatar();
-
-
-            string name = user.ToString();
-
-            embed.WithColor(color)
-                .WithTitle(name)
+            embed.WithColor(profile.ProfileCharacter is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.ProfileCharacter.Vision))
+                .WithTitle(user.ToString())
                 .AddField("5★ Characters", $"{(profile.Characters.Any() ? string.Join('\n', profile.Characters.Select(x => x.ToString())) : "None yet!")}")
                 .AddField("5★ Weapons", $"{(profile.Weapons.Any() ? string.Join('\n', profile.Weapons.Select(x => x.ToString())) : "None yet!")}")
                 .WithThumbnailUrl($"attachment://{fileName}");
