@@ -297,9 +297,18 @@ namespace GenshinLibrary.Modules
             [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
         {
             WishHistoryFilters parsedFilters = null;
-            if (filters != null)
+            try
             {
                 parsedFilters = new WishHistoryFilters(filters);
+            }
+            catch (ArgumentException e)
+            {
+                await ReplyAsync(embed: GetInvalidFiltersEmbed(e.Message));
+                return;
+            }
+
+            if (filters != null)
+            {
                 var result = _wishes.ValidateFilters(parsedFilters, banner);
                 if (!result.IsSuccess)
                 {
@@ -367,9 +376,18 @@ namespace GenshinLibrary.Modules
                 return;
 
             WishHistoryFilters parsedFilters = null;
-            if (filters != null)
+            try
             {
                 parsedFilters = new WishHistoryFilters(filters);
+            }
+            catch (ArgumentException e)
+            {
+                await ReplyAsync(embed: GetInvalidFiltersEmbed(e.Message));
+                return;
+            }
+
+            if (filters != null)
+            {
                 var result = _wishes.ValidateFilters(parsedFilters, selectedBanner.BannerType);
                 if (!result.IsSuccess)
                 {
