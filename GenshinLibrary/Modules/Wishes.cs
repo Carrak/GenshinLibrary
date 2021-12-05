@@ -119,7 +119,7 @@ namespace GenshinLibrary.Modules
 
             static bool TryParseBannerRaw(string input, out Banner output)
             {
-                switch(input)
+                switch (input)
                 {
                     case "Character Event Wish":
                         output = Banner.Character1;

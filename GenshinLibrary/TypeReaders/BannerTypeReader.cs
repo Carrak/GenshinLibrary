@@ -1,10 +1,10 @@
 ﻿using Discord.Commands;
+using GenshinLibrary.Attributes;
 using GenshinLibrary.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading.Tasks;
-using GenshinLibrary.Attributes;
 
 namespace GenshinLibrary.TypeReaders
 {

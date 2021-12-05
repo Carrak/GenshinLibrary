@@ -27,9 +27,7 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
 
             GachaSimWishItemRecord[] items = new GachaSimWishItemRecord[count];
             for (int i = 0; i < count; i++)
-            {
-                items[i] = new GachaSimWishItemRecord(CurrentFiveStarPity, CurrentFourStarPity, DateTime.UtcNow, GetWishItem());
-            }
+                items[i] = new GachaSimWishItemRecord(CurrentFiveStarPity, CurrentFourStarPity, GetWishItem());
 
             return items;
         }

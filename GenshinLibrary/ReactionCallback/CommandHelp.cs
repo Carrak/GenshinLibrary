@@ -5,7 +5,6 @@ using GenshinLibrary.Attributes;
 using GenshinLibrary.ReactionCallback.Base;
 using System.Collections.Generic;
 using System.Linq;
-using GenshinLibrary.Attributes;
 
 namespace GenshinLibrary.ReactionCallback
 {

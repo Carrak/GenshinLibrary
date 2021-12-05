@@ -1,5 +1,4 @@
 ﻿using GenshinLibrary.Models;
-using System;
 
 namespace GenshinLibrary.Services.GachaSim
 {
