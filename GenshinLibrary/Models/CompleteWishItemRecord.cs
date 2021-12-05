@@ -7,7 +7,7 @@ namespace GenshinLibrary.Models
         public int Pity { get; }
         public int WishID { get; }
 
-        public CompleteWishItemRecord(DateTime dateTime, WishItem wishItem, int pity, int wishid) : base(dateTime, wishItem)
+        public CompleteWishItemRecord(DateTime dateTime, WishItem wishItem, int pity, int wishid, Banner banner) : base(dateTime, wishItem, banner)
         {
             Pity = pity;
             WishID = wishid;

@@ -174,9 +174,9 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<CompleteWishItemRecord>> GetRecentRecordsAsync(IUser user, Banner banner, int limit)
         {
             string query = @"
-            SELECT wid, wishid, datetime FROM
-                (SELECT wid, wishid, datetime FROM gl.wishes 
-                WHERE userid = @uid AND banner = @banner
+            SELECT wid, wishid, datetime, banner_type FROM
+                (SELECT wid, wishid, datetime, banner_type FROM gl.wishes 
+                WHERE userid = @uid AND gl.has_flag(banner_type, @banner)
                 ORDER BY wishid DESC
                 LIMIT @limit) temp_wishes
             ";
@@ -198,8 +198,9 @@ namespace GenshinLibrary.Services.Wishes
                 int wid = reader.GetInt32(0);
                 int wishid = reader.GetInt32(1);
                 DateTime dt = reader.GetDateTime(2);
+                int bannerType = reader.GetInt32(3);
 
-                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], 0, wishid));
+                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], 0, wishid, (Banner)bannerType));
             }
 
             return records;
@@ -208,7 +209,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, WishHistoryFilters filters = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity FROM gl.get_detailed_wishes(@uid, @banner, @sp)
+            SELECT wid, datetime, wishid, pity, banner_type FROM gl.get_detailed_wishes(@uid, @banner, @sp)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -236,8 +237,9 @@ namespace GenshinLibrary.Services.Wishes
                 DateTime dt = reader.GetDateTime(1);
                 int wishid = reader.GetInt32(2);
                 int pity = reader.GetInt32(3);
+                int bannerType = reader.GetInt32(4);
 
-                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pity, wishid));
+                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pity, wishid, (Banner)bannerType));
             }
 
             return records;
@@ -246,7 +248,7 @@ namespace GenshinLibrary.Services.Wishes
         public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, EventWish eventWish, WishHistoryFilters filters = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity FROM gl.get_banner_wishes(@uid, @bid, @sp)
+            SELECT wid, datetime, wishid, pity, banner_type FROM gl.get_banner_wishes(@uid, @bid, @sp)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -274,8 +276,9 @@ namespace GenshinLibrary.Services.Wishes
                 DateTime dt = reader.GetDateTime(1);
                 int wishid = reader.GetInt32(2);
                 int pity = reader.GetInt32(3);
+                int bannerType = reader.GetInt32(4);
 
-                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pity, wishid));
+                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pity, wishid, (Banner)bannerType));
             }
 
             return records;
