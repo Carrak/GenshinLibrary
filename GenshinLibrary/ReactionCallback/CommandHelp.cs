@@ -5,6 +5,7 @@ using GenshinLibrary.Attributes;
 using GenshinLibrary.ReactionCallback.Base;
 using System.Collections.Generic;
 using System.Linq;
+using GenshinLibrary.Attributes;
 
 namespace GenshinLibrary.ReactionCallback
 {
@@ -37,12 +38,11 @@ namespace GenshinLibrary.ReactionCallback
                 embed.AddField("Parameters", string.Join("\n\n",
                     parameters.Select((param, index) => $"**{index + 1}.** `{param.Name}` {(param.IsOptional ? " [Optional]" : "")}\n{GetSummary(param.Summary, "parameter")}")));
 
-            if (cmd.Attributes.FirstOrDefault(x => x is ExampleAttribute) is ExampleAttribute ea)
+            if (cmd.GetAttribute<ExampleAttribute>() is ExampleAttribute ea)
                 embed.AddField("Example", ea.Value);
 
-            if (cmd.Attributes.FirstOrDefault(x => x is GifExampleAttribute) is GifExampleAttribute gea)
+            if (cmd.GetAttribute<GifExampleAttribute>() is GifExampleAttribute gea)
                 embed.WithImageUrl(gea.Link);
-
 
             return embed.Build();
         }
