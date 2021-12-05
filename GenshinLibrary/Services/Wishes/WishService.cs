@@ -45,7 +45,7 @@ namespace GenshinLibrary.Services.Wishes
 
             return minWishItem;
 
-            float GetLevenshteinScore(string s1, string s2) => 1 - (float)Levenshtein.Distance(s1.ToLower(), s2.ToLower()) / Math.Max(s1.Length, s2.Length);
+            static float GetLevenshteinScore(string s1, string s2) => 1 - (float)Levenshtein.Distance(s1.ToLower(), s2.ToLower()) / Math.Max(s1.Length, s2.Length);
         }
 
         public ValidationResult ValidateFilters(WishHistoryFilters filters, Banner banner)
