@@ -12,33 +12,48 @@ namespace GenshinLibrary.ReactionCallback
     class WishHistoryPaged : FragmentedPagedMessage<CompleteWishItemRecord>
     {
         private readonly string _bannerName;
-        private readonly int count;
-        private const int maxNameLength = 27;
+        private readonly int _count;
+        private readonly bool _showType;
 
         public WishHistoryPaged(InteractiveService interactive,
             SocketCommandContext context,
             int displayPerPage,
             IEnumerable<CompleteWishItemRecord> records,
-            string bannerName) : base(interactive, context, records, displayPerPage)
+            string bannerName,
+            bool showType) : base(interactive, context, records, displayPerPage)
         {
             _bannerName = bannerName;
-            count = records.Count();
+            _count = records.Count();
+            _showType = showType;
         }
 
         protected override Embed ConstructEmbed(IEnumerable<CompleteWishItemRecord> currentPage)
         {
-            var table = new TextTable("Pity", "Name", "DateTime");
+            TextTable table;
 
-            foreach (var wir in currentPage)
+            if (_showType)
             {
-                var name = wir.WishItem.GetFormattedName(maxNameLength);
-                table.AddRow(wir.Pity == -1 ? "-" : wir.Pity.ToString(), name, wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+                table = new TextTable("Pity", "Type", "Name", "DateTime");
+                foreach (var wir in currentPage)
+                {
+                    var name = wir.WishItem.GetFormattedName(27);
+                    table.AddRow(wir.Pity == -1 ? "-" : wir.Pity.ToString(), wir.GetShortBannerString(), name, wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+                }
+            }
+            else
+            {
+                table = new TextTable("Pity", "Name", "DateTime");
+                foreach (var wir in currentPage)
+                {
+                    var name = wir.WishItem.GetFormattedName(27);
+                    table.AddRow(wir.Pity == -1 ? "-" : wir.Pity.ToString(), name, wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+                }
             }
 
             var embed = new EmbedBuilder();
             embed.WithColor(Globals.MainColor)
                 .WithTitle($"Wish history for {_bannerName}")
-                .WithDescription($"Total items: **{count}**\n{table.GetTable()}");
+                .WithDescription($"Total items: **{_count}**\n{table.GetTable()}");
 
             embed = SetDefaultFooter(embed);
 
