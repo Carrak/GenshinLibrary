@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using GenshinLibrary.Attributes;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -70,7 +71,20 @@ namespace GenshinLibrary
             List<string> parameters = new List<string>();
             foreach (var parameter in command.Parameters)
             {
-                string paramBody = parameter.Type.IsEnum ? string.Join("/", parameter.Type.GetEnumNames().Select(x => x.ToLower())) : parameter.Name;
+                string paramBody;
+                if (parameter.Type.IsEnum)
+                {
+                    IEnumerable<string> names = parameter.Type.GetEnumNames();
+                    if (parameter.Type.GetAttribute<EnumIgnoreAttribute>() is EnumIgnoreAttribute eia)
+                    {
+                        var ignoredNames = new HashSet<string>(eia.IgnoredNames);
+                        names = names.Where(x => !ignoredNames.Contains(x));
+                    }
+                    paramBody = string.Join("/", names.Select(x => x.ToLower()));
+                }
+                else
+                    paramBody = parameter.Name;
+
                 string fullParam = parameter.IsOptional ? $"<{paramBody}>" : $"[{paramBody}]";
                 parameters.Add(fullParam);
             }
