@@ -119,17 +119,7 @@ namespace GenshinLibrary.Modules
             await ReplyAsync(errorMessage, embed: embed.Build());
         }
 
-        [Command("addwish", RunMode = RunMode.Async)]
-        [Summary("Add a single wish to a certain banner.")]
-        [Ratelimit(5)]
-        public async Task AddWish(
-            Banner banner,
-            [Summary("Date of the wish.")] DateTime datetime,
-            [Summary("The name of the received item.")][Remainder] WishItem wishItem)
-        {
-            try
             {
-                await AddWish(wishItem, banner, datetime);
             }
             catch (PostgresException pe)
             {
@@ -512,26 +502,6 @@ namespace GenshinLibrary.Modules
         public async Task Summary(
             [Summary("Character or weapon.")][Remainder] WishItem wishItem
             ) => await Summary(Context.User, wishItem);
-
-        private async Task AddWish(WishItem wi, Banner banner, DateTime datetime)
-        {
-            if (!CheckWish(wi, banner))
-            {
-                await ReplyAsync($"`{wi.Name}` does not drop from the `{banner}` banner!");
-                return;
-            }
-
-            await _wishes.AddWishAsync(Context.User, wi, banner, datetime);
-
-            var embed = new EmbedBuilder();
-            var table = GetTable(new WishItemRecord(datetime, wi));
-
-            embed.WithColor(Globals.MainColor)
-                .WithTitle("Wish recorded!")
-                .WithDescription(table.GetTable());
-
-            await ReplyAsync(embed: embed.Build());
-        }
 
         private bool CheckWish(WishItem wishItem, Banner banner) => wishItem.Banners.HasFlag(banner);
 

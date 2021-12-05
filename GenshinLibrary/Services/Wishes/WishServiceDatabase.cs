@@ -284,33 +284,17 @@ namespace GenshinLibrary.Services.Wishes
             return records;
         }
 
-        public async Task AddWishAsync(IUser user, WishItem item, Banner banner, DateTime datetime)
+        public async Task AddWishesAsync(IUser user, IEnumerable<WishItemRecord> records)
         {
             string query = @"
-            INSERT INTO gl.wishes (userid, wid, banner, datetime) VALUES (@uid, @wid, @banner, @dt); 
+            INSERT INTO gl.wishes (userid, banner_type, datetime, wid)
+            SELECT @uid, * FROM unnest(@banner, @arrdt, @arritems);
             ";
 
             await using var cmd = _database.GetCommand(query);
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
-            cmd.Parameters.AddWithValue("wid", item.WID);
-            cmd.Parameters.AddWithValue("banner", banner);
-            cmd.Parameters.AddWithValue("dt", datetime);
-
-            await cmd.ExecuteNonQueryAsync();
-        }
-
-        public async Task AddWishesAsync(IUser user, Banner banner, IEnumerable<WishItemRecord> records)
-        {
-            string query = @"
-            INSERT INTO gl.wishes (userid, banner, datetime, wid)
-            SELECT @uid, @banner, * FROM unnest(@arrdt, @arritems);
-            ";
-
-            await using var cmd = _database.GetCommand(query);
-
-            cmd.Parameters.AddWithValue("banner", banner);
-            cmd.Parameters.AddWithValue("uid", (long)user.Id);
+            cmd.Parameters.AddWithValue("banner", records.Select(x => (int)x.Banner).ToArray());
             cmd.Parameters.AddWithValue("arritems", records.Select(x => x.WishItem.WID).ToArray());
             cmd.Parameters.AddWithValue("arrdt", records.Select(x => x.DateTime).ToArray());
 
