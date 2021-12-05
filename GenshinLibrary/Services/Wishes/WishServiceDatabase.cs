@@ -108,7 +108,8 @@ namespace GenshinLibrary.Services.Wishes
 
                 switch (eventWish.Type)
                 {
-                    case Banner.Character:
+                    case Banner.Character1:
+                    case Banner.Character2:
                         banners[eventWish.BID] = new EventWish(gachaSimAvailable, eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.5f, eventWish.Type, rateupPool, standardNoWeapons, baseFivestarChance, baseFourstarChance, baseHardpity);
                         break;
                     case Banner.Weapon:
@@ -184,7 +185,7 @@ namespace GenshinLibrary.Services.Wishes
             await using var cmd = _database.GetCommand(query);
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
-            cmd.Parameters.AddWithValue("banner", banner);
+            cmd.Parameters.AddWithValue("banner", (int)banner);
             cmd.Parameters.AddWithValue("limit", limit);
 
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -222,7 +223,7 @@ namespace GenshinLibrary.Services.Wishes
             }
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
-            cmd.Parameters.AddWithValue("banner", banner);
+            cmd.Parameters.AddWithValue("banner", (int)banner);
             cmd.Parameters.AddWithValue("sp", filters?.SeparatePity ?? false);
 
             await using var reader = await cmd.ExecuteReaderAsync();

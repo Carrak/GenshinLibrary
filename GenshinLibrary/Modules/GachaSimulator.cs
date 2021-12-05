@@ -104,7 +104,7 @@ namespace GenshinLibrary.Modules
         [Ratelimit(5)]
         public async Task SelectBanner(Banner banner)
         {
-            List<WishBanner> selection = _wishes.Banners.Values.Where(x => x.BannerType == banner && x.GachaSimAvailable).ToList();
+            List<WishBanner> selection = _wishes.Banners.Values.Where(x => banner.HasFlag(x.BannerType) && x.GachaSimAvailable).ToList();
             WishBanner selectedBanner = await BannerSelectionAsync(selection);
 
             if (selectedBanner != null)

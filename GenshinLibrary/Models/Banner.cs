@@ -1,13 +1,17 @@
-﻿using System;
+﻿using GenshinLibrary.Attributes;
+using System;
 
 namespace GenshinLibrary.Models
 {
     [Flags]
+    [EnumIgnore("Character1", "Character2")]
     public enum Banner
     {
-        Character = 1 << 0,
-        Weapon = 1 << 1,
-        Standard = 1 << 2,
-        Beginner = 1 << 3
+        Character1 = 1,
+        Character2 = 2,
+        Character = 3,
+        Weapon = 4,
+        Standard = 8,
+        Beginner = 16,
     }
 }

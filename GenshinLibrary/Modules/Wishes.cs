@@ -48,47 +48,46 @@ namespace GenshinLibrary.Modules
         [GifExample("https://cdn.discordapp.com/attachments/461538521551863825/836371667001409586/awb_example.gif")]
         [Ratelimit(5)]
         public async Task AddWishBulk(
-            Banner banner,
             [Summary("The data copied from the game's history.\nWhen importing, wishes must be added in chronological order, therefore, " +
             "__**copy each page starting from the last on each banner and don't modify the copied data.**__. " +
             "The bot will handle the rest for you (including reversing the copied data). For mobile-only players, sadly, there's no viable solution for now.")] [Remainder] string data
             )
         {
-            // dumb check for dumb people xd
-            if (data.Contains("@everyone") || data.Contains("@here"))
-            {
-                await ReplyAsync("That's so funny 👏 🤏 😂");
-                return;
-            }
-
             List<WishItemRecord> records = new List<WishItemRecord>();
             string errorMessage = "";
-            string[] splitData = data.Split('\n');
 
-            for (int i = 0; i < splitData.Length - 2; i += 3)
+            string[] splitData = data.Split('\n');
+            for (int i = 0; i < splitData.Length - 3; i += 4)
             {
                 var name = splitData[i + 1];
-                var dateTimeString = splitData[i + 2];
+                var bannerRaw = splitData[i + 2];
+                var dateTimeString = splitData[i + 3];
 
                 if (!_wishes.WishItems.TryGetValue(name, out var wi))
                 {
-                    errorMessage += $"`{name}` is not a character/weapon. Skipped.\n";
-                    continue;
+                    await ErrorMessage($"`{name}` is not a character/weapon. Skipped.");
+                    return;
+                }
+
+                if (!TryParseBannerRaw(bannerRaw, out Banner banner))
+                {
+                    await ErrorMessage($"`{bannerRaw}` is not a banner. Skipped.");
+                    return;
                 }
 
                 if (!DateTime.TryParseExact(dateTimeString, "yyyy-MM-dd HH:mm:ss", null, DateTimeStyles.None, out var dateTime))
                 {
-                    errorMessage += $"`{dateTimeString}` is not a DateTime. Skipped.\n";
-                    continue;
+                    await ErrorMessage($"`{dateTimeString}` is not a DateTime. Skipped.");
+                    return;
                 }
 
                 if (!CheckWish(wi, banner))
                 {
-                    await ReplyAsync($"`{wi.Name}` does not drop from the `{banner}` banner. Skipping everything.");
+                    await ErrorMessage($"`{wi.Name}` does not drop from the `{banner}` banner. Skipping everything.");
                     return;
                 }
 
-                var wir = new WishItemRecord(dateTime, wi);
+                var wir = new WishItemRecord(dateTime, wi, banner);
                 records.Add(wir);
             }
 
@@ -108,7 +107,7 @@ namespace GenshinLibrary.Modules
 
             try
             {
-                await _wishes.AddWishesAsync(Context.User, banner, records);
+                await _wishes.AddWishesAsync(Context.User, records);
             }
             catch (PostgresException pe)
             {
@@ -117,16 +116,42 @@ namespace GenshinLibrary.Modules
             }
 
             await ReplyAsync(errorMessage, embed: embed.Build());
-        }
 
+            static bool TryParseBannerRaw(string input, out Banner output)
             {
-            }
-            catch (PostgresException pe)
-            {
-                await ReplyAsync(pe.MessageText);
-                return;
+                switch(input)
+                {
+                    case "Character Event Wish":
+                        output = Banner.Character1;
+                        break;
+                    case "Character Event Wish-2":
+                        output = Banner.Character2;
+                        break;
+                    case "Weapon Event Wish":
+                        output = Banner.Weapon;
+                        break;
+                    case "Permanent Wish":
+                        output = Banner.Standard;
+                        break;
+                    case "Novice Wishes":
+                        output = Banner.Beginner;
+                        break;
+                    default:
+                        output = 0;
+                        return false;
+                }
+                return true;
             }
 
+            async Task ErrorMessage(string message)
+            {
+                var embed = new EmbedBuilder()
+                    .WithColor(Color.Red)
+                    .WithTitle("Invalid input")
+                    .WithDescription(message);
+
+                await ReplyAsync(embed: embed.Build());
+            }
         }
 
         [Command("removerecent", RunMode = RunMode.Async)]
@@ -314,7 +339,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var history = new WishHistoryPaged(Interactive, Context, 18, records, $"{banner} banner");
+            var history = new WishHistoryPaged(Interactive, Context, 18, records, $"{banner} banner", Banner.Character.HasFlag(banner));
             await history.DisplayAsync();
         }
 
@@ -403,7 +428,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var history = new WishHistoryPaged(Interactive, Context, 18, records, selectedBanner.GetFullName());
+            var history = new WishHistoryPaged(Interactive, Context, 18, records, selectedBanner.GetFullName(), Banner.Character.HasFlag(selectedBanner.BannerType));
             await history.DisplayAsync();
         }
 
@@ -509,7 +534,7 @@ namespace GenshinLibrary.Modules
         {
             var table = new TextTable("Type", "Name", "DateTime");
             foreach (var wir in wishRecords)
-                table.AddRow(wir.WishItem.GetType().Name, wir.WishItem.GetFormattedName(29), wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+                table.AddRow(wir.GetShortBannerString(), wir.WishItem.GetFormattedName(34), wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
 
             return table;
         }
