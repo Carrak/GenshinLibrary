@@ -57,6 +57,7 @@ namespace GenshinLibrary
             _client.Log += Log;
             _client.JoinedGuild += OnJoin;
             _client.LeftGuild += OnLeave;
+            _client.Ready += Ready;
 
             // Retrieve the config
             var config = Globals.GetConfig();
@@ -80,11 +81,18 @@ namespace GenshinLibrary
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
-            // Set status
-            await _client.SetGameAsync("gl!help");
-
             // Make sure it doesn't die
             await Task.Delay(-1);
+        }
+
+        private async Task Ready()
+        {
+            await SetStatusAsync();
+        }
+
+        private async Task SetStatusAsync()
+        {
+            await _client.SetGameAsync($"gl!help | {_client.Guilds.Count} guilds");
         }
 
         private async Task OnJoin(SocketGuild guild)
@@ -99,11 +107,13 @@ namespace GenshinLibrary
             _ = Task.Run(async () => await guild.DownloadUsersAsync());
 
             await _dbl.UpdateStats(_client.Guilds.Count);
+            await SetStatusAsync();
         }
 
         private async Task OnLeave(SocketGuild guild)
         {
             await _dbl.UpdateStats(_client.Guilds.Count);
+            await SetStatusAsync();
         }
 
         private Task Log(LogMessage arg)
