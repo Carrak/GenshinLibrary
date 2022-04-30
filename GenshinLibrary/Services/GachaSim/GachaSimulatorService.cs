@@ -20,7 +20,7 @@ namespace GenshinLibrary.Services.GachaSim
             if (profiles.TryGetValue<GachaSimulatorProfile>(user.Id, out var profile))
                 return profile;
 
-            var newProfile = new GachaSimulatorProfile(_wishes.Banners[_wishes.StandardBID]);
+            var newProfile = new GachaSimulatorProfile(_wishes.BannersByBID[_wishes.StandardBID]);
             SetOrUpdate(user, newProfile);
 
             return newProfile;

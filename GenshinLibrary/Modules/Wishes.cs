@@ -1,15 +1,17 @@
 ﻿using Discord;
-using Discord.Commands;
+using Discord.Interactions;
+using Discord.WebSocket;
 using GenshinLibrary.Analytics;
-using GenshinLibrary.Attributes;
-using GenshinLibrary.Commands;
+using GenshinLibrary.AutocompleteHandlers;
 using GenshinLibrary.Models;
+using GenshinLibrary.Pagers;
 using GenshinLibrary.Preconditions;
-using GenshinLibrary.ReactionCallback;
 using GenshinLibrary.Services.GachaSim;
+using GenshinLibrary.Services.Menus;
 using GenshinLibrary.Services.Wishes;
 using GenshinLibrary.Services.Wishes.Filtering;
-using GenshinLibrary.StringTable;
+using GenshinLibrary.Services.Wishes.Images;
+using Microsoft.Extensions.Caching.Memory;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -17,40 +19,25 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using SixLabors.ImageSharp;
 
 namespace GenshinLibrary.Modules
 {
-    [Summary("Manage your wishes and view wish history and detailed analytics.")]
-    public class Wishes : GLInteractiveBase
+    [Group("wishes", "Manage your wishes")]
+    public class Wishes : InteractionModuleBase<SocketInteractionContext>
     {
-        private const string FiltersSummary =
-            "**Rarity** - filter by rarity.\n" +
-            "**Pity** - filter by pity.\n" +
-            "**DateTime** - filter by date received.\n" +
-            "**Name** - filter by item name.\n" +
-            "**SeparatePity** - display according pity only on 4- and 5- drops. Specify this filter as `sp:true`\n\n" +
-            "Filters are specified in the following format:\n" +
-            "`[filter]:[operator][value]`\n" +
-            "Where `[operator]` is either an equality (`=`, `!=`) or an inequality (`<`, `>`, `<=`, `>=`) operator.\nYou can specify several filter values of one type by separating them with a comma.\nOperator can be unspecified if it's `=`.\n\n" +
-            "You can also specify the order by adding `order:pity` or `order:rarity`. By default wishes are ordered chronologically.";
-
-        private static readonly Emoji checkmark = new Emoji("✅");
         private readonly WishService _wishes;
+        private readonly MenuService _menus;
 
-        public Wishes(WishService wishes)
+        public Wishes(WishService wishes, MenuService menus)
         {
             _wishes = wishes;
+            _menus = menus;
         }
 
-        [Command("addwishbulk")]
-        [Summary("Add up to 6 wishes at once by copying them from the game.")]
-        [Alias("awb")]
-        [GifExample("https://cdn.discordapp.com/attachments/461538521551863825/836371667001409586/awb_example.gif")]
-        [Ratelimit(5)]
+        [SlashCommand("addwishbulk", "Import your wishes from the game by copying your history")]
         public async Task AddWishBulk(
-            [Summary("The data copied from the game's history.\nWhen importing, wishes must be added in chronological order, therefore, " +
-            "__**copy each page starting from the last on each banner and don't modify the copied data.**__. " +
-            "The bot will handle the rest for you (including reversing the copied data). For mobile-only players, sadly, there's no viable solution for now.")] [Remainder] string data
+            string data
             )
         {
             List<WishItemRecord> records = new List<WishItemRecord>();
@@ -63,7 +50,7 @@ namespace GenshinLibrary.Modules
                 var bannerRaw = splitData[i + 2];
                 var dateTimeString = splitData[i + 3];
 
-                if (!_wishes.WishItems.TryGetValue(name, out var wi))
+                if (!_wishes.WishItemsByName.TryGetValue(name, out var wi))
                 {
                     await ErrorMessage($"`{name}` is not a character/weapon. Skipped.");
                     return;
@@ -81,7 +68,7 @@ namespace GenshinLibrary.Modules
                     return;
                 }
 
-                if (!CheckWish(wi, banner))
+                if (!wi.Banners.HasFlag(banner))
                 {
                     await ErrorMessage($"`{wi.Name}` does not drop from the `{banner}` banner. Skipping everything.");
                     return;
@@ -99,9 +86,10 @@ namespace GenshinLibrary.Modules
 
             var embed = new EmbedBuilder();
 
+            using var wishImage = WishImage.GetRecordsWishImage(records).GetStream();
             embed.WithColor(Globals.MainColor)
-                .WithTitle($"{records.Count} wishes recorded!")
-                .WithDescription(GetTable(records.ToArray()).GetTable());
+                .WithImageUrl("attachment://image.png")
+                .WithTitle($"{records.Count} wishes recorded!");
 
             records.Reverse();
 
@@ -115,7 +103,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            await ReplyAsync(errorMessage, embed: embed.Build());
+            await RespondWithFileAsync(wishImage, "image.png", errorMessage, embed: embed.Build());
 
             static bool TryParseBannerRaw(string input, out Banner output)
             {
@@ -146,33 +134,19 @@ namespace GenshinLibrary.Modules
             async Task ErrorMessage(string message)
             {
                 var embed = new EmbedBuilder()
-                    .WithColor(Color.Red)
+                    .WithColor(Discord.Color.Red)
                     .WithTitle("Invalid input")
                     .WithDescription(message);
 
-                await ReplyAsync(embed: embed.Build());
+                await RespondAsync(embed: embed.Build(), ephemeral: true);
             }
         }
 
-        [Command("removerecent", RunMode = RunMode.Async)]
-        [Alias("rr")]
-        [Summary("Remove recently added wishes on a certain banner.")]
-        [Ratelimit(5)]
+        [SlashCommand("removerecent", "Remove recently added wishes from wish history", runMode: RunMode.Async)]
         public async Task RemoveRecent(
             Banner banner,
-            [Summary("Amount to remove. Can only delete up to 12 wishes at once.")] int count)
+            [Summary(description: "Amount to remove. Can only delete up to 6 wishes at once."), MinValue(1), MaxValue(6)] int count)
         {
-            if (count <= 0)
-            {
-                await ReplyAsync("Cannot delete 0 or less records.");
-                return;
-            }
-            else if (count > 12)
-            {
-                await ReplyAsync("Cannot remove more than 12 records at once.");
-                return;
-            }
-
             var records = await _wishes.GetRecentRecordsAsync(Context.User, banner, count);
 
             if (records == null)
@@ -181,50 +155,173 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var table = GetTable(records.ToArray());
-
-            var embed = new EmbedBuilder();
-            embed.WithColor(Globals.MainColor)
+            var embed = new EmbedBuilder()
+                .WithColor(Globals.MainColor)
                 .WithTitle($"Wishes to be removed")
-                .WithDescription(table.GetTable());
+                .WithImageUrl("attachment://image.png");
 
-            var msg = await ReplyAsync($"Are you sure you want to remove these wishes from the `{banner}` banner?", embed: embed.Build());
-            await msg.AddReactionAsync(checkmark);
+            int hash = records.GetHashCode();
+            using var wishImage = WishImage.GetRecordsWishImage(records);
+            var component = new ComponentBuilder()
+                .WithButton("Confirm", $"confirmation:{Context.User.Id},{hash}", ButtonStyle.Primary);
 
-            if (await NextReactionAsync(checkmark, msg, Context.User))
+            await RespondWithFileAsync(wishImage.GetStream(), "image.png", "Are you sure want to remove these wishes?", embed: embed.Build(), components: component.Build());
+
+            var msg = await GetOriginalResponseAsync() as SocketUserMessage;
+            ButtonBuilder removedButton = new ButtonBuilder().WithCustomId("placeholder").WithDisabled(true).WithStyle(ButtonStyle.Success);
+            ButtonBuilder timedOutbutton = new ButtonBuilder().WithCustomId("placeholder").WithDisabled(true).WithLabel("Timed out").WithStyle(ButtonStyle.Secondary);
+            ButtonBuilder alreadyRemovedButton = new ButtonBuilder().WithCustomId("placeholder").WithDisabled(true).WithLabel("Wishes already removed").WithStyle(ButtonStyle.Danger);
+
+            var trigger = new TaskCompletionSource<object>();
+            Context.Client.ButtonExecuted += ButtonPressed;
+            var task = await Task.WhenAny(trigger.Task, Task.Delay(15000));
+            if (task != trigger.Task)
             {
-                await _wishes.RemoveWishesAsync(records);
-                await ReplyAsync("Successfully removed.");
+                var timedOutComponent = new ComponentBuilder().WithButton(timedOutbutton);
+                await ModifyOriginalResponseAsync(x => x.Components = timedOutComponent.Build());
             }
+
+            async Task ButtonPressed(SocketMessageComponent comp)
+            {
+                var splitId = comp.Data.CustomId.Split(':');
+                if (splitId.Length != 2)
+                    return;
+
+                var splitParams = splitId[1].Split(',');
+
+                if (splitParams.Length == 2 && splitId[0] == "confirmation" && ulong.Parse(splitParams[0]) == comp.User.Id && int.Parse(splitParams[1]) == hash)
+                {
+                    var rowsRemoved = await _wishes.RemoveWishesAsync(records);
+                    trigger.SetResult(null);
+
+                    var component = new ComponentBuilder().WithButton(rowsRemoved == 0 ? alreadyRemovedButton : removedButton.WithLabel($"Removed {rowsRemoved} wishes!"));
+                    await comp.UpdateAsync(x => x.Components = component.Build());
+                }
+            };
         }
 
-        [Command("analytics")]
-        [Summary("View your wish analytics.")]
-        [Ratelimit(7)]
-        public async Task Analytics() => await Anal(Context.User);
-
-        [Command("analytics")]
-        [Summary("View someone's wish analytics.")]
-        [Ratelimit(7)]
-        public async Task Anal(
-            [Summary("The user whose analytics you want to see.")][Remainder] IUser user
-            )
+        [SlashCommand("history", "View your or someone's wishes")]
+        public async Task WishHistoryUser(
+            Banner banner,
+            [Summary(description: "Filter wishes by time. Example: \">01.03.2022,<01.04.2022\" will display wishes from March to April")] string timeReceivedFilter = null,
+            [Summary(description: "Filter wishes by pity. Example: \">50,<=60\" will display wishes with pity ranging from 51 to 60")] string pityFilter = null,
+            [Summary(description: "Filter wishes by name. Example: \"Rosaria,\" will display wishes containing Rosaria")] string nameFilter = null,
+            [Summary(description: "Filter wishes by rarity. Example: \"5\" will display 5-stars. Equality sign can be omitted")] string rarityFilter = null,
+            [Summary(description: "Whose wishes to display. Leave empty to see your own")] IUser user = null)
         {
+            await DeferAsync();
 
-            Dictionary<Banner, BannerStats> data;
-            try
+            user ??= Context.User;
+
+            var filtersResult = WishHistoryFilters.Parse(rarityFilter, timeReceivedFilter, nameFilter, pityFilter);
+            if (!filtersResult.IsSuccess)
             {
-                data = await _wishes.GetAnalyticsAsync(user);
-            }
-            catch (PostgresException pe)
-            {
-                await ReplyAsync($"{pe.MessageText}");
+                var embed = new EmbedBuilder()
+                    .WithTitle("Invalid filters.")
+                    .WithDescription(filtersResult.ErrorMessage)
+                    .WithColor(Discord.Color.Red)
+                    .Build();
+
+                await FollowupAsync(embed: embed);
                 return;
             }
 
+            var records = await _wishes.GetRecordsAsync(user, banner, false, filtersResult.Value);
+
+            if (!records.Any())
+            {
+                await RespondAsync("No wishes have been found matching the conditions.");
+                return;
+            }
+
+            var pager = new WishHistoryPager(records, $"{banner} banner");
+            var policy = new MemoryCacheEntryOptions();
+            policy.SlidingExpiration = TimeSpan.FromMinutes(5);
+            policy.PostEvictionCallbacks.Add(new PostEvictionCallbackRegistration() { EvictionCallback = EvictedFromCacheCallback });
+
+            var menuId = _menus.CreateMenu(Context.User.Id, pager, policy);
+
+            using var image = new MemoryStream();
+            pager.GetPageImage().CopyTo(image);
+
+            await FollowupWithFileAsync(image, "image.png",
+                embed: GetPagerEmbed(pager, user.ToString()),
+                components: GetComponent(Context.User.Id, menuId, 0, user.Id));
+        }
+
+        public class BannerHistorySelectionPager : BannerSelectionPager
+        {
+            public IUser User { get; }
+            public WishHistoryFilters Filters { get; }
+
+            public BannerHistorySelectionPager(IEnumerable<EventWish> banners, string selectionCustomId, int menuId, IUser user, WishHistoryFilters filters) : base(banners, selectionCustomId, menuId, Array.Empty<ActionRowBuilder>())
+            {
+                User = user;
+                Filters = filters;
+            }
+        }
+
+        [SlashCommand("bannerhistory", "View your or someone's wishes that were made during a specific banner")]
+        public async Task BannerHistory(
+            [Summary(description: "Name of a 5* weapon/character to search the banner"), Autocomplete(typeof(WishItemAutocomplete))] WishItem wishItem,
+            [Summary(description: "Filter wishes by time. Example: \">01.03.2022,<01.04.2022\" will display wishes from March to April")] string timeReceivedFilter = null,
+            [Summary(description: "Filter wishes by pity. Example: \">50,<=60\" will display wishes with pity ranging from 51 to 60")] string pityFilter = null,
+            [Summary(description: "Filter wishes by name. Example: \"Rosaria,\" will display wishes containing Rosaria")] string nameFilter = null,
+            [Summary(description: "Filter wishes by rarity. Example: \"5\" will display 5-stars. Equality sign can be omitted")] string rarityFilter = null,
+            [Summary(description: "Whose wishes to display. Leave empty to see your own")] IUser user = null)
+        {
+            user ??= Context.User;
+
+            var filtersResult = WishHistoryFilters.Parse(rarityFilter, timeReceivedFilter, nameFilter, pityFilter);
+            if (!filtersResult.IsSuccess)
+            {
+                var embed = new EmbedBuilder()
+                    .WithTitle("Invalid filters.")
+                    .WithDescription(filtersResult.ErrorMessage)
+                    .WithColor(Discord.Color.Red)
+                    .Build();
+
+                await RespondAsync(embed: embed, ephemeral: true);
+                return;
+            }
+
+            if (wishItem.Rarity != 5)
+            {
+                await RespondAsync("Please search using 5-star characters/weapon names.", ephemeral: true);
+                return;
+            }
+
+            var selection = _wishes.BannersByBID.Values.Where(x => x is EventWish ew && ew.RateUpFivestars.Contains(wishItem)).Cast<EventWish>();
+            if (!selection.Any())
+            {
+                await RespondAsync("This item is not rate-up on any event wishes.");
+                return;
+            }
+
+            int menuId = _menus.CreateMenu(Context.User.Id);
+            var customPager = new BannerHistorySelectionPager(selection, "bh_selected", menuId, user, filtersResult.Value);
+            _menus.SetMenuContent(Context.User.Id, customPager);
+            await customPager.UpdateAsync(Context);
+        }
+
+        [SlashCommand("analytics", "View your wish analytics")]
+        public async Task Anal(
+            [Summary(description: "Whose analytics to display. Leave empty to see your own")] IUser user = null
+            )
+        {
+            user ??= Context.User;
+
+            var result = await _wishes.GetAnalyticsAsync(user);
+            if (!result.IsSuccess)
+            {
+                await RespondAsync(result.ErrorMessage, ephemeral: true);
+                return;
+            }
+
+            var data = result.Value;
             if (data is null)
             {
-                await ReplyAsync("No records exist for this user.");
+                await RespondAsync("No records exist for this user.", ephemeral: true);
                 return;
             }
 
@@ -273,7 +370,7 @@ namespace GenshinLibrary.Modules
                 $"5★: {(weapon.FiveStarWishes == 0 ? errorMessage : ComparedToAverage(weapon.FiveStarWishes / (float)weapon.TotalWishes, 0.0185f))}\n\n" +
                 $"{weapon.RateUpStats()}", true);
 
-            await ReplyAsync(embed: embed.Build());
+            await RespondAsync(embed: embed.Build());
 
             static string ComparedToAverage(float player, float average)
             {
@@ -291,195 +388,13 @@ namespace GenshinLibrary.Modules
             }
         }
 
-        [Command("history")]
-        [Alias("h")]
-        [Summary("View your wish history.")]
-        [Example("This command will display all the 4 stars and 5 stars that you got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard rarity:4,5 pity:<60 order:pity`")]
-        [Ratelimit(7)]
-        public async Task History
-            (Banner banner,
-            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
-            ) => await History(banner, Context.User, filters);
-
-        [Command("history")]
-        [Alias("h")]
-        [Summary("View someone's wish history.")]
-        [Example("This command will display all the 4 stars and 5 stars that @user got before 60 pity on the standard banner ordered by the pity values.\n`gl!history standard @user rarity:4,5 pity:<60 order:pity`")]
-        [Ratelimit(7)]
-        public async Task History(
-            Banner banner,
-            [Summary("The user whose history you wish to see.")] IUser user,
-            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null)
-        {
-            WishHistoryFilters parsedFilters = null;
-            if (filters != null)
-            {
-                try
-                {
-                    parsedFilters = new WishHistoryFilters(filters);
-                }
-                catch (ArgumentException e)
-                {
-                    await ReplyAsync(embed: GetInvalidFiltersEmbed(e.Message));
-                    return;
-                }
-
-                var result = _wishes.ValidateFilters(parsedFilters, banner);
-                if (!result.IsSuccess)
-                {
-                    await ReplyAsync(embed: GetInvalidFiltersEmbed(result.ErrorMessage));
-                    return;
-                }
-            }
-
-            var records = await _wishes.GetRecordsAsync(user, banner, parsedFilters);
-            if (records == null)
-            {
-                await ReplyAsync("No wishes have been found.");
-                return;
-            }
-
-            var history = new WishHistoryPaged(Interactive, Context, 18, records, $"{banner} banner", Banner.Character.HasFlag(banner));
-            await history.DisplayAsync();
-        }
-
-        [Command("bannerhistory", RunMode = RunMode.Async)]
-        [Alias("bhistory", "bh")]
-        [Summary("View your wishes on a certain character/weapon banner.")]
-        [Example("`gl!banner xiao rarity:4 pity:<60`\nFor more information regarding filters, please refer to `gl!help history`")]
-        [Ratelimit(7)]
-        public async Task BannerHistory(
-            [Remainder, Summary("The name of the rate-up item. E.g. `zhongli`, `xiao`, etc. For names that contain spaces, use quotes: `\"staff of homa\"`")] WishItem wishItem
-            ) => await BannerHistory(wishItem, Context.User, null);
-
-        [Command("bannerhistory", RunMode = RunMode.Async)]
-        [Alias("bhistory", "bh")]
-        [Summary("View your wishes on a certain character/weapon banner.")]
-        [Example("`gl!banner xiao rarity:4 pity:<60`\nFor more information regarding filters, please refer to `gl!help history`")]
-        [Ratelimit(7)]
-        public async Task BannerHistory(
-            [Summary("The name of the rate-up item. E.g. `zhongli`, `xiao`, etc. For names that contain spaces, use quotes: `\"staff of homa\"`")] WishItem wishItem,
-            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
-            ) => await BannerHistory(wishItem, Context.User, filters);
-
-        [Command("bannerhistory", RunMode = RunMode.Async)]
-        [Alias("bhistory", "bh")]
-        [Summary("View someone's wishes wishes on a certain character/weapon banner.")]
-        [Example("`gl!banner xiao @user rarity:4 pity:<60`\nFor more information regarding filters, please refer to `gl!help history`")]
-        [Ratelimit(7)]
-        public async Task BannerHistory(
-            [Summary("The name of the rate-up item. E.g. `zhongli`, `xiao`, etc. For names that contain spaces, use quotes: `\"staff of homa\"`")] WishItem wishItem,
-            [Summary("The user whose history you wish to see.")] IUser user,
-            [Summary(FiltersSummary)] WishHistoryFilterValues filters = null
-            )
-        {
-            if (wishItem.Rarity != 5)
-            {
-                await ReplyAsync("Please search using 5-star characters/weapon names.");
-                return;
-            }
-
-            var selection = _wishes.Banners.Values.Where(x => x is EventWish ew && ew.RateUpFivestars.Contains(wishItem));
-            if (!selection.Any())
-            {
-                await ReplyAsync("This item is not rate-up on any event wishes.");
-                return;
-            }
-
-            WishBanner selectedBanner = await BannerSelectionAsync(selection);
-            if (selectedBanner == null)
-                return;
-
-            WishHistoryFilters parsedFilters = null;
-            if (filters != null)
-            {
-                try
-                {
-                    parsedFilters = new WishHistoryFilters(filters);
-                }
-                catch (ArgumentException e)
-                {
-                    await ReplyAsync(embed: GetInvalidFiltersEmbed(e.Message));
-                    return;
-                }
-
-                var result = _wishes.ValidateFilters(parsedFilters, selectedBanner.BannerType);
-                if (!result.IsSuccess)
-                {
-                    await ReplyAsync(embed: GetInvalidFiltersEmbed(result.ErrorMessage));
-                    return;
-                }
-            }
-
-            IEnumerable<CompleteWishItemRecord> records = null;
-            try
-            {
-                records = await _wishes.GetBannerWishesAsync(user, selectedBanner as EventWish, parsedFilters);
-            }
-            catch (PostgresException pe)
-            {
-                await ReplyAsync($"{pe.MessageText}");
-                return;
-            }
-
-            if (records == null)
-            {
-                await ReplyAsync("No wishes have been found.");
-                return;
-            }
-
-            var history = new WishHistoryPaged(Interactive, Context, 18, records, selectedBanner.GetFullName(), Banner.Character.HasFlag(selectedBanner.BannerType));
-            await history.DisplayAsync();
-        }
-
-        [Command("setserver", RunMode = RunMode.Async)]
-        [Summary("Set your in-game server to get access to wishes by banners and more analytics.\nThis is necessary to separate wishes, so to adjust the timezone correctly and match them by banners." +
-            "That, on the other hand, allows to tell what is rate-up and what isn't, hence providing more data to work with.")]
-        [Ratelimit(7)]
-        public async Task SetServer()
-        {
-            var servers = _wishes.Servers.Values.ToArray();
-
-            var embed = new EmbedBuilder()
-                .WithColor(Globals.MainColor)
-                .WithTitle("Available servers")
-                .WithFooter($"Reply with just the index of the selected server.")
-                .WithDescription(string.Join('\n', servers.Select((x, index) => $"**{index + 1}. {x.ServerName} ({x.ServerTimezone})**")));
-
-            await ReplyAsync(embed: embed.Build());
-
-            int index = -1;
-            if (await NextMessageWithConditionAsync(Context, x =>
-            {
-                if (int.TryParse(x.Content, out var num))
-                {
-                    index = num;
-                    return true;
-                }
-                return false;
-            }) != null)
-            {
-                index--;
-                if (index < 0 || index > servers.Length)
-                {
-                    await ReplyAsync("Number invalid.");
-                    return;
-                }
-
-                await _wishes.SetServerAsync(Context.User, servers[index].ServerID);
-                await ReplyAsync($"Successfully changed your server to **{servers[index].ServerName}**");
-            }
-        }
-
-        [Command("summary")]
-        [Alias("s")]
-        [Ratelimit(3)]
-        [Summary("Provides a user's wish summary of a certain character or weapon.")]
+        [SlashCommand("summary", "Provides a user's wish summary of a certain character or weapon")]
         public async Task Summary(
-            [Summary("User to look up.")] IUser user,
-            [Summary("Character or weapon.")][Remainder] WishItem wishItem
-            )
+            [Summary(description: "Name of the desired character/weapon"), Autocomplete(typeof(WishItemAutocomplete))] WishItem wishItem,
+            [Summary(description: "Whose summary to display. Leave empty to see your own")] IUser user = null)
         {
+            user ??= Context.User;
+
             var summary = await _wishes.GetSummaryAsync(user, wishItem);
 
             if (summary is null)
@@ -488,27 +403,28 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            Color color;
+            Discord.Color color;
             string imagePath;
 
-            if (wishItem is Character c)
+            switch (wishItem)
             {
-                color = GenshinColors.GetElementColor(c.Vision);
-                imagePath = c.AvatarImagePath;
+                case Character character:
+                    color = GenshinColors.GetElementColor(character.Vision);
+                    imagePath = character.AvatarImagePath;
+                    break;
+                case Weapon weapon:
+                    color = GenshinColors.GetRarityColor(weapon.Rarity);
+                    imagePath = weapon.WeaponIconPath;
+                    break;
+                default:
+                    throw new Exception("Invalid type.");
             }
-            else if (wishItem is Weapon w)
-            {
-                color = GenshinColors.GetRarityColor(w.Rarity);
-                imagePath = w.WishArtPath;
-            }
-            else
-                throw new Exception("Invalid type.");
 
             string fileName = "avatar.png";
-            using var bitmap = new System.Drawing.Bitmap(imagePath);
-            using var image = new MemoryStream();
-            bitmap.Save(image, System.Drawing.Imaging.ImageFormat.Png);
-            image.Position = 0;
+            using var image = SixLabors.ImageSharp.Image.Load(imagePath);
+            MemoryStream stream = new();
+            image.SaveAsPng(stream);
+            stream.Seek(0, SeekOrigin.Begin);
 
             var embed = new EmbedBuilder()
                 .WithTitle(wishItem.Name)
@@ -517,35 +433,100 @@ namespace GenshinLibrary.Modules
                 .WithDescription($"Total count: **{summary.Count}**")
                 .AddField("Banners", string.Join('\n', summary.GroupedCounts.OrderByDescending(x => x.Count).Select(x => $"{x.Banner}: **{x.Count}**")));
 
-            await Context.Channel.SendFileAsync(image, fileName, embed: embed.Build());
+            await RespondWithFileAsync(stream, fileName, embed: embed.Build());
         }
 
-        [Command("summary")]
-        [Alias("s")]
-        [Ratelimit(3)]
-        [Summary("Provides your wish summary of a certain character or weapon.")]
-        public async Task Summary(
-            [Summary("Character or weapon.")][Remainder] WishItem wishItem
-            ) => await Summary(Context.User, wishItem);
-
-        private bool CheckWish(WishItem wishItem, Banner banner) => wishItem.Banners.HasFlag(banner);
-
-        private TextTable GetTable(params WishItemRecord[] wishRecords)
+        [SlashCommand("server", "Select your in-game server to get access to analytics and more options")]
+        public async Task Server()
         {
-            var table = new TextTable("Type", "Name", "DateTime");
-            foreach (var wir in wishRecords)
-                table.AddRow(wir.GetShortBannerString(), wir.WishItem.GetFormattedName(34), wir.DateTime.ToString(@"dd.MM.yyyy HH:mm:ss"));
+            var servers = _wishes.ServersBySID.Values.ToArray();
 
-            return table;
+            var embed = new EmbedBuilder()
+                .WithColor(Globals.MainColor)
+                .WithTitle("Select a server with the buttons below")
+                .WithDescription("Selecting a server gives access to `/wishes bannerhistory` and `/wishes analytics`, alongside a few additions in `/profile`.");
+
+            var mc = new ComponentBuilder();
+            for (int i = 0; i < servers.Length; i++)
+                mc.WithButton($"{servers[i].ServerName} ({servers[i].ServerTimezone})", $"server_selected:{servers[i].ServerID}", ButtonStyle.Success, row: i / 2);
+
+            await RespondAsync(embed: embed.Build(), components: mc.Build(), ephemeral: true);
         }
 
-        private Embed GetInvalidFiltersEmbed(string message)
+        [ComponentInteraction("server_selected:*", true)]
+        public async Task ServerSelected(int serverId)
         {
-            return new EmbedBuilder()
-                .WithTitle("Invalid filters.")
-                .WithDescription(message)
-                .WithColor(Color.Red)
+            await _wishes.SetServerAsync(Context.User, serverId);
+            var server = _wishes.ServersBySID[serverId];
+            await RespondAsync($"Changed your server to **{server.ServerName}**\nServer timezone: **{server.ServerTimezone}**", ephemeral: true);
+        }
+
+        [ComponentInteraction("wish_history_page:*,*,*,*", true)]
+        [VerifyUserAndMenu]
+        public async Task WishHistoryPage(ulong userId, int menuId, PagerDirection pd, IUser viewedUser)
+        {
+            var pager = _menus.GetMenuContent<WishHistoryPager>(Context.User.Id);
+            pager.FlipPage(pd);
+
+            using var image = new MemoryStream();
+            pager.GetPageImage().CopyTo(image);
+
+            var component = Context.Interaction as SocketMessageComponent;
+            var attachment = new FileAttachment(image, "image.png");
+
+            await component.UpdateAsync(x =>
+            {
+                //x.Attachments = new[] { attachment };
+                x.Embed = GetPagerEmbed(pager, viewedUser.ToString());
+                x.Components = GetComponent(userId, menuId, pager.Page, viewedUser.Id);
+            });
+
+            await component.Message.ModifyAsync(x => x.Attachments = new[] { attachment });
+        }
+
+        [ComponentInteraction("bh_selected:*,*,*", true)]
+        [VerifyUserAndMenu]
+        public async Task BannerHistorySelected(ulong userId, int menuId, int bid)
+        {
+            var component = Context.Interaction as SocketMessageComponent;
+
+            var data = _menus.GetMenuContent<BannerHistorySelectionPager>(userId);
+            var wish = _wishes.BannersByBID[bid];
+            var records = await _wishes.GetBannerWishesAsync(data.User, bid, data.Filters);
+            var pager = new WishHistoryPager(records, $"{wish.GetFullName()}");
+
+            using var image = new MemoryStream();
+            pager.GetPageImage().CopyTo(image);
+            
+            await component.UpdateAsync(x => 
+            {
+                x.Embed = GetPagerEmbed(pager, data.User.ToString());
+                x.Components = GetComponent(Context.User.Id, menuId, 0, data.User.Id);
+            });
+
+            await component.Message.ModifyAsync(x => x.Attachments = new[] { new FileAttachment(image, "image.png") });
+
+            _menus.SetMenuContent(userId, pager);
+        }
+
+        private static void EvictedFromCacheCallback(object key, object value, EvictionReason reason, object state)
+        {
+            (value as WishHistoryPager).Dispose();
+        }
+
+        private static Embed GetPagerEmbed(WishHistoryPager pager, string userName) =>
+            new EmbedBuilder()
+                .WithColor(Globals.MainColor)
+                .WithImageUrl("attachment://image.png")
+                .WithTitle($"Wish history for {pager.BannerName}")
+                .WithFooter($"Page {pager.Page + 1} / {pager.TotalPages} | Viewing {userName}'s wishes")
                 .Build();
-        }
+
+        private static MessageComponent GetComponent(ulong userId, int menuId, int currentPage, ulong viewedUserId) =>
+            new ComponentBuilder()
+                .WithButton("<", $"wish_history_page:{userId},{menuId},0,{viewedUserId}", ButtonStyle.Primary)
+                .WithButton($"{currentPage + 1}", $"placeholder", ButtonStyle.Secondary, disabled: true)
+                .WithButton(">", $"wish_history_page:{userId},{menuId},1,{viewedUserId}", ButtonStyle.Primary)
+                .Build();
     }
 }

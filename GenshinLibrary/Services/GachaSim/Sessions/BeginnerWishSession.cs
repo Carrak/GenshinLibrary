@@ -9,45 +9,27 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
     {
         public BeginnerWish BeginnerWish => Banner as BeginnerWish;
 
-        private int Counter = 0;
         private bool ObtainedNoelle = false;
 
         public BeginnerWishSession(BeginnerWish banner) : base(banner)
         {
         }
 
-        public override GachaSimWishItemRecord[] Wish(int count)
-        {
-            if (count != 10)
-                throw new Exception("Can only do 10-pulls on Beginner.");
-
-            if (Counter == 20)
-                throw new Exception("Already wished 20 times.");
-
-            Counter += 10;
-            return base.Wish(count);
-        }
-
         protected override WishItem GetWishItem()
         {
-            CurrentFiveStarPity++;
-            CurrentFourStarPity++;
-
-            if (RollFivestar(Random))
-                return BeginnerWish.FiveStarCharacters.RandomElement();
-
-            if (RollFourstar(Random))
+            switch (GetObtainedRarity())
             {
-                if (!ObtainedNoelle)
-                {
-                    ObtainedNoelle = true;
-                    return BeginnerWish.Noelle;
-                }
-
-                return BeginnerWish.FourStarCharacters.RandomElement();
+                case 5: return BeginnerWish.FiveStarCharacters.RandomElement();
+                case 4:
+                    if (!ObtainedNoelle)
+                    {
+                        ObtainedNoelle = true;
+                        return BeginnerWish.Noelle;
+                    }
+                    return BeginnerWish.FourStarCharacters.RandomElement();
+                case 3: return BeginnerWish.Threestars.RandomElement();
+                default: throw new Exception("Unknown rarity.");
             }
-
-            return BeginnerWish.Threestars.RandomElement();
         }
     }
 }

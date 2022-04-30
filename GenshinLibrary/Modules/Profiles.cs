@@ -1,23 +1,18 @@
 ﻿using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using GenshinLibrary.Analytics;
-using GenshinLibrary.Commands;
+using GenshinLibrary.AutocompleteHandlers;
 using GenshinLibrary.Models;
-using GenshinLibrary.Preconditions;
 using GenshinLibrary.Services.Wishes;
-using Npgsql;
-using System.Collections.Generic;
-using System.Drawing;
+using SixLabors.ImageSharp;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace GenshinLibrary.Modules
 {
-    [Summary("View and manage your profile.\nProfiles display your 5 stars and current pity counters across all banners. " +
-        "They use the same data as analytics and wishes, so if you're wondering how to add anything to your profile, you might want to import your wishes first. " +
-        "For that, refer to the `Wishes` module.")]
-    public class Profiles : GLInteractiveBase
+    [Group("profile", "Profiles with neatly packed data ")]
+    public class Profiles : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly WishService _wishes;
 
@@ -26,40 +21,24 @@ namespace GenshinLibrary.Modules
             _wishes = wishService;
         }
 
-        [Command("profile")]
-        [Alias("p")]
-        [Summary("View your profile.")]
-        [Ratelimit(5)]
-        public async Task UserProfile() => await UserProfile(Context.User);
-
-        [Command("profile")]
-        [Alias("p")]
-        [Summary("View someone's profile.")]
-        [Ratelimit(5)]
+        [SlashCommand("view", "View your or someone's profile")]
         public async Task UserProfile(
-            [Summary("The user whose profile you want to see")][Remainder] IUser user
+            [Summary(description: "Whose analytics to display. Leave empty to see your own")] IUser user = null
             )
         {
-            var embed = new EmbedBuilder();
-            Dictionary<Banner, BannerStats> analytics = null;
+            user ??= Context.User;
 
-            try
-            {
-                analytics = await _wishes.GetAnalyticsAsync(user);
-            }
-            catch (PostgresException)
-            {
-                embed.WithFooter("Set your server using gl!setserver to view wish stats in profile.");
-            }
+            var embed = new EmbedBuilder();
+            var analyticsResult = await _wishes.GetAnalyticsAsync(user);
 
             var pities = await _wishes.GetPities(user);
             var profile = await _wishes.GetProfileAsync(user);
 
             string fileName = "avatar.png";
-            using var bitmap = new Bitmap(profile.ProfileCharacter?.AvatarImagePath ?? Character.DefaultAvatarPath);
-            using var image = new MemoryStream();
-            bitmap.Save(image, System.Drawing.Imaging.ImageFormat.Png);
-            image.Position = 0;
+            using var image = SixLabors.ImageSharp.Image.Load(profile.ProfileCharacter?.AvatarImagePath ?? Character.DefaultAvatarPath);
+            MemoryStream stream = new();
+            image.SaveAsPng(stream);
+            stream.Seek(0, SeekOrigin.Begin);
 
             embed.WithColor(profile.ProfileCharacter is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.ProfileCharacter.Vision))
                 .WithTitle(user.ToString())
@@ -67,9 +46,9 @@ namespace GenshinLibrary.Modules
                 .AddField("5★ Weapons", $"{(profile.Weapons.Any() ? string.Join('\n', profile.Weapons.Select(x => x.ToString())) : "None yet!")}")
                 .WithThumbnailUrl($"attachment://{fileName}");
 
-            if (analytics != null)
+            if (analyticsResult.IsSuccess)
             {
-                var analyticsValues = analytics.Values;
+                var analyticsValues = analyticsResult.Value.Values;
                 var total = analyticsValues.Sum(x => x.TotalWishes);
                 var fivestar = analyticsValues.Sum(x => x.FiveStarWishes);
                 var fourstar = analyticsValues.Sum(x => x.FourStarWishes);
@@ -83,44 +62,34 @@ namespace GenshinLibrary.Modules
                         $"5★: **{fivestar}** | **{fivestar / (float)total:0.00%}**\n"
                         );
             }
+            else
+                embed.WithFooter("Set your server using gl!setserver to view wish stats in profile.");
 
             if (pities != null)
                 embed.AddField("Pities", pities.ToString(), true);
 
-            if (analytics != null)
+            if (analyticsResult != null)
                 embed.AddField("Rate Ups",
-                    $"{(analytics[Banner.Character] as EventBannerStats).RateUpGuarantees()}\n" +
-                    $"{(analytics[Banner.Weapon] as EventBannerStats).RateUpGuarantees()}", true);
+                    $"{(analyticsResult.Value[Banner.Character] as EventBannerStats).RateUpGuarantees()}\n" +
+                    $"{(analyticsResult.Value[Banner.Weapon] as EventBannerStats).RateUpGuarantees()}", true);
 
-            await Context.Channel.SendFileAsync(image, fileName, embed: embed.Build());
+            await RespondWithFileAsync(stream, fileName, embed: embed.Build());
         }
 
-        [Command("setavatar")]
-        [Summary("Change your profile avatar.")]
-        [Alias("avatar", "changeavatar")]
-        [Ratelimit(5)]
+        [SlashCommand("avatar", "Change your profile avatar")]
         public async Task SetAvatar(
-            [Summary("The name of the character to set as the avatar.")][Remainder] WishItem wi
+            [Summary(description: "The character to set as the avatar."), Autocomplete(typeof(WishItemAutocomplete<Character>))] Character character
             )
         {
-            if (wi is Character c)
-            {
-                await _wishes.SetAvatarAsync(Context.User, c);
-                await ReplyAsync("Successfully changed!");
-            }
-            else
-                await ReplyAsync("Given wish item is not a character.");
+            await _wishes.SetAvatarAsync(Context.User, character);
+            await RespondAsync($"Successfully changed your avatar to **{character.Name}**!");
         }
 
-        [Command("resetavatar")]
-        [Summary("Set your avatar to default (Aether).")]
-        [Alias("deleteavatar")]
-        [Ratelimit(5)]
+        [SlashCommand("resetavatar", "Reset your wish profile avatar to default")]
         public async Task ResetAvatar()
         {
             await _wishes.RemoveAvatarAsync(Context.User);
-
-            await ReplyAsync("Successfully reset.");
+            await RespondAsync("Successfully reset.");
         }
     }
 }

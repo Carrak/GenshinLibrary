@@ -2,6 +2,7 @@
 using GenshinLibrary.Services.GachaSim.Sessions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace GenshinLibrary.Services.GachaSim
@@ -18,8 +19,8 @@ namespace GenshinLibrary.Services.GachaSim
         public DateTime Date { get; }
         public float RateUpChance { get; }
 
-        public EventWish(bool gachaSimAvailable, int bid, string name, DateTime date, float rateUpChance, Banner bannerType, IEnumerable<WishItem> rateUpPool, IEnumerable<WishItem> standardPool, float fiveStarChance, float fourStarChance, int pity)
-            : base(gachaSimAvailable, rateUpPool.Concat(standardPool), bid, name, bannerType, fiveStarChance, fourStarChance, pity)
+        public EventWish(bool gachaSimAvailable, int bid, string name, DateTime date, float rateUpChance, Banner bannerType, IEnumerable<WishItem> rateUpPool, IEnumerable<WishItem> standardPool, ReadOnlyCollection<double> fivestarChances, ReadOnlyCollection<double> fourstarChances)
+            : base(gachaSimAvailable, rateUpPool.Concat(standardPool), bid, name, bannerType, fivestarChances, fourstarChances)
         {
             Date = date;
             RateUpChance = rateUpChance;

@@ -15,26 +15,24 @@ namespace GenshinLibrary.Services.GachaSim.Sessions
 
         protected override WishItem GetWishItem()
         {
-            CurrentFiveStarPity++;
-            CurrentFourStarPity++;
-
-            if (RollFivestar(Random))
+            switch (GetObtainedRarity())
             {
-                if (Random.NextDouble() < 0.5f)
-                    return StandardWish.FiveStarCharacters.RandomElement();
-                else
-                    return StandardWish.FiveStarWeapons.RandomElement();
-            }
+                case 5:
+                    if (Globals.Random.NextDouble() < 0.5f)
+                        return StandardWish.FiveStarCharacters.RandomElement();
+                    else
+                        return StandardWish.FiveStarWeapons.RandomElement();
+                case 4:
+                    if (Globals.Random.NextDouble() < 0.5f)
+                        return StandardWish.FourStarCharacters.RandomElement();
+                    else
+                        return StandardWish.FourStarWeapons.RandomElement();
+                case 3:
+                    return StandardWish.Threestars.RandomElement();
+                default:
+                    throw new Exception("Unknown rarity.");
 
-            if (RollFourstar(Random))
-            {
-                if (Random.NextDouble() < 0.5f)
-                    return StandardWish.FourStarCharacters.RandomElement();
-                else
-                    return StandardWish.FourStarWeapons.RandomElement();
             }
-
-            return StandardWish.Threestars.RandomElement();
         }
     }
 }

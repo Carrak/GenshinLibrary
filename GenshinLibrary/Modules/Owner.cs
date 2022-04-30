@@ -1,4 +1,4 @@
-﻿using Discord;
+﻿/*using Discord;
 using Discord.Commands;
 using GenshinLibrary.Attributes;
 using GenshinLibrary.Commands;
@@ -69,3 +69,4 @@ namespace GenshinLibrary.Modules
         }
     }
 }
+*/

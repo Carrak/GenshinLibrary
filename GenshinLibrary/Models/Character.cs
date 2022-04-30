@@ -11,8 +11,8 @@ namespace GenshinLibrary.Models
         public Element Vision { get; }
         public WeaponType WieldedWeapon { get; }
         public string AvatarImagePath { get; }
+        public string ElementIconPath { get; }
 
-        public override string IconPath { get; }
         public override string WishArtPath { get; }
 
         [JsonConstructor]
@@ -20,8 +20,8 @@ namespace GenshinLibrary.Models
         {
             Vision = vision;
             WieldedWeapon = weapon;
-            WishArtPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}SplashArtsPartial{Path.DirectorySeparatorChar}{Name}.png";
-            IconPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png";
+            WishArtPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}WishArtworks{Path.DirectorySeparatorChar}{Name}.png";
+            ElementIconPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png";
             AvatarImagePath = $"{Globals.ProjectDirectory}Characters{Path.DirectorySeparatorChar}{Name}.png";
         }
 

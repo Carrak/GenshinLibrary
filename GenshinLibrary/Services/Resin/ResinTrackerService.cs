@@ -1,5 +1,4 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -25,14 +24,14 @@ namespace GenshinLibrary.Services.Resin
                 ResinUpdates[ru.UserID] = ru;
         }
 
-        public async Task<ResinUpdate> SetValueAsync(IUser user, DateTime dt, int value)
+        public async Task<ResinUpdate> SetValueAsync(ulong userId, DateTime dt, int value)
         {
-            var update = new ResinUpdate(user.Id, dt, value);
-            ResinUpdates[user.Id] = update;
+            var update = new ResinUpdate(userId, dt, value);
+            ResinUpdates[userId] = update;
             await UpdateResinAsync(update);
             return update;
         }
 
-        public ResinUpdate GetResinUpdate(IUser user) => ResinUpdates.TryGetValue(user.Id, out var update) ? update : null;
+        public ResinUpdate GetResinUpdate(ulong userId) => ResinUpdates.TryGetValue(userId, out var update) ? update : null;
     }
 }

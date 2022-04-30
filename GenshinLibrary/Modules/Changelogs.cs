@@ -1,7 +1,5 @@
 ﻿using Discord;
-using Discord.Commands;
-using GenshinLibrary.Attributes;
-using GenshinLibrary.Commands;
+using Discord.Interactions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -9,50 +7,47 @@ using System.Threading.Tasks;
 namespace GenshinLibrary.Modules
 {
     [RequireOwner]
-    [HelpIgnore]
-    [Group("cl")]
-    public class Changelogs : GLInteractiveBase
+    [Group("changelog", "changelog")]
+    [DontAutoRegister]
+    public class Changelogs : InteractionModuleBase<SocketInteractionContext>
     {
-        private static readonly Emoji success = new Emoji("✅");
-        private static readonly List<string> updates = new List<string>();
+        private static readonly List<string> updates = new();
 
-        private readonly ulong changelogsChannelID = 831565644272107582;
-
-        [Command("add")]
-        public async Task Add([Remainder] string toAdd)
+        [SlashCommand("add", "add")]
+        public async Task Add(string toAdd)
         {
             updates.Add($"- {toAdd}");
-            await Context.Message.AddReactionAsync(success);
+            await RespondAsync("Added", ephemeral: true);
         }
 
-        [Command("clear")]
+        [SlashCommand("clear", "clear")]
         public async Task Clear()
         {
             updates.Clear();
-            await Context.Message.AddReactionAsync(success);
+            await RespondAsync("Cleared", ephemeral: true);
         }
 
-        [Command("view")]
+        [SlashCommand("view", "view")]
         public async Task View()
         {
-            await ReplyAsync(embed: GetEmbed());
+            await RespondAsync(embed: GetEmbed(), ephemeral: true);
         }
 
-        [Command("remove")]
+        [SlashCommand("remove", "remove")]
         public async Task Remove(int index)
         {
             updates.RemoveAt(index);
-            await Context.Message.AddReactionAsync(success);
+            await RespondAsync("Removed", ephemeral: true);
         }
 
-        [Command("send")]
+        [SlashCommand("send", "remove")]
         public async Task Send()
         {
-            var channel = Context.Client.GetGuild(Globals.GenshinLibraryGuildID).GetChannel(changelogsChannelID) as ITextChannel;
+            var channel = Context.Client.GetGuild(Globals.GenshinLibraryGuildID).GetChannel(Globals.GetConfig().) as ITextChannel;
             await channel.SendMessageAsync(embed: GetEmbed());
         }
 
-        private Embed GetEmbed()
+        private static Embed GetEmbed()
         {
             var embed = new EmbedBuilder()
                 .WithColor(Globals.MainColor)

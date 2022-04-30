@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿/*
+using Discord;
 using Discord.Commands;
 using Discord.Net;
 using GenshinLibrary.Attributes;
@@ -419,3 +420,4 @@ namespace GenshinLibrary.Main
         public IUserMessage Message { get; set; }
     }
 }
+*/

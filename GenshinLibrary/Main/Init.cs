@@ -1,10 +1,12 @@
 ﻿using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using DiscordBotsList.Api;
 using GenshinLibrary.Services;
 using GenshinLibrary.Services.GachaSim;
+using GenshinLibrary.Services.Menus;
 using GenshinLibrary.Services.Resin;
 using GenshinLibrary.Services.Wishes;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,11 +20,10 @@ namespace GenshinLibrary
         static void Main() => new Init().RunBotAsync().GetAwaiter().GetResult();
 
         // Discord.NET essentials.
-        private static DiscordSocketClient _client;
-        private static CommandService _commands;
-        private static IServiceProvider _services;
-
-        private CommandSupportService _support;
+        private DiscordSocketClient _client;
+        private CommandService _commands;
+        private IServiceProvider _services;
+        private InteractionService _interactionService;
         private AuthDiscordBotListApi _dbl;
 
         private async Task RunBotAsync()
@@ -31,6 +32,10 @@ namespace GenshinLibrary
             _client = new DiscordSocketClient(new DiscordSocketConfig()
             {
                 AlwaysDownloadUsers = true,
+                GatewayIntents = GatewayIntents.AllUnprivileged
+                & ~GatewayIntents.GuildScheduledEvents
+                & ~GatewayIntents.GuildInvites
+                | GatewayIntents.GuildMembers
             });
 
             _commands = new CommandService(new CommandServiceConfig()
@@ -38,20 +43,21 @@ namespace GenshinLibrary
                 CaseSensitiveCommands = false,
             });
 
+            _interactionService = new InteractionService(_client.Rest);
+
             _services = new ServiceCollection()
                 .AddSingleton(_client)
                 .AddSingleton(_commands)
+                .AddSingleton(_interactionService)
                 .AddSingleton<InteractiveService>()
                 .AddSingleton<MessageHandler>()
                 .AddSingleton<DatabaseService>()
-                .AddSingleton<CommandSupportService>()
                 .AddSingleton<ResinTrackerService>()
                 .AddSingleton<WishService>()
                 .AddSingleton<GachaSimulatorService>()
+                .AddSingleton<InteractionHandler>()
+                .AddSingleton<MenuService>()
                 .BuildServiceProvider();
-
-            // Set services
-            _support = _services.GetRequiredService<CommandSupportService>();
 
             // Register events
             _client.Log += Log;
@@ -73,9 +79,10 @@ namespace GenshinLibrary
             string token = config.Token;
 
             // Init services
-            await _services.GetRequiredService<MessageHandler>().InstallCommandsAsync();
+            _services.GetRequiredService<MessageHandler>().Init();
             await _services.GetRequiredService<WishService>().InitAsync();
             await _services.GetRequiredService<ResinTrackerService>().InitAsync();
+            await _services.GetRequiredService<InteractionHandler>().InitAsync();
 
             // Login and start
             await _client.LoginAsync(TokenType.Bot, token);
@@ -87,19 +94,14 @@ namespace GenshinLibrary
 
         private async Task Ready()
         {
-            await SetStatusAsync();
-        }
-
-        private async Task SetStatusAsync()
-        {
-            await _client.SetGameAsync($"gl!help | {_client.Guilds.Count} guilds");
+            await UpdateStatus();
         }
 
         private async Task OnJoin(SocketGuild guild)
         {
             if (guild.SystemChannel != null)
             {
-                var embed = _support.GetInfoEmbed();
+                var embed = Globals.HelpEmbed.ToEmbedBuilder();
                 embed.WithTitle("Thank you for inviting the bot!");
                 await guild.SystemChannel.SendMessageAsync(embed: embed.Build());
             }
@@ -107,13 +109,18 @@ namespace GenshinLibrary
             _ = Task.Run(async () => await guild.DownloadUsersAsync());
 
             await _dbl.UpdateStats(_client.Guilds.Count);
-            await SetStatusAsync();
+            await UpdateStatus();
         }
 
         private async Task OnLeave(SocketGuild guild)
         {
             await _dbl.UpdateStats(_client.Guilds.Count);
-            await SetStatusAsync();
+            await UpdateStatus();
+        }
+
+        private async Task UpdateStatus()
+        {
+            await _client.SetGameAsync($"{_client.Guilds.Count} guilds");
         }
 
         private Task Log(LogMessage arg)

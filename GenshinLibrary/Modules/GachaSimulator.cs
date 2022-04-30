@@ -1,130 +1,111 @@
 ﻿using Discord;
-using Discord.Commands;
-using GenshinLibrary.Commands;
+using Discord.Interactions;
+using Discord.WebSocket;
 using GenshinLibrary.Models;
+using GenshinLibrary.Pagers;
 using GenshinLibrary.Preconditions;
 using GenshinLibrary.Services.GachaSim;
+using GenshinLibrary.Services.Menus;
 using GenshinLibrary.Services.Wishes;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace GenshinLibrary.Modules
 {
-    [Group("sim")]
-    [Name("GachaSimulator")]
-    [Summary("Gacha simulator for you to play around with :)\nIf not used for 24 hours, your wish inventory resets.")]
-    public class GachaSimulator : GLInteractiveBase
+    public class GachaSimulator : InteractionModuleBase<SocketInteractionContext>
     {
-        private readonly WishService _wishes;
         private readonly GachaSimulatorService _sim;
+        private readonly WishService _wishes;
+        private readonly MenuService _menus;
 
-        private readonly string fileName = "result.png";
+        private const string FILE_NAME = "result.png";
 
-        public GachaSimulator(WishService wishes, GachaSimulatorService sim)
+        public GachaSimulator(GachaSimulatorService sim, WishService wishes, MenuService menus)
         {
-            _wishes = wishes;
             _sim = sim;
+            _menus = menus;
+            _wishes = wishes;
         }
 
-        [Command("wish", RunMode = RunMode.Async)]
-        [Ratelimit(7, WarnOnExceeded = false)]
-        [Summary("Wish on the gacha simulator.")]
-        public async Task Wish(
-            [Summary("The amount of wishes to make, from 1 to 100. Defaulted to 10 if not specified.")] int count = 10
-            )
+        [SlashCommand("gachasimulator", "Open the menu of the gacha simulator")]
+        public async Task GachaSimulatorMenu()
+        {
+            var menuId = _menus.CreateMenu(Context.User.Id);
+            var profile = _sim.GetOrCreateProfile(Context.User);
+            var embed = GetMenuEmbed(profile);
+            var components = GetMenuComponents(Context.User.Id, menuId);
+            await RespondAsync(components: components, embed: embed);
+        }
+
+        [ComponentInteraction("wishsim_menu:*,*")]
+        [VerifyUserAndMenu]
+        public async Task WishSimMenu(ulong userId, int menuId)
         {
             var profile = _sim.GetOrCreateProfile(Context.User);
-            var bannerName = profile.GetCurrentSession().Banner.GetFullName();
-            var pityBefore = profile.GetCurrentSession().CurrentFiveStarPity;
-            var wishCountBefore = profile.Inventory.Count;
+            var embed = GetMenuEmbed(profile);
+            var components = GetMenuComponents(Context.User.Id, menuId);
 
-            GachaSimWishItemRecord[] result;
-            try
+            var component = Context.Interaction as SocketMessageComponent;
+
+            await component.Message.ModifyAsync(x =>
             {
-                result = _sim.Wish(Context.User, count);
-            }
-            catch (Exception e)
+                x.Attachments = new Optional<IEnumerable<FileAttachment>>(Enumerable.Empty<FileAttachment>());
+                x.Components = components;
+                x.Embed = embed;
+            });
+            await component.UpdateAsync(x => { });
+
+            /*await component.UpdateAsync(x => 
             {
-                await ReplyAsync(e.Message);
-                return;
-            }
-
-            var pityAfter = profile.GetCurrentSession().CurrentFiveStarPity;
-            var wishCountAfter = profile.Inventory.Count;
-
-            var rarityColor = GenshinColors.GetRarityColor(result.Max(x => x.WishItem.Rarity));
-
-            var embed = new EmbedBuilder()
-                .WithTitle($"Wishing {(count == 1 ? "once" : $"{count} times")}... Pity: `{pityBefore}`")
-                .WithFooter($"Total wishes: {wishCountBefore} | Banner: {bannerName}")
-                .WithColor(Color.DarkGrey);
-
-            var message = await ReplyAsync(embed: embed.Build());
-            await Task.Delay(2500);
-
-            embed.WithColor(rarityColor)
-                .WithFooter($"Total wishes: {wishCountAfter} | Banner: {bannerName}")
-                .WithTitle($"Wishing {(count == 1 ? "once" : $"{count} times")}... Pity: `{pityBefore} -> {pityAfter}`");
-
-            await message.ModifyAsync(x => x.Embed = embed.Build());
-            await Task.Delay(1500);
-
-            var resultEmbed = new EmbedBuilder()
-                .WithColor(rarityColor);
-
-            if (count > 10)
-            {
-                var counts = new WishCounts(result);
-
-                resultEmbed.WithTitle($"{count} wishes results");
-
-                if (counts.Fivestars.Count > 0)
-                    resultEmbed.AddField("5★ items", string.Join('\n', counts.Fivestars.Select(x => FormatWishItemCount(x))));
-                if (counts.Fourstars.Count > 0)
-                    resultEmbed.AddField("4★ items", string.Join('\n', counts.Fourstars.Select(x => FormatWishItemCount(x))));
-                if (counts.Threestars.Count > 0)
-                    resultEmbed.AddField("3★ items", string.Join('\n', counts.Threestars.Select(x => FormatWishItemCount(x))));
-
-                await ReplyAsync(embed: resultEmbed.Build());
-                return;
-            }
-
-            var wishImage = new WishImage(result);
-            using var stream = wishImage.GetImage();
-
-            resultEmbed.WithImageUrl($"attachment://{fileName}");
-            await Context.Channel.SendFileAsync(stream, fileName, embed: resultEmbed.Build());
+                x.Attachments = new Optional<IEnumerable<FileAttachment>>(Enumerable.Empty<FileAttachment>());
+                x.Components = components;
+                x.Embed = embed;
+            });*/
         }
 
-        [Command("banner", RunMode = RunMode.Async)]
-        [Summary("Select a banner to wish on.")]
-        [Alias("wishon", "selectbanner", "select")]
-        [Ratelimit(5)]
-        public async Task SelectBanner(Banner banner)
+        [ComponentInteraction("wishsim_banners:*,*,*")]
+        [VerifyUserAndMenu]
+        public async Task WishSimBanners(ulong userId, int menuId, Banner banner)
         {
-            List<WishBanner> selection = _wishes.Banners.Values.Where(x => banner.HasFlag(x.BannerType) && x.GachaSimAvailable).ToList();
-            WishBanner selectedBanner = await BannerSelectionAsync(selection);
+            IEnumerable<EventWish> banners = _wishes.BannersByBID.Values.Where(x => banner.HasFlag(x.BannerType)).Cast<EventWish>().OrderByDescending(x => x.Date);
 
-            if (selectedBanner != null)
+            var row2 = new ActionRowBuilder();
+            switch (banner)
             {
-                _sim.ChangeBanner(Context.User, selectedBanner);
-                await ReplyAsync("Sucessfully changed banner.");
+                case Banner.Character: row2.AddComponent(new ButtonBuilder("Weapon", $"wishsim_banners:{Context.User.Id},{menuId},{(int)Banner.Weapon}", ButtonStyle.Secondary).Build()); break;
+                case Banner.Weapon: row2.AddComponent(new ButtonBuilder("Character", $"wishsim_banners:{Context.User.Id},{menuId},{(int)Banner.Character}", ButtonStyle.Secondary).Build()); break;
             }
+            row2.AddComponent(new ButtonBuilder("Standard", $"wishsim_banners_selected:{Context.User.Id},{menuId},{_wishes.StandardBID}", ButtonStyle.Secondary).Build())
+                .AddComponent(new ButtonBuilder("Beginner", $"wishsim_banners_selected:{Context.User.Id},{menuId},{_wishes.BeginnerBID}", ButtonStyle.Secondary).Build())
+                .AddComponent(new ButtonBuilder("Menu", $"wishsim_menu:{Context.User.Id},{menuId}", ButtonStyle.Secondary).Build());
+
+            var pager = new BannerSelectionPager(banners, "wishsim_banners_selected", menuId, row2);
+            _menus.SetMenuContent(userId, pager);
+
+            await pager.UpdateAsync(Context);
         }
 
-        [Command("inventory")]
-        [Alias("items", "inv")]
-        [Summary("View your current items.")]
-        [Ratelimit(5)]
-        public async Task History()
+        [ComponentInteraction("wishsim_banners_selected:*,*,*")]
+        [VerifyUserAndMenu]
+        public async Task WishSimBannersSelected(ulong userId, int menuId, int bid)
+        {
+            var profile = _sim.GetOrCreateProfile(Context.User);
+            var wish = _wishes.BannersByBID[bid];
+            profile.ChangeBanner(wish);
+
+            await WishSimMenu(userId, menuId);
+        }
+
+        [ComponentInteraction("wishsim_inventory:*,*")]
+        [VerifyUserAndMenu]
+        public async Task WishSimInventory(ulong userId, int menuId)
         {
             var profile = _sim.GetOrCreateProfile(Context.User);
 
             if (profile.Inventory.Count == 0)
             {
-                await ReplyAsync($"Your inventory is empty! Do some wishes using `{Globals.DefaultPrefix}sim wish`");
+                await RespondAsync($"Your inventory is empty! Do some wishes first.", ephemeral: true);
                 return;
             }
 
@@ -140,32 +121,132 @@ namespace GenshinLibrary.Modules
             var total = fivestar + fourstar + threestar;
 
             var embed = new EmbedBuilder()
-                .WithTitle($"{Context.User}")
                 .WithColor(Globals.MainColor)
-                .WithFooter($"{Globals.DefaultPrefix}sim reset - resets your inventory.")
                 .AddField("Stats",
                     $"Wishes: **{total}**\n" +
-                    $"3-star: **{threestar}** // **{threestar / (float)total:0.00%}**\n" +
-                    $"4-star: **{fourstar}** // **{fourstar / (float)total:0.00%}**\n" +
-                    $"5-star: **{fivestar}** // **{fivestar / (float)total:0.00%}**\n"
+                    $"3-star: **{threestar}** | **{threestar / (float)total:0.00%}**\n" +
+                    $"4-star: **{fourstar}** | **{fourstar / (float)total:0.00%}**\n" +
+                    $"5-star: **{fivestar}** | **{fivestar / (float)total:0.00%}**\n"
                     )
                 .AddField("5★ items", string.IsNullOrEmpty(fivestarsString) ? "None yet!" : fivestarsString)
                 .AddField("4★ items", string.IsNullOrEmpty(fourstarString) ? "None yet!" : fourstarString)
                 .AddField("3★ items", string.IsNullOrEmpty(threestarString) ? "None yet!" : threestarString);
 
-            await ReplyAsync(embed: embed.Build());
+            var cb = new ComponentBuilder().WithButton("Menu", $"wishsim_menu:{Context.User.Id},{menuId}", ButtonStyle.Secondary);
+            var component = Context.Interaction as SocketMessageComponent;
+            await component.UpdateAsync(x =>
+            {
+                x.Embed = embed.Build();
+                x.Components = cb.Build();
+            });
 
+            static string FormatWishItemCount(WishItemCount wic) => $"**{wic.WishItem.Name}** (x{wic.Count})";
         }
 
-        [Command("reset")]
-        [Summary("Reset your inventory.")]
-        [Ratelimit(5)]
-        public async Task ResetHistory()
+        [ComponentInteraction("wishsim_reset:*,*")]
+        [VerifyUserAndMenu]
+        public async Task WishSimReset(ulong userId, int menuId)
         {
             _sim.ResetProfile(Context.User);
-            await ReplyAsync("Sucessfully reset.");
+            await WishSimMenu(userId, menuId);
         }
 
-        private string FormatWishItemCount(WishItemCount wic) => $"**{wic.WishItem.Name}** (x{wic.Count})";
+        [ComponentInteraction("wishsim:*,*,*")]
+        [VerifyUserAndMenu]
+        public async Task WishSimButton(ulong userId, int menuId, int count)
+        {
+            var button1 = new ButtonBuilder("Wish 10", $"wishsim:{Context.User.Id},{menuId},10", ButtonStyle.Primary, emote: GenshinEmotes.Intertwined, isDisabled: true);
+            var button2 = new ButtonBuilder("Wish 1", $"wishsim:{Context.User.Id},{menuId},1", ButtonStyle.Primary, emote: GenshinEmotes.Intertwined, isDisabled: true);
+            var button3 = new ButtonBuilder("Menu", $"wishsim_menu:{Context.User.Id},{menuId}", ButtonStyle.Secondary, isDisabled: true);
+
+            var result = GetWishResult(count, Context.Interaction.User);
+
+            var component = Context.Interaction as SocketMessageComponent;
+
+            // Discord.NET please fix #358 in Labs so I don't have to do this SHIT
+            await component.Message.ModifyAsync(x =>
+            {
+                x.Attachments = new Optional<IEnumerable<FileAttachment>>(Enumerable.Empty<FileAttachment>());
+                x.Embed = result.Embeds[0];
+                x.Components = new ComponentBuilder().WithButton(button1).WithButton(button2).WithButton(button3).Build();
+            });
+            await component.UpdateAsync(x => { });
+            await Task.Delay(750);
+
+            await component.ModifyOriginalResponseAsync(x => x.Embed = result.Embeds[1]);
+            await Task.Delay(1500);
+
+            button1.WithDisabled(false);
+            button2.WithDisabled(false);
+            button3.WithDisabled(false);
+
+            using var stream = result.WishImage.GetImage();
+            using FileAttachment fa = new FileAttachment(stream, FILE_NAME);
+            await component.ModifyOriginalResponseAsync(x =>
+            {
+                x.Attachments = new[] { fa };
+                x.Embed = result.Embeds[2];
+                x.Components = new ComponentBuilder().WithButton(button1).WithButton(button2).WithButton(button3).Build();
+            });
+        }
+
+        private GachaSimResult GetWishResult(int count, IUser user)
+        {
+            var profile = _sim.GetOrCreateProfile(user);
+            var session = profile.GetCurrentSession();
+            var pityBefore = session.CurrentFiveStarPity;
+            var wishCountBefore = profile.Inventory.Count;
+
+            Embed[] embeds = new Embed[3];
+
+            var embed = new EmbedBuilder()
+                .WithAuthor(user)
+                .WithTitle($"Wishing {(count == 1 ? "once" : $"{count} times")}... Pity: `{pityBefore}`")
+                .WithFooter($"Total wishes: {wishCountBefore} | Banner: {session.Banner.GetFullName()}")
+                .WithColor(Color.DarkGrey);
+
+            embeds[0] = embed.Build();
+
+            GachaSimWishItemRecord[] result = result = _sim.Wish(Context.User, count);
+            var rarityColor = GenshinColors.GetRarityColor(result.Max(x => x.WishItem.Rarity));
+            embed.WithColor(rarityColor)
+                .WithTitle($"Wishing {(count == 1 ? "once" : $"{count} times")}... Pity: `{pityBefore} -> {session.CurrentFiveStarPity}`")
+                .WithFooter($"Total wishes: {profile.Inventory.Count} | Banner: {session.Banner.GetFullName()}");
+
+            embeds[1] = embed.Build();
+
+            embed.WithImageUrl($"attachment://{FILE_NAME}");
+
+            embeds[2] = embed.Build();
+
+            return new GachaSimResult(embeds, new GachaSimImage(result));
+        }
+
+        private Embed GetMenuEmbed(GachaSimulatorProfile profile)
+        {
+            var session = profile.GetCurrentSession();
+            var embed = new EmbedBuilder()
+                .WithColor(Globals.MainColor)
+                .WithTitle("Gacha simulator menu")
+                .WithFooter($"Total wishes: {profile.Inventory.Count} | Banner: {session.Banner.GetFullName()}");
+
+            if (session.Banner is EventWish ew)
+                embed.WithDescription($"__You are wishing on {session.Banner.Name}__\n{string.Join(", ", ew.RateUpFivestars.Select(x => x.GetNameWithEmotes()))}\n" +
+                    $"{string.Join("\n", ew.RateUpFourstars.Select(x => x.Name))}");
+            else
+                embed.WithDescription($"You are wishing on **{session.Banner.Name}**");
+
+            var wish = session.Banner as EventWish;
+
+            return embed.Build();
+        }
+
+        private static MessageComponent GetMenuComponents(ulong userId, int menuId) => new ComponentBuilder()
+               .WithButton("Wish 10", $"wishsim:{userId},{menuId},10", ButtonStyle.Primary, emote: GenshinEmotes.Intertwined)
+               .WithButton("Wish 1", $"wishsim:{userId},{menuId},1", ButtonStyle.Primary, emote: GenshinEmotes.Intertwined)
+               .WithButton("Banner", $"wishsim_banners:{userId},{menuId},{(int)Banner.Character}", ButtonStyle.Secondary, row: 1)
+               .WithButton("Inventory", $"wishsim_inventory:{userId},{menuId}", ButtonStyle.Secondary, row: 1)
+               .WithButton("Reset", $"wishsim_reset:{userId},{menuId}", ButtonStyle.Secondary, row: 1)
+               .Build();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using GenshinLibrary.Models;
 using GenshinLibrary.Services.GachaSim.Sessions;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace GenshinLibrary.Services.GachaSim.Banners
 {
@@ -12,8 +13,8 @@ namespace GenshinLibrary.Services.GachaSim.Banners
         public IReadOnlyList<WishItem> FourStarWeapons { get; }
         public IReadOnlyList<WishItem> Threestars { get; }
 
-        public StandardWish(bool gachaSimAvailable, int bid, string name, IEnumerable<WishItem> pool, float fiveStarChance, float fourStarChance, int fiveStarHardPity)
-            : base(gachaSimAvailable, pool, bid, name, Banner.Standard, fiveStarChance, fourStarChance, fiveStarHardPity)
+        public StandardWish(bool gachaSimAvailable, int bid, string name, IEnumerable<WishItem> pool, ReadOnlyCollection<double> fivestarChances, ReadOnlyCollection<double> fourstarChances)
+            : base(gachaSimAvailable, pool, bid, name, Banner.Standard, fivestarChances, fourstarChances)
         {
             List<WishItem> threestars = new List<WishItem>();
             List<WishItem> fourstarWeapons = new List<WishItem>();

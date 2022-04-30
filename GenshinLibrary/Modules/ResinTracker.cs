@@ -1,117 +1,152 @@
 ﻿using Discord;
-using Discord.Commands;
-using GenshinLibrary.Commands;
+using Discord.Interactions;
+using Discord.WebSocket;
 using GenshinLibrary.Models;
-using GenshinLibrary.Preconditions;
 using GenshinLibrary.Services.Resin;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace GenshinLibrary.Modules
 {
-    [Summary("Keep track of your resin outside of the game.")]
-    public class ResinTracker : GLInteractiveBase
+    public class ResinTracker : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly ResinTrackerService _resinTracker;
+
+        private static readonly Dictionary<ulong, int> _menus = new Dictionary<ulong, int>();
 
         public ResinTracker(ResinTrackerService resinTracker)
         {
             _resinTracker = resinTracker;
         }
 
-        [Command("setresin")]
-        [Summary("Update your resin.")]
-        [Alias("sr")]
-        [Ratelimit(5)]
-        public async Task SetResin(
-            [Summary("The value to set.")] int value,
-            [Summary("Current in-game resin countdown timer. Specify this in `0m0s` format.")] TimeSpan? nextIn = null
-            )
+        [SlashCommand("resin", "Open the resin menu")]
+        public async Task GetResin()
         {
-            if (value < 0 || value >= ResinUpdate.MaxResin)
+            if (_menus.TryGetValue(Context.User.Id, out int menuId))
+                menuId++;
+            else
+                menuId = 0;
+
+            _menus[Context.User.Id] = menuId;
+
+            var resinUpdate = _resinTracker.GetResinUpdate(Context.User.Id);
+            if (resinUpdate is null)
+                resinUpdate = await _resinTracker.SetValueAsync(Context.User.Id, DateTime.UtcNow, ResinUpdate.MAX_RESIN);
+
+            await RespondAsync(embed: GetResinEmbed(resinUpdate), components: GetResinMenuComponent(menuId));
+        }
+
+        [ComponentInteraction("subtract_resin:*,*,*")]
+        public async Task SubstractResin(ulong userId, int menuId, int toSubtract)
+        {
+            if (!VerifyMenu(userId, menuId))
+                return;
+
+            var resinUpdate = _resinTracker.GetResinUpdate(Context.User.Id);
+            if (resinUpdate.Value < toSubtract)
             {
-                await ReplyAsync($"Can only update to a value from 0 to {ResinUpdate.MaxResin - 1}.");
+                await RespondAsync($"Your resin is too low to subtract that amount", ephemeral: true);
                 return;
             }
 
-            var dt = DateTime.UtcNow;
-            if (nextIn.HasValue)
-            {
-                var ts = nextIn.Value;
-                if (ts > TimeSpan.FromMinutes(8))
-                {
-                    await ReplyAsync($"Cannot adjust by more than {ResinUpdate.RechargeRateMinutes} minutes.");
-                    return;
-                }
+            resinUpdate = await _resinTracker.SetValueAsync(Context.User.Id,
+                DateTime.UtcNow.Add(resinUpdate.UntilNext() - TimeSpan.FromMinutes(ResinUpdate.RESIN_RATE_MINUTES)),
+                resinUpdate.Value - toSubtract);
 
-                var rechargeRate = TimeSpan.FromMinutes(ResinUpdate.RechargeRateMinutes);
-                dt = dt.Add(ts - rechargeRate);
-            }
-
-            var resinUpdate = await _resinTracker.SetValueAsync(Context.User, dt, value);
-            var embed = new EmbedBuilder();
-            embed.WithAuthor(Context.User)
-                .WithColor(Globals.MainColor)
-                .WithDescription($"{GenshinEmotes.Resin} {ResinUpdate.GetResinString(resinUpdate.Value)}")
-                .WithFooter($"Next in {resinUpdate.UntilNext():hh\\:mm\\:ss}\nFully refills in {resinUpdate.UntilFullRefill():hh\\:mm\\:ss}");
-
-            await ReplyAsync("Done!", embed: embed.Build());
+            var component = Context.Interaction as SocketMessageComponent;
+            await component.UpdateAsync(x => x.Embed = GetResinEmbed(resinUpdate));
         }
 
-        [Command("resin")]
-        [Summary("View your resin.")]
-        [Alias("r")]
-        [Ratelimit(5)]
-        public async Task GetResin()
+        [ComponentInteraction("set_resin:*,*")]
+        public async Task SetResin(ulong userId, int menuId)
         {
-            var resinUpdate = _resinTracker.GetResinUpdate(Context.User);
-            var embed = new EmbedBuilder();
+            if (!VerifyMenu(userId, menuId))
+                return;
 
-            int currentResin = ResinUpdate.MaxResin;
+            var component = Context.Interaction as SocketMessageComponent;
+            await RespondWithModalAsync<ResinModal>($"resin_modal:{component.Message.Id}");
+        }
 
-            if (resinUpdate != null && !resinUpdate.IsFull)
+        public class ResinModal : IModal
+        {
+            public string Title => "Set your current resin";
+
+            [InputLabel("Current resin")]
+            [ModalTextInput("resin_value", TextInputStyle.Short, "Input your current in-game resin here", 1, 3)]
+            public string Resin { get; set; }
+
+            [InputLabel("Next resin in")]
+            [ModalTextInput("next_in", TextInputStyle.Short, "Resin countdown timer. Specify in 0m0s format.", 1, 4, "8m0s")]
+            public string NextIn { get; set; }
+        }
+
+        [ModalInteraction("resin_modal:*")]
+        public async Task ResinModalResponse(ulong messageId, ResinModal rm)
+        {
+            string[] formats =
             {
-                currentResin = resinUpdate.GetCurrentResin();
-                embed.WithFooter($"Next in {resinUpdate.UntilNext():hh\\:mm\\:ss}\nFully refills in {resinUpdate.UntilFullRefill():hh\\:mm\\:ss}");
+                "%m'm'%s's'",
+                "%m'm'",
+                "%s's'"
+            };
+
+            if (!TimeSpan.TryParseExact(rm.NextIn.ToLowerInvariant(), formats, CultureInfo.InvariantCulture, out TimeSpan ts))
+            {
+                await RespondAsync($"\"Next in\" is not specified in `0m0s` format.", ephemeral: true);
+                return;
+            }
+
+            if (!int.TryParse(rm.Resin, out int resin))
+            {
+                await RespondAsync($"\"Resin\" is not a number.", ephemeral: true);
+                return;
+            }
+
+            var rechargeRate = TimeSpan.FromMinutes(ResinUpdate.RESIN_RATE_MINUTES);
+            if (ts > rechargeRate)
+            {
+                await RespondAsync($"Cannot adjust by more than {ResinUpdate.RESIN_RATE_MINUTES} minutes.", ephemeral: true);
+                return;
+            }
+
+            if (resin < 0 || resin >= ResinUpdate.MAX_RESIN)
+            {
+                await RespondAsync($"Resin must be above 0 and below {ResinUpdate.MAX_RESIN}.", ephemeral: true);
+                return;
+            }
+
+            var resinUpdate = await _resinTracker.SetValueAsync(Context.User.Id, DateTime.UtcNow.Add(ts - rechargeRate), resin);
+            var msg = await Context.Interaction.Channel.GetMessageAsync(messageId) as IUserMessage;
+
+            await msg.ModifyAsync(x => x.Embed = GetResinEmbed(resinUpdate));
+            await RespondAsync("Succesffuly set your resin!", ephemeral: true);
+        }
+
+        private Embed GetResinEmbed(ResinUpdate ru)
+        {
+            var embed = new EmbedBuilder();
+            int currentResin = ResinUpdate.MAX_RESIN;
+
+            if (ru != null && !ru.IsFull)
+            {
+                currentResin = ru.GetCurrentResin();
+                embed.WithFooter($"Next in {ru.UntilNext():hh\\:mm\\:ss}\nFully refills in {ru.UntilFullRefill():hh\\:mm\\:ss}");
             }
 
             embed.WithAuthor(Context.User)
                 .WithColor(Globals.MainColor)
                 .WithDescription($"{GenshinEmotes.Resin} {ResinUpdate.GetResinString(currentResin)}");
 
-            await ReplyAsync(embed: embed.Build());
+            return embed.Build();
         }
 
-        [Command("subtract")]
-        [Summary("Subtracts a certain value from your current resin.")]
-        [Alias("subtractresin", "subr")]
-        [Ratelimit(5)]
-        public async Task SubtractResin(
-            [Summary("The value to subtract. Must be between 10 and 150.")] int subtract
-            )
-        {
-            if (subtract % 10 != 0 || subtract < 10 || subtract > ResinUpdate.MaxResin - 10)
-            {
-                await ReplyAsync($"Can only subtract a number that divides by 10 and that is between 10 and {ResinUpdate.MaxResin - 10}.");
-                return;
-            }
+        private MessageComponent GetResinMenuComponent(int menuId) => new ComponentBuilder()
+            .WithButton("Set resin", $"set_resin:{Context.User.Id},{menuId}", ButtonStyle.Primary, GenshinEmotes.Resin)
+            .WithButton("Subtract 20", $"subtract_resin:{Context.User.Id},{menuId},20", ButtonStyle.Secondary)
+            .Build();
 
-            var update = _resinTracker.GetResinUpdate(Context.User);
-
-            if (update is null)
-            {
-                await SetResin(ResinUpdate.MaxResin - subtract);
-                return;
-            }
-
-            int currentResin = update.GetCurrentResin();
-            if (currentResin < subtract)
-            {
-                await ReplyAsync($"Current resin ({currentResin}) is less than value to subtract.");
-                return;
-            }
-
-            await SetResin(currentResin - subtract, update.UntilNext());
-        }
+        private bool VerifyMenu(ulong userId, int menuId) => Context.User.Id == userId && _menus.TryGetValue(userId, out var oldMenuId) && oldMenuId == menuId;
     }
 }

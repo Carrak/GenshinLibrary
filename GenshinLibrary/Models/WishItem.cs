@@ -11,7 +11,6 @@ namespace GenshinLibrary.Models
         public Banner Banners { get; }
         public IEnumerable<string> Aliases { get; }
 
-        public abstract string IconPath { get; }
         public abstract string WishArtPath { get; }
         public string RarityImagePath { get; }
 
@@ -23,28 +22,6 @@ namespace GenshinLibrary.Models
             Banners = banners;
             Aliases = aliases;
             RarityImagePath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
-        }
-
-        public string GetFormattedName(int allowedLength)
-        {
-            string format = Rarity switch
-            {
-                3 => "[{0}]",
-                4 => "\"{0}\"",
-                5 => "\"[{0}]\"",
-                _ => "{0}"
-            };
-
-            string toFill = "...";
-            int max = allowedLength - (format.Length - 3);
-            string name;
-
-            if (Name.Length > max)
-                name = Name.Substring(0, max - toFill.Length) + toFill;
-            else
-                name = Name;
-
-            return string.Format(format, name);
         }
 
         public abstract string GetNameWithEmotes();

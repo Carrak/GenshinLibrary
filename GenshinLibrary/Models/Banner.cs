@@ -1,13 +1,14 @@
-﻿using GenshinLibrary.Attributes;
+﻿using Discord.Interactions;
 using System;
 
 namespace GenshinLibrary.Models
 {
     [Flags]
-    [EnumIgnore("Character1", "Character2")]
     public enum Banner
     {
+        [Hide]
         Character1 = 1,
+        [Hide]
         Character2 = 2,
         Character = 3,
         Weapon = 4,

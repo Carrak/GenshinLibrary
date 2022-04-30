@@ -9,82 +9,33 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 {
     class PrimogemCalculator
     {
-        public static readonly int UpdateDuration = 42;
-        public static readonly int FatePrice = 160;
-        public static readonly int EventAverage = 2200;
-        public static readonly int BannersPerUpdate = 2;
-
-        private int Days => (EndDate - StartDate).Days;
+        public const int VERSION_DURATION = 42;
+        public const int FATE_PRICE = 160;
+        public const int EVENTS_AVERAGE = 2200;
+        public const int BANNERS_PER_VERSION = 2;
 
         private DateTime StartDate { get; }
         private DateTime EndDate { get; }
         private PrimogemCalculatorSettings Settings { get; }
-        private Version CurrentVersion { get; }
-        private Version ReachedVersion { get; }
+        private List<GameVersion> Versions { get; } = new List<GameVersion>();
 
-        private List<Version> Versions { get; } = new List<Version>();
+        private int Days => (EndDate - StartDate).Days;
+        private GameVersion CurrentVersion => Versions[0];
+        private GameVersion ReachedVersion => Versions[^1];
 
-        public PrimogemCalculator(DateTime start, DateTime end, PrimogemCalculatorSettings settings = null)
+        public PrimogemCalculator(DateTime start, List<GameVersion> versions, int banner, PrimogemCalculatorSettings settings)
         {
-            var currentVersion = Globals.GetConfig().Version;
-
-            Settings = settings;
-            StartDate = start;
-            EndDate = end;
-            Versions = GetVersions(currentVersion, end);
-            CurrentVersion = Versions[0];
-            ReachedVersion = Versions[^1];
-        }
-
-        public PrimogemCalculator(DateTime start, string versionName, int banner, PrimogemCalculatorSettings settings = null)
-        {
-            var currentVersion = Globals.GetConfig().Version;
-            var versions = new List<Version>();
-            Version version = null;
-            var tempVersions = GetVersions(currentVersion, 5);
-
-            foreach (var ver in tempVersions)
-            {
-                versions.Add(ver);
-                if (ver.VersionName == versionName)
-                {
-                    version = ver;
-                    break;
-                }
-            }
-
-            if (version is null)
-                throw new ArgumentException("No such version exists or version out of boundaries.\nCannot specify versions that have already ended or versions that are more than 5 versions ahead of the current one.");
-
-            if (banner < 1 || banner > BannersPerUpdate)
-                throw new ArgumentException($"Invalid banner value. Specify a number from 1 to {BannersPerUpdate}");
-
-            TimeSpan bannerDuration = (version.End - version.Start) / BannersPerUpdate;
             Versions = versions;
+            TimeSpan bannerDuration = (ReachedVersion.End - ReachedVersion.Start) / BANNERS_PER_VERSION;
             Settings = settings;
             StartDate = start;
-            EndDate = version.Start + bannerDuration * banner - TimeSpan.FromDays(1);
-            CurrentVersion = tempVersions[0];
-            ReachedVersion = version;
+            EndDate = ReachedVersion.Start + bannerDuration * banner - TimeSpan.FromDays(1);
         }
 
         public Embed ConstructEmbed()
         {
-            var totals = GetTotals();
-
-            string footer = "S - Sojourner, G - Gnostic.";
-            if (Settings.Events)
-                footer += "\nRewards for events are average per update.";
-
             var embed = new EmbedBuilder();
-            embed.WithColor(Globals.MainColor)
-                .WithTitle($"Primogem calculator")
-                .WithDescription(
-                $"Period: **{StartDate:dd.MM.yyyy}** - **{EndDate:dd.MM.yyyy}** (**{Days}** days)\n" +
-                $"Version: {ReachedVersion.Info()}\n" +
-                $"Banner: {GetCurrentBannerString()}"
-                )
-                .WithFooter(footer);
+            var totals = GetTotals();
 
             int totalGems = 0;
             int totalAcquaint = 0;
@@ -99,26 +50,35 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 totalIntertwined += totalCurrencies[2];
             }
 
-            int totalRolls = totalGems / FatePrice + totalAcquaint + totalIntertwined;
+            int totalRolls = totalGems / FATE_PRICE + totalAcquaint + totalIntertwined;
             int fourStars = (int)(totalRolls * 0.13);
-            int starglitter = fourStars * 2;
+            int starglitter = fourStars * 3;
 
-            int extraRolls = totalGems / FatePrice;
-            int extraGems = totalGems % FatePrice;
+            int extraRolls = totalGems / FATE_PRICE;
+            int extraGems = totalGems % FATE_PRICE;
 
-            embed.AddField($"= Grand total =",
-                $"**{totalGems}**{GenshinEmotes.Primogem} " +
-                $"(**{extraRolls}** {GenshinEmotes.Intertwined}/{GenshinEmotes.Acquaint} and **{extraGems}**{GenshinEmotes.Primogem})\n" +
-                $"**{totalIntertwined}**{GenshinEmotes.Intertwined} (**{totalIntertwined + extraRolls}**{GenshinEmotes.Intertwined} w/ the primogems)\n" +
-                $"**{totalAcquaint}**{GenshinEmotes.Acquaint} (**{totalAcquaint + extraRolls}**{GenshinEmotes.Acquaint} w/ the primogems)\n" +
-                $"**{starglitter}**{GenshinEmotes.Starglitter} (avg)");
+            embed.Fields.Insert(0, new EmbedFieldBuilder()
+            {
+                Name = $"{GenshinEmotes.Intertwined} GRAND TOTAL",
+                Value =
+                $"**{totalIntertwined + extraRolls}**{GenshinEmotes.Intertwined} or **{totalAcquaint + extraRolls}**{GenshinEmotes.Acquaint} + **{extraGems}**{GenshinEmotes.Primogem}\n" +
+                $"**{totalGems}**{GenshinEmotes.Primogem}, **{totalIntertwined}**{GenshinEmotes.Intertwined}, **{totalAcquaint}**{GenshinEmotes.Acquaint}, **{starglitter}**{GenshinEmotes.Starglitter}"
+            });
+
+            embed.WithColor(Globals.MainColor)
+                .WithTitle($"Primogem calculator")
+                .WithFooter($"Period: {StartDate:dd.MM.yyyy} - {EndDate:dd.MM.yyyy} ({Days} days)\n" +
+                $"Version: {ReachedVersion.VersionName} | {ReachedVersion.Start:dd.MM.yyyy} - {ReachedVersion.End:dd.MM.yyyy}\n" +
+                $"Banner: {GetCurrentBannerString()}\n" +
+                $"Event rewards and starglitter are averaged\n" +
+                $"S - Sojourner, G - Gnostic");
 
             return embed.Build();
         }
 
         private string GetCurrentBannerString()
         {
-            int banner = (int)((EndDate - ReachedVersion.Start) / (ReachedVersion.End - ReachedVersion.Start) * BannersPerUpdate);
+            int banner = (int)((EndDate - ReachedVersion.Start) / TimeSpan.FromDays(VERSION_DURATION) * BANNERS_PER_VERSION);
             string bannerString = banner switch
             {
                 0 => "1st",
@@ -126,9 +86,9 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 _ => throw new NotImplementedException()
             };
 
-            var daysPerBanner = UpdateDuration / BannersPerUpdate;
-            var bannerStart = ReachedVersion.Start + TimeSpan.FromDays(UpdateDuration / BannersPerUpdate) * banner;
-            return $"**{bannerString}** // **{bannerStart:dd.MM.yyyy}** - **{bannerStart.AddDays(daysPerBanner):dd.MM.yyyy}**";
+            var daysPerBanner = VERSION_DURATION / BANNERS_PER_VERSION;
+            var bannerStart = ReachedVersion.Start + TimeSpan.FromDays(VERSION_DURATION / BANNERS_PER_VERSION) * banner;
+            return $"{bannerString} | {bannerStart:dd.MM.yyyy} - {bannerStart.AddDays(daysPerBanner):dd.MM.yyyy}";
         }
 
         private IEnumerable<RewardTotal> GetTotals()
@@ -167,7 +127,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             if (monthlyResets != 0)
                 totals.Add(new RewardTotal(GenshinEmotes.Stardust, "Stardust shop", new Reward(Currency.Acquaint, monthlyResets, 5), new Reward(Currency.Intertwined, monthlyResets, 5)));
 
-            int codes = DateCalculator(CurrentVersion.Start - TimeSpan.FromDays(12), i => i.AddDays(UpdateDuration));
+            int codes = DateCalculator(CurrentVersion.Start - TimeSpan.FromDays(12), i => i.AddDays(VERSION_DURATION));
             int reachedUpdateDays = Math.Min((EndDate - ReachedVersion.Start).Days + 1, Days);
             int currentUpdateDays = Math.Min((CurrentVersion.End - StartDate).Days, Days);
 
@@ -184,7 +144,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
                 totals.Add(events);
 
             // Test runs
-            int testRuns = DateCalculator(CurrentVersion.Start, i => i.AddDays(UpdateDuration / 2));
+            int testRuns = DateCalculator(CurrentVersion.Start, i => i.AddDays(VERSION_DURATION / 2));
             if (testRuns != 0)
                 totals.Add(new RewardTotal(GenshinEmotes.Primogem, "Test Runs", new Reward(Currency.Primogems, testRuns, 20)));
 
@@ -206,13 +166,13 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
             if (currentUpdateDays > 0)
             {
-                events.Rewards.Add(new Reward(Currency.Primogems, 1, EventAverage * currentUpdateDays / UpdateDuration));
+                events.Rewards.Add(new Reward(Currency.Primogems, 1, EVENTS_AVERAGE * currentUpdateDays / VERSION_DURATION));
                 updateNames.Add($"{Versions[0]}");
             }
 
             if (Versions.Count > 2)
             {
-                events.Rewards.Add(new Reward(Currency.Primogems, Versions.Count - 2, EventAverage));
+                events.Rewards.Add(new Reward(Currency.Primogems, Versions.Count - 2, EVENTS_AVERAGE));
                 if (Versions.Count > 3)
                     updateNames.Add($"{Versions[1]}-{Versions[^2]}");
                 else
@@ -221,7 +181,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
             if (Versions.Count > 1)
             {
-                events.Rewards.Add(new Reward(Currency.Primogems, 1, EventAverage * reachedUpdateDays / UpdateDuration));
+                events.Rewards.Add(new Reward(Currency.Primogems, 1, EVENTS_AVERAGE * reachedUpdateDays / VERSION_DURATION));
                 updateNames.Add($"{ReachedVersion}");
             }
 
@@ -380,36 +340,36 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             return hoyolab;
         }
 
-        private List<Version> GetVersions(Version current, int count)
+        private List<GameVersion> GetVersions(GameVersion current, int count)
         {
-            List<Version> versions = new List<Version>();
+            List<GameVersion> versions = new List<GameVersion>();
             int version = 0;
 
             for (DateTime i = current.Start; version < count; i = Increment(i))
             {
                 var next = Increment(i);
-                versions.Add(new Version(i, next, $"{current.Major + (current.Minor + version) / 10}.{(current.Minor + version) % 10}"));
+                versions.Add(new GameVersion(i, next, $"{current.Major + (current.Minor + version) / 10}.{(current.Minor + version) % 10}"));
                 version++;
             }
 
             return versions;
-            static DateTime Increment(DateTime dt) => dt.AddDays(UpdateDuration);
+            static DateTime Increment(DateTime dt) => dt.AddDays(VERSION_DURATION);
         }
 
-        private List<Version> GetVersions(Version current, DateTime end)
+        private List<GameVersion> GetVersions(GameVersion current, DateTime end)
         {
-            List<Version> versions = new List<Version>();
+            List<GameVersion> versions = new List<GameVersion>();
             int version = 0;
 
             for (DateTime i = current.Start; i <= end; i = Increment(i))
             {
                 var next = Increment(i);
-                versions.Add(new Version(i, next, $"{current.Major + (current.Minor + version) / 10}.{(current.Minor + version) % 10}"));
+                versions.Add(new GameVersion(i, next, $"{current.Major + (current.Minor + version) / 10}.{(current.Minor + version) % 10}"));
                 version++;
             }
 
             return versions;
-            static DateTime Increment(DateTime dt) => dt.AddDays(UpdateDuration);
+            static DateTime Increment(DateTime dt) => dt.AddDays(VERSION_DURATION);
         }
 
         private int DateCalculator(DateTime start, Func<DateTime, DateTime> incrementFunc)

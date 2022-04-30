@@ -1,6 +1,7 @@
 ﻿using GenshinLibrary.Models;
 using GenshinLibrary.Services.GachaSim.Sessions;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace GenshinLibrary.Services.GachaSim
 {
@@ -10,28 +11,20 @@ namespace GenshinLibrary.Services.GachaSim
         public int BID { get; }
         public string Name { get; }
         public Banner BannerType { get; }
-
-        public float SoftPityChance = 0.33f;
-        public float FiveStarChance { get; }
-        public float FourStarChance { get; }
-
-        public int FiveStarHardPity { get; }
-        public int FourStarHardPity { get; } = 10;
-        public int FiveStarSoftPity => FiveStarHardPity - 15;
-        public int FourStarSoftPity => FourStarHardPity - 3;
+        public ReadOnlyCollection<double> FivestarChances { get; }
+        public ReadOnlyCollection<double> FourstarChances { get; }
 
         public IEnumerable<WishItem> Pool { get; }
 
-        protected WishBanner(bool gachaSimAvailable, IEnumerable<WishItem> pool, int bid, string name, Banner bannerType, float fiveStarChance, float fourStarChance, int fiveStarHardPity)
+        protected WishBanner(bool gachaSimAvailable, IEnumerable<WishItem> pool, int bid, string name, Banner bannerType, ReadOnlyCollection<double> fivestarChances, ReadOnlyCollection<double> fourstarChances)
         {
             GachaSimAvailable = gachaSimAvailable;
             Pool = pool;
             BID = bid;
             Name = name;
             BannerType = bannerType;
-            FiveStarChance = fiveStarChance;
-            FourStarChance = fourStarChance;
-            FiveStarHardPity = fiveStarHardPity;
+            FivestarChances = fivestarChances;
+            FourstarChances = fourstarChances;
         }
 
         public virtual string GetFullName() => Name;

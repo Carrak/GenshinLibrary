@@ -3,7 +3,7 @@ using System;
 
 namespace GenshinLibrary.Calculators.PrimogemCalculator
 {
-    public class Version
+    public class GameVersion
     {
         public string VersionName { get; }
         public DateTime Start { get; }
@@ -12,7 +12,7 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
         public int Minor { get; }
 
         [JsonConstructor]
-        public Version(
+        public GameVersion(
             [JsonProperty("start")] DateTime start,
             [JsonProperty("end")] DateTime end,
             [JsonProperty("version_name")] string versionName)
@@ -24,11 +24,6 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
             var split = versionName.Split('.');
             Major = int.Parse(split[0]);
             Minor = int.Parse(split[1]);
-        }
-
-        public string Info()
-        {
-            return $"**{VersionName}** // **{Start:dd.MM.yyyy}** - **{End:dd.MM.yyyy}**";
         }
 
         public override string ToString()

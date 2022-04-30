@@ -7,9 +7,11 @@ using GenshinLibrary.Services.GachaSim.Banners;
 using GenshinLibrary.Services.Wishes.Filtering;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +24,7 @@ namespace GenshinLibrary.Services.Wishes
         {
             await InitWishItems();
             await InitEventWishesAsync();
-            await InitServers();
+            await InitServersAsync();
         }
 
         private async Task InitWishItems()
@@ -54,7 +56,7 @@ namespace GenshinLibrary.Services.Wishes
             foreach (var weapon in weapons)
                 AddWishItem(weapon);
 
-            WishItems = wishitems.ToImmutable();
+            WishItemsByName = wishitems.ToImmutable();
             WishItemsByWID = wishitemsbywid.ToImmutable();
 
             void AddWishItem(WishItem wi)
@@ -73,27 +75,24 @@ namespace GenshinLibrary.Services.Wishes
 
         private async Task InitEventWishesAsync()
         {
-            foreach (var wi in WishItems.Values.Distinct())
+            foreach (var wi in WishItemsByName.Values.Distinct())
                 if (!File.Exists(wi.WishArtPath))
                     Console.WriteLine($"{wi.Name} does not have a wish art image.");
 
-            float baseFivestarChance = 0.006f;
-            float baseFourstarChance = 0.051f;
-            int baseHardpity = 90;
-
-            float weaponFivestarChance = 0.007f;
-            float weaponFourstarChance = 0.06f;
-            int weaponHardpity = 80;
-
-            var wishItems = WishItems.Values;
+            var wishItems = WishItemsByName.Values;
             var standardItems = wishItems.Where(x => x.Banners.HasFlag(Banner.Standard));
 
             var banners = ImmutableDictionary.CreateBuilder<int, WishBanner>();
 
-            var noelle = WishItems["Noelle"];
+            ReadOnlyCollection<double> weaponFourstarChances = CreateFromRanges(ArrRange(7, 0.06), new[] { 0.32, 1.0 });
+            ReadOnlyCollection<double> characterFourstarChances = CreateFromRanges(ArrRange(8, 0.051), new[] { 0.32, 1.0 });
+            ReadOnlyCollection<double> weaponFivestarChances = CreateFromRanges(ArrRange(62, 0.007), new[] { 0.08, 0.16 }, ArrRange(15, 0.32), new[] { 1.0 });
+            ReadOnlyCollection<double> characterFivestarChances = CreateFromRanges(ArrRange(73, 0.006), new[] { 0.08, 0.16 }, ArrRange(14, 0.32), new[] { 1.0 });
+
+            var noelle = WishItemsByName["Noelle"];
             var beginnerItems = wishItems.Where(x => x.Banners.HasFlag(Banner.Beginner)).Where(x => x.WID != noelle.WID);
-            banners[StandardBID] = new StandardWish(GachaSimAvailable(standardItems), StandardBID, "Standard", standardItems, baseFivestarChance, baseFourstarChance, baseHardpity);
-            banners[BeginnerBID] = new BeginnerWish(GachaSimAvailable(beginnerItems), BeginnerBID, "Beginner", beginnerItems, noelle, baseFivestarChance, baseFourstarChance, baseHardpity);
+            banners[StandardBID] = new StandardWish(GachaSimAvailable(standardItems), StandardBID, "Standard", standardItems, characterFivestarChances, characterFourstarChances);
+            banners[BeginnerBID] = new BeginnerWish(GachaSimAvailable(beginnerItems), BeginnerBID, "Beginner", beginnerItems, noelle, characterFivestarChances, characterFourstarChances);
 
             string[] starterNames = { "Amber", "Kaeya", "Lisa" };
             var standardNoStarters = standardItems.Where(x => !starterNames.Contains(x.Name));
@@ -110,20 +109,38 @@ namespace GenshinLibrary.Services.Wishes
                 {
                     case Banner.Character1:
                     case Banner.Character2:
-                        banners[eventWish.BID] = new EventWish(gachaSimAvailable, eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.5f, eventWish.Type, rateupPool, standardNoWeapons, baseFivestarChance, baseFourstarChance, baseHardpity);
+                        banners[eventWish.BID] = new EventWish(gachaSimAvailable, eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.5f, eventWish.Type, rateupPool, standardNoWeapons, characterFivestarChances, characterFourstarChances);
                         break;
                     case Banner.Weapon:
-                        banners[eventWish.BID] = new EventWish(gachaSimAvailable, eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.75f, eventWish.Type, rateupPool, standardNoCharacters, weaponFivestarChance, weaponFourstarChance, weaponHardpity);
+                        banners[eventWish.BID] = new EventWish(gachaSimAvailable, eventWish.BID, eventWish.Name, eventWish.DateStarted, 0.75f, eventWish.Type, rateupPool, standardNoCharacters, weaponFivestarChances, weaponFourstarChances);
                         break;
                 }
             }
 
-            Banners = banners.ToImmutable();
+            BannersByBID = banners.ToImmutable();
         }
 
-        private bool GachaSimAvailable(IEnumerable<WishItem> wishItems) => !wishItems.Any(x => !File.Exists(x.WishArtPath));
+        private static bool GachaSimAvailable(IEnumerable<WishItem> wishItems) => !wishItems.Any(x => !File.Exists(x.WishArtPath));
 
-        private async Task InitServers()
+        private static double[] ArrRange(int count, double value)
+        {
+            var arr = new double[count];
+            for (int i = 0; i < count; i++)
+                arr[i] = value;
+            return arr;
+        }
+
+        private static ReadOnlyCollection<double> CreateFromRanges(params double[][] arrays)
+        {
+            List<double> result = new();
+            for (int i = 0; i < arrays.Length; i++)
+                for (int j = 0; j < arrays[i].Length; j++)
+                    result.Add(arrays[i][j]);
+
+            return result.AsReadOnly();
+        }
+
+        private async Task InitServersAsync()
         {
             string query = "SELECT gl.get_servers()";
 
@@ -132,10 +149,10 @@ namespace GenshinLibrary.Services.Wishes
 
             await reader.ReadAsync();
 
-            Servers = JsonConvert.DeserializeObject<IEnumerable<ServerInfo>>(reader.GetString(0)).ToDictionary(x => x.ServerID);
+            ServersBySID = JsonConvert.DeserializeObject<IEnumerable<ServerInfo>>(reader.GetString(0)).ToDictionary(x => x.ServerID);
         }
 
-        public async Task<Dictionary<Banner, BannerStats>> GetAnalyticsAsync(IUser user)
+        public async Task<Result<Dictionary<Banner, BannerStats>>> GetAnalyticsAsync(IUser user)
         {
             string query = @"
             SELECT gl.get_analytics(@uid);
@@ -144,23 +161,31 @@ namespace GenshinLibrary.Services.Wishes
             await using var cmd = _database.GetCommand(query);
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
 
-            await using var reader = await cmd.ExecuteReaderAsync();
-            await reader.ReadAsync();
+            try
+            {
+                await using var reader = await cmd.ExecuteReaderAsync();
 
-            if (await reader.IsDBNullAsync(0))
-                return null;
+                await reader.ReadAsync();
 
-            JObject json = JObject.Parse(reader.GetString(0));
-            Dictionary<Banner, BannerStats> banners = new Dictionary<Banner, BannerStats>();
-            banners[Banner.Beginner] = JsonConvert.DeserializeObject<BannerStats>(json["beginner"].ToString());
-            banners[Banner.Standard] = JsonConvert.DeserializeObject<BannerStats>(json["standard"].ToString());
-            banners[Banner.Character] = JsonConvert.DeserializeObject<EventBannerStats>(json["character"].ToString());
-            banners[Banner.Weapon] = JsonConvert.DeserializeObject<EventBannerStats>(json["weapon"].ToString());
+                if (await reader.IsDBNullAsync(0))
+                    return null;
 
-            return banners;
+                JObject json = JObject.Parse(reader.GetString(0));
+                Dictionary<Banner, BannerStats> banners = new();
+                banners[Banner.Beginner] = JsonConvert.DeserializeObject<BannerStats>(json["beginner"].ToString());
+                banners[Banner.Standard] = JsonConvert.DeserializeObject<BannerStats>(json["standard"].ToString());
+                banners[Banner.Character] = JsonConvert.DeserializeObject<EventBannerStats>(json["character"].ToString());
+                banners[Banner.Weapon] = JsonConvert.DeserializeObject<EventBannerStats>(json["weapon"].ToString());
+
+                return new Result<Dictionary<Banner, BannerStats>>(banners, true, null);
+            }
+            catch(PostgresException pe)
+            {
+                return new Result<Dictionary<Banner, BannerStats>>(null, false, pe.MessageText);
+            }
         }
 
-        public async Task RemoveWishesAsync(IEnumerable<CompleteWishItemRecord> records)
+        public async Task<int> RemoveWishesAsync(IEnumerable<CompleteWishItemRecord> records)
         {
             string query = @"
             DELETE FROM gl.wishes WHERE wishid IN (SELECT * FROM unnest(@wishids))
@@ -169,7 +194,7 @@ namespace GenshinLibrary.Services.Wishes
             await using var cmd = _database.GetCommand(query);
             cmd.Parameters.AddWithValue("wishids", records.Select(x => x.WishID).ToArray());
 
-            await cmd.ExecuteNonQueryAsync();
+            return await cmd.ExecuteNonQueryAsync();
         }
 
         public async Task<IEnumerable<CompleteWishItemRecord>> GetRecentRecordsAsync(IUser user, Banner banner, int limit)
@@ -193,7 +218,7 @@ namespace GenshinLibrary.Services.Wishes
             if (!reader.HasRows)
                 return null;
 
-            List<CompleteWishItemRecord> records = new List<CompleteWishItemRecord>();
+            List<CompleteWishItemRecord> records = new();
             while (await reader.ReadAsync())
             {
                 int wid = reader.GetInt32(0);
@@ -201,16 +226,16 @@ namespace GenshinLibrary.Services.Wishes
                 DateTime dt = reader.GetDateTime(2);
                 int bannerType = reader.GetInt32(3);
 
-                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], 0, wishid, (Banner)bannerType));
+                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], 0, 0, wishid, (Banner)bannerType));
             }
 
             return records;
         }
 
-        public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, WishHistoryFilters filters = null)
+        public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, bool sp, WishHistoryFilters filters = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity, banner_type FROM gl.get_detailed_wishes(@uid, @banner, @sp)
+            SELECT wid, datetime, wishid, pity_five, pity_four, banner_type FROM gl.get_detailed_wishes(@uid, @banner, @sp)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -224,32 +249,33 @@ namespace GenshinLibrary.Services.Wishes
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
             cmd.Parameters.AddWithValue("banner", (int)banner);
-            cmd.Parameters.AddWithValue("sp", filters?.SeparatePity ?? false);
+            cmd.Parameters.AddWithValue("sp", sp);
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
             if (!reader.HasRows)
                 return null;
 
-            List<CompleteWishItemRecord> records = new List<CompleteWishItemRecord>();
+            List<CompleteWishItemRecord> records = new();
             while (await reader.ReadAsync())
             {
                 int wid = reader.GetInt32(0);
                 DateTime dt = reader.GetDateTime(1);
                 int wishid = reader.GetInt32(2);
-                int pity = reader.GetInt32(3);
-                int bannerType = reader.GetInt32(4);
+                int pityFive = reader.GetInt32(3);
+                int pityFour = reader.GetInt32(4);
+                int bannerType = reader.GetInt32(5);
 
-                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pity, wishid, (Banner)bannerType));
+                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pityFive, pityFour, wishid, (Banner)bannerType));
             }
 
             return records;
         }
 
-        public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, EventWish eventWish, WishHistoryFilters filters = null)
+        public async Task<IEnumerable<CompleteWishItemRecord>> GetBannerWishesAsync(IUser user, int bid, WishHistoryFilters filters = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity, banner_type FROM gl.get_banner_wishes(@uid, @bid, @sp)
+            SELECT wid, datetime, wishid, pity_five, pity_four, banner_type FROM gl.get_banner_wishes(@uid, @bid, false)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -262,24 +288,25 @@ namespace GenshinLibrary.Services.Wishes
             }
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
-            cmd.Parameters.AddWithValue("bid", eventWish.BID);
-            cmd.Parameters.AddWithValue("sp", filters?.SeparatePity ?? false);
+            cmd.Parameters.AddWithValue("bid", bid);
+            //cmd.Parameters.AddWithValue("sp", filters?.SeparatePity ?? false);
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
             if (!reader.HasRows)
                 return null;
 
-            List<CompleteWishItemRecord> records = new List<CompleteWishItemRecord>();
+            List<CompleteWishItemRecord> records = new();
             while (await reader.ReadAsync())
             {
                 int wid = reader.GetInt32(0);
                 DateTime dt = reader.GetDateTime(1);
                 int wishid = reader.GetInt32(2);
-                int pity = reader.GetInt32(3);
-                int bannerType = reader.GetInt32(4);
+                int pityFive = reader.GetInt32(3);
+                int pityFour = reader.GetInt32(4);
+                int bannerType = reader.GetInt32(5);
 
-                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pity, wishid, (Banner)bannerType));
+                records.Add(new CompleteWishItemRecord(dt, WishItemsByWID[wid], pityFive, pityFour, wishid, (Banner)bannerType));
             }
 
             return records;
@@ -315,8 +342,8 @@ namespace GenshinLibrary.Services.Wishes
             await reader.ReadAsync();
 
             RawProfile rawProfile = JsonConvert.DeserializeObject<RawProfile>(reader.GetString(0));
-            List<WishCount> weapons = new List<WishCount>();
-            List<WishCount> characters = new List<WishCount>();
+            List<WishCount> weapons = new();
+            List<WishCount> characters = new();
             Character avatar = rawProfile.AvatarWID.HasValue ? WishItemsByWID[rawProfile.AvatarWID.Value] as Character : null;
 
             if (rawProfile.Weapons != null)

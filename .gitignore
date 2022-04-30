@@ -364,5 +364,6 @@ FodyWeavers.xsd
 GenshinLibrary/bin
 GenshinLibrary/obj
 GenshinLibrary/Characters
+GenshinLibrary/Weapons
 GenshinLibrary/genlibconfig.json
 GenshinLibrary/GachaSim
