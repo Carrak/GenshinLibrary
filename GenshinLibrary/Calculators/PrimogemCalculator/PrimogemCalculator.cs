@@ -59,11 +59,17 @@ namespace GenshinLibrary.Calculators.PrimogemCalculator
 
             embed.Fields.Insert(0, new EmbedFieldBuilder()
             {
-                Name = $"{GenshinEmotes.Intertwined} GRAND TOTAL",
-                Value =
-                $"**{totalIntertwined + extraRolls}**{GenshinEmotes.Intertwined} or **{totalAcquaint + extraRolls}**{GenshinEmotes.Acquaint} + **{extraGems}**{GenshinEmotes.Primogem}\n" +
-                $"**{totalGems}**{GenshinEmotes.Primogem}, **{totalIntertwined}**{GenshinEmotes.Intertwined}, **{totalAcquaint}**{GenshinEmotes.Acquaint}, **{starglitter}**{GenshinEmotes.Starglitter}"
+                Name = $"{GenshinEmotes.Primogem} INTERTWINED TOTAL",
+                Value = $"**{totalIntertwined + extraRolls}**{GenshinEmotes.Intertwined} + **{extraGems}**{GenshinEmotes.Primogem}"
             });
+
+            embed.Fields.Insert(1, new EmbedFieldBuilder()
+            {
+                Name = $"{GenshinEmotes.Primogem} Reward breakdown",
+                Value = $"**{totalGems}**{GenshinEmotes.Primogem}, **{totalIntertwined}**{GenshinEmotes.Intertwined}, **{totalAcquaint}**{GenshinEmotes.Acquaint}, **{starglitter}**{GenshinEmotes.Starglitter}"
+            });
+
+
 
             embed.WithColor(Globals.MainColor)
                 .WithTitle($"Primogem calculator")
