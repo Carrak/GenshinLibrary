@@ -43,7 +43,7 @@ namespace GenshinLibrary.Modules
         [SlashCommand("send", "remove")]
         public async Task Send()
         {
-            var channel = Context.Client.GetGuild(Globals.GenshinLibraryGuildID).GetChannel(Globals.GetConfig().) as ITextChannel;
+            var channel = Context.Client.GetChannel(Globals.GetConfig().ChangelogChannelId) as ITextChannel;
             await channel.SendMessageAsync(embed: GetEmbed());
         }
 
