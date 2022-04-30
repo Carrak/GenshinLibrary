@@ -53,7 +53,7 @@ namespace GenshinLibrary.Modules
 
             resinUpdate = await _resinTracker.SetValueAsync(Context.User.Id,
                 DateTime.UtcNow.Add(resinUpdate.UntilNext() - TimeSpan.FromMinutes(ResinUpdate.RESIN_RATE_MINUTES)),
-                resinUpdate.Value - toSubtract);
+                resinUpdate.GetCurrentResin() - toSubtract);
 
             var component = Context.Interaction as SocketMessageComponent;
             await component.UpdateAsync(x => x.Embed = GetResinEmbed(resinUpdate));
