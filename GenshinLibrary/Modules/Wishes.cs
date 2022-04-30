@@ -399,7 +399,7 @@ namespace GenshinLibrary.Modules
 
             if (summary is null)
             {
-                await ReplyAsync("The user has not obtained this character/weapon yet!");
+                await RespondAsync("The user has not obtained this character/weapon yet!");
                 return;
             }
 
