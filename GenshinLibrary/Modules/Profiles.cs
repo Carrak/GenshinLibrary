@@ -42,8 +42,8 @@ namespace GenshinLibrary.Modules
 
             embed.WithColor(profile.ProfileCharacter is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.ProfileCharacter.Vision))
                 .WithTitle(user.ToString())
-                .AddField("5★ Characters", $"{(profile.Characters.Any() ? string.Join('\n', profile.Characters.Select(x => x.ToString())) : "None yet!")}")
-                .AddField("5★ Weapons", $"{(profile.Weapons.Any() ? string.Join('\n', profile.Weapons.Select(x => x.ToString())) : "None yet!")}")
+                .AddField("5★ Characters", $"{(profile.Characters.Any() ? string.Join('\n', profile.Characters.Select(x => x.ToString())) : "None yet!")}", true)
+                .AddField("5★ Weapons", $"{(profile.Weapons.Any() ? string.Join('\n', profile.Weapons.Select(x => x.ToString())) : "None yet!")}", true)
                 .WithThumbnailUrl($"attachment://{fileName}");
 
             if (analyticsResult.IsSuccess)
