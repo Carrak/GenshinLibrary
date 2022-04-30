@@ -22,7 +22,7 @@ namespace GenshinLibrary.AutocompleteHandlers
             List<AutocompleteResult> suggestions = new();
             foreach (var wishItem in wishes.WishItemsByWID.Values)
             {
-                if (!types.Contains(wishItem.GetType()))
+                if (types.Length > 0 && !types.Contains(wishItem.GetType()))
                     continue;
 
                 if (wishItem.Name.StartsWith(subject, sc) || wishItem.Aliases.Any(x => x.StartsWith(subject, sc)))
