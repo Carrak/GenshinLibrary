@@ -12,7 +12,7 @@ namespace GenshinLibrary.AutocompleteHandlers
     public class WishItemAutocomplete : AutocompleteHandler
     {
         private const StringComparison sc = StringComparison.InvariantCultureIgnoreCase;
-        protected Type[] types { get; set; }
+        protected Type[] types { get; set; } = Array.Empty<Type>();
 
         public override Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
         {
