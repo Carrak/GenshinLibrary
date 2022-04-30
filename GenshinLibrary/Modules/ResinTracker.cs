@@ -100,7 +100,7 @@ namespace GenshinLibrary.Modules
 
             if (!int.TryParse(rm.Resin, out int resin))
             {
-                await RespondAsync($"\"Resin\" is not a number.", ephemeral: true);
+                await RespondAsync($"\"Resin\" is not a natural number.", ephemeral: true);
                 return;
             }
 
