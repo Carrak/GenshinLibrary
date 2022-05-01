@@ -29,6 +29,7 @@ namespace GenshinLibrary
         public async Task InitAsync()
         {
             _handler.AddModalInfo<ResinTracker.ResinModal>();
+            _handler.AddModalInfo<Wishes.AddWishBulkModal>();
             _handler.AddTypeConverter<WishItem>(new WishItemTypeConverter());
             _handler.AddTypeConverter<Character>(new CharacterTypeReader());
             _handler.AddTypeConverter<Weapon>(new WeaponTypeReader());

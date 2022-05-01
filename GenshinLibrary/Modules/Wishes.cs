@@ -35,15 +35,22 @@ namespace GenshinLibrary.Modules
             _menus = menus;
         }
 
-        [SlashCommand("addwishbulk", "Import your wishes from the game by copying your history")]
-        public async Task AddWishBulk(
-            string data
-            )
+        public class AddWishBulkModal : IModal
         {
-            List<WishItemRecord> records = new List<WishItemRecord>();
+            public string Title => "Paste your data here";
+
+            [InputLabel("Copied data")]
+            [ModalTextInput("copied_data", TextInputStyle.Paragraph, "Copy data from the game's with history and paste it here")]
+            public string CopiedData { get; set; }
+        }
+
+        [ModalInteraction("addwishbulkmodal", true)]
+        public async Task AddWishBulkModalInteraction(AddWishBulkModal modal)
+        {
+            List<WishItemRecord> records = new();
             string errorMessage = "";
 
-            string[] splitData = data.Split('\n');
+            string[] splitData = modal.CopiedData.Split('\n');
             for (int i = 0; i < splitData.Length - 3; i += 4)
             {
                 var name = splitData[i + 1];
@@ -80,7 +87,7 @@ namespace GenshinLibrary.Modules
 
             if (records.Count > 6)
             {
-                await ReplyAsync("Can only import one page (6 wishes) at a time.");
+                await ErrorMessage("Can only import one page (6 wishes) at a time.");
                 return;
             }
 
@@ -99,11 +106,11 @@ namespace GenshinLibrary.Modules
             }
             catch (PostgresException pe)
             {
-                await ReplyAsync(pe.MessageText);
+                await RespondAsync(pe.MessageText, ephemeral: true);
                 return;
             }
 
-            await RespondWithFileAsync(wishImage, "image.png", errorMessage, embed: embed.Build());
+            await RespondWithFileAsync(wishImage, "image.png", errorMessage, embed: embed.Build(), ephemeral: true);
 
             static bool TryParseBannerRaw(string input, out Banner output)
             {
@@ -140,6 +147,24 @@ namespace GenshinLibrary.Modules
 
                 await RespondAsync(embed: embed.Build(), ephemeral: true);
             }
+        }
+
+        [ComponentInteraction("addwishbulk", true)]
+        public async Task AddWishBulkButton() => await RespondWithModalAsync<AddWishBulkModal>("addwishbulkmodal");
+
+        [SlashCommand("addwishbulk", "Import your wishes from the game by copying your history")]
+        public async Task AddWishBulk()
+        {
+            var embed = new EmbedBuilder()
+                .WithTitle("Adding your wishes")
+                .WithColor(Globals.MainColor)
+                .WithDescription("To add your wishes, navigate to the game and open your wish history. " +
+                "Wishes must be added in chronological order, so go to the last page that you haven't yet recorded in the bot. " +
+                "Then select and copy everything from the table the wishes are in except the header and press the button below.");
+
+            var mc = new ComponentBuilder().WithButton("Add wishes", "addwishbulk", ButtonStyle.Primary, GenshinEmotes.Intertwined);
+
+            await RespondAsync(embed: embed.Build(), components: mc.Build());
         }
 
         [SlashCommand("removerecent", "Remove recently added wishes from wish history", runMode: RunMode.Async)]
