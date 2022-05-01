@@ -232,10 +232,10 @@ namespace GenshinLibrary.Services.Wishes
             return records;
         }
 
-        public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, bool sp, WishHistoryFilters filters = null)
+        public async Task<IEnumerable<CompleteWishItemRecord>> GetRecordsAsync(IUser user, Banner banner, WishHistoryFilters filters = null)
         {
             string query = @$"
-            SELECT wid, datetime, wishid, pity_five, pity_four, banner_type FROM gl.get_detailed_wishes(@uid, @banner, @sp)
+            SELECT wid, datetime, wishid, pity_five, pity_four, banner_type FROM gl.get_detailed_wishes(@uid, @banner, false)
             ";
 
             await using var cmd = _database.GetCommand(query);
@@ -249,7 +249,6 @@ namespace GenshinLibrary.Services.Wishes
 
             cmd.Parameters.AddWithValue("uid", (long)user.Id);
             cmd.Parameters.AddWithValue("banner", (int)banner);
-            cmd.Parameters.AddWithValue("sp", sp);
 
             await using var reader = await cmd.ExecuteReaderAsync();
 
