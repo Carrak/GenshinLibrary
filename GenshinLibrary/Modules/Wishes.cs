@@ -226,7 +226,7 @@ namespace GenshinLibrary.Modules
                 return;
             }
 
-            var records = await _wishes.GetRecordsAsync(user, banner, false, filtersResult.Value);
+            var records = await _wishes.GetRecordsAsync(user, banner, filtersResult.Value);
 
             if (!records.Any())
             {
