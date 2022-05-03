@@ -117,7 +117,7 @@ namespace GenshinLibrary.Services.Wishes.Images
                 elements[1] = new WishImageRowElement(record.PityFour.ToString(), record.WishItem.Rarity == 4 ? fourstarColor : Mix(textColor, fourstarColor, record.PityFour / 10f / 1.75f));
                 elements[2] = new WishImageRowElement(name, rarityColor);
                 elements[3] = new WishImageRowElement(record.Banner.ToString(), textColor);
-                elements[4] = new WishImageRowElement(record.DateTime.ToString("yyyy-MM-dd hh:mm:ss"), textColor);
+                elements[4] = new WishImageRowElement(record.DateTime.ToString("yyyy-MM-dd HH:mm:ss"), textColor);
 
                 rows.Add(new WishImageRow(elements));
             }
