@@ -536,7 +536,7 @@ namespace GenshinLibrary.Modules
 
         private static void EvictedFromCacheCallback(object key, object value, EvictionReason reason, object state)
         {
-            (value as WishHistoryPager).Dispose();
+            (value as Menu<WishHistoryPager>).Content.Dispose();
         }
 
         private static Embed GetPagerEmbed(WishHistoryPager pager, string userName) =>
