@@ -18,7 +18,7 @@ namespace GenshinLibrary.Services.Wishes.Images
         public const int HEIGHT = 702;
         public const int WIDTH = 910;
 
-        private const int FONT_SIZE = 21;
+        private const int FONT_SIZE = 20;
         private const int LINE_THICKNESS = 2;
         private const int DY = HEIGHT / (WISHES_DISPLAYED + 1);
 
@@ -86,10 +86,10 @@ namespace GenshinLibrary.Services.Wishes.Images
         {
             WishImageColumn[] columns = new[]
             {
-                new WishImageColumn("Pity 5", 75),
-                new WishImageColumn("Pity 4", 75),
-                new WishImageColumn("Item Name", 356),
-                new WishImageColumn("Wish Type", 162),
+                new WishImageColumn("Pity 5", 72),
+                new WishImageColumn("Pity 4", 72),
+                new WishImageColumn("Item Name", 367),
+                new WishImageColumn("Wish Type", 157),
                 new WishImageColumn("Time Received", 242)
             };
 
