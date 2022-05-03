@@ -231,7 +231,7 @@ namespace GenshinLibrary.Modules
             [Summary(description: "Filter wishes by time. Example: \">01.03.2022,<01.04.2022\" will display wishes from March to April")] string timeReceivedFilter = null,
             [Summary(description: "Filter wishes by pity. Example: \">50,<=60\" will display wishes with pity ranging from 51 to 60")] string pityFilter = null,
             [Summary(description: "Filter wishes by name. Example: \"Rosaria,\" will display wishes containing Rosaria")] string nameFilter = null,
-            [Summary(description: "Filter wishes by rarity. Example: \"5\" will display 5-stars. Equality sign can be omitted")] string rarityFilter = null,
+            [Summary(description: "Filter wishes by rarity. Example: \"=5\" will display 5-stars. Equality sign can be omitted")] string rarityFilter = null,
             [Summary(description: "Whose wishes to display. Leave empty to see your own")] IUser user = null)
         {
             await DeferAsync();
@@ -292,7 +292,7 @@ namespace GenshinLibrary.Modules
             [Summary(description: "Filter wishes by time. Example: \">01.03.2022,<01.04.2022\" will display wishes from March to April")] string timeReceivedFilter = null,
             [Summary(description: "Filter wishes by pity. Example: \">50,<=60\" will display wishes with pity ranging from 51 to 60")] string pityFilter = null,
             [Summary(description: "Filter wishes by name. Example: \"Rosaria,\" will display wishes containing Rosaria")] string nameFilter = null,
-            [Summary(description: "Filter wishes by rarity. Example: \"5\" will display 5-stars. Equality sign can be omitted")] string rarityFilter = null,
+            [Summary(description: "Filter wishes by rarity. Example: \"=5\" will display 5-stars. Equality sign can be omitted")] string rarityFilter = null,
             [Summary(description: "Whose wishes to display. Leave empty to see your own")] IUser user = null)
         {
             user ??= Context.User;
