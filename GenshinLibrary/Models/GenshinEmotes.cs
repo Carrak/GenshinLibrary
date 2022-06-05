@@ -19,19 +19,19 @@ namespace GenshinLibrary.Models
         public static readonly Emote Battlepass = Emote.Parse("<:Battlepass:826514967129620480>");
         public static readonly Emote Resin = Emote.Parse("<:Resin:846420332649906216>");
 
-        public static readonly Emote Pyro = Emote.Parse("<:Pyro:820689358088568832>");
-        public static readonly Emote Cryo = Emote.Parse("<:Cryo:820689413813698610>");
-        public static readonly Emote Hydro = Emote.Parse("<:Hydro:820689376844841013>");
-        public static readonly Emote Electro = Emote.Parse("<:Electro:820689395555631164>");
-        public static readonly Emote Anemo = Emote.Parse("<:Anemo:820689405378560100>");
-        public static readonly Emote Geo = Emote.Parse("<:Geo:820689422462091289>");
-        public static readonly Emote Dendro = Emote.Parse("<:Dendro:820689385014951966>");
+        public static readonly Emote Pyro = Emote.Parse("<:P:820689358088568832>");
+        public static readonly Emote Cryo = Emote.Parse("<:C:820689413813698610>");
+        public static readonly Emote Hydro = Emote.Parse("<:H:820689376844841013>");
+        public static readonly Emote Electro = Emote.Parse("<:E:820689395555631164>");
+        public static readonly Emote Anemo = Emote.Parse("<:A:820689405378560100>");
+        public static readonly Emote Geo = Emote.Parse("<:G:820689422462091289>");
+        public static readonly Emote Dendro = Emote.Parse("<:D:820689385014951966>");
 
-        public static readonly Emote Claymore = Emote.Parse("<:Claymore:828002792270331946>");
-        public static readonly Emote Sword = Emote.Parse("<:Sword:828002817192230934>");
-        public static readonly Emote Polearm = Emote.Parse("<:Polearm:828002779322384474>");
-        public static readonly Emote Bow = Emote.Parse("<:Bow:828002766458322996>");
-        public static readonly Emote Catalyst = Emote.Parse("<:Catalyst:828002806148628571>");
+        public static readonly Emote Claymore = Emote.Parse("<:Cr:828002792270331946>");
+        public static readonly Emote Sword = Emote.Parse("<:Sd:828002817192230934>");
+        public static readonly Emote Polearm = Emote.Parse("<:Pm:828002779322384474>");
+        public static readonly Emote Bow = Emote.Parse("<:Bw:828002766458322996>");
+        public static readonly Emote Catalyst = Emote.Parse("<:Ct:828002806148628571>");
 
         public static Emote GetElementEmote(Element element)
         {
