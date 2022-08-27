@@ -9,7 +9,7 @@ namespace GenshinLibrary.Services.GachaSim
 {
     public class GachaSimImage
     {
-        private static readonly string gachasimMainPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Main{Path.DirectorySeparatorChar}";
+        private static readonly string gachasimMainPath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}GachaSim{Path.DirectorySeparatorChar}Main{Path.DirectorySeparatorChar}";
         private static readonly string backgroundPath = $"{gachasimMainPath}Bg.jpg";
         private static readonly string maskPath = $"{gachasimMainPath}mask.png";
         private static readonly string framePath = $"{gachasimMainPath}frame.png";

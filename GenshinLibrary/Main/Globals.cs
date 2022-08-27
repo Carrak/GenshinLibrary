@@ -27,8 +27,8 @@ namespace GenshinLibrary
 
         public static Config GetConfig()
         {
-            string text = File.ReadAllText($"{ProjectDirectory}genlibconfig.json");
-            return JsonConvert.DeserializeObject<Config>(text);
+            string path = File.ReadAllText($"{ProjectDirectory}genlibconfig.json");
+            return JsonConvert.DeserializeObject<Config>(path);
         }
     }
 }

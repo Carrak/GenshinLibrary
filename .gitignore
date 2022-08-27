@@ -363,7 +363,8 @@ FodyWeavers.xsd
 
 GenshinLibrary/bin
 GenshinLibrary/obj
-GenshinLibrary/Characters
-GenshinLibrary/Weapons
 GenshinLibrary/genlibconfig.json
-GenshinLibrary/GachaSim
+GenshinLibrary/Sprites
+GenshinLibrary/Arial.ttf
+GenshinLibrary/ArialBold.ttf
+GenshinLibrary/HYWenHei-85W.ttf

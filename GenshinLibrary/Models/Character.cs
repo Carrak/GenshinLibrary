@@ -6,7 +6,7 @@ namespace GenshinLibrary.Models
 {
     public class Character : WishItem
     {
-        public static string DefaultAvatarPath = $"{Globals.ProjectDirectory}Characters{Path.DirectorySeparatorChar}Aether.png";
+        public static string DefaultAvatarPath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}Characters{Path.DirectorySeparatorChar}Aether.png";
 
         public Element Vision { get; }
         public WeaponType WieldedWeapon { get; }
@@ -20,9 +20,9 @@ namespace GenshinLibrary.Models
         {
             Vision = vision;
             WieldedWeapon = weapon;
-            WishArtPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}WishArtworks{Path.DirectorySeparatorChar}{Name}.png";
-            ElementIconPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png";
-            AvatarImagePath = $"{Globals.ProjectDirectory}Characters{Path.DirectorySeparatorChar}{Name}.png";
+            WishArtPath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}GachaSim{Path.DirectorySeparatorChar}WishArtworks{Path.DirectorySeparatorChar}{Name}.png";
+            ElementIconPath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Vision}.png";
+            AvatarImagePath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}Characters{Path.DirectorySeparatorChar}{Name}.png";
         }
 
         public override string GetNameWithEmotes()

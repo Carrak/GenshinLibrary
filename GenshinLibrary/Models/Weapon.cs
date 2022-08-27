@@ -16,9 +16,9 @@ namespace GenshinLibrary.Models
         public Weapon(int wid, string name, WeaponType type, int rarity, Banner banners, IEnumerable<string> aliases) : base(wid, name, rarity, banners, aliases)
         {
             Type = type;
-            WishArtPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}WishArtworks{Path.DirectorySeparatorChar}{Name}.png";
-            WeaponTypeIconPath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Type}.png";
-            WeaponIconPath = $"{Globals.ProjectDirectory}Weapons{Path.DirectorySeparatorChar}{Name}.png";
+            WishArtPath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}GachaSim{Path.DirectorySeparatorChar}WishArtworks{Path.DirectorySeparatorChar}{Name}.png";
+            WeaponTypeIconPath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}GachaSim{Path.DirectorySeparatorChar}Icons{Path.DirectorySeparatorChar}{Type}.png";
+            WeaponIconPath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}Weapons{Path.DirectorySeparatorChar}{Name}.png";
         }
 
         public override string GetNameWithEmotes()

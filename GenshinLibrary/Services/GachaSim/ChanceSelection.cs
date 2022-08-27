@@ -5,7 +5,7 @@ namespace GenshinLibrary.Services.GachaSim
 {
     public class ChanceSelection<T>
     {
-        private IEnumerable<ChanceSelectionItem<T>> _items { get; }
+        private readonly IEnumerable<ChanceSelectionItem<T>> _items;
 
         public ChanceSelection(params ChanceSelectionItem<T>[] items)
         {

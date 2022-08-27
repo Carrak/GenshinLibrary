@@ -21,7 +21,7 @@ namespace GenshinLibrary.Models
             Rarity = rarity;
             Banners = banners;
             Aliases = aliases;
-            RarityImagePath = $"{Globals.ProjectDirectory}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
+            RarityImagePath = $"{Globals.ProjectDirectory}Sprites{Path.DirectorySeparatorChar}GachaSim{Path.DirectorySeparatorChar}Rarity{Path.DirectorySeparatorChar}{Rarity}.png";
         }
 
         public abstract string GetNameWithEmotes();
