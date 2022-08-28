@@ -3,10 +3,13 @@ using Discord.Interactions;
 using GenshinLibrary.Analytics;
 using GenshinLibrary.AutocompleteHandlers;
 using GenshinLibrary.Models;
+using GenshinLibrary.Models.Profiles;
 using GenshinLibrary.Services.Wishes;
 using SixLabors.ImageSharp;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace GenshinLibrary.Modules
@@ -42,8 +45,8 @@ namespace GenshinLibrary.Modules
 
             embed.WithColor(profile.ProfileCharacter is null ? GenshinColors.NoElement : GenshinColors.GetElementColor(profile.ProfileCharacter.Vision))
                 .WithTitle(user.ToString())
-                .AddField("5★ Characters", $"{(profile.Characters.Any() ? string.Join('\n', profile.Characters.Select(x => x.ToString())) : "None yet!")}", true)
-                .AddField("5★ Weapons", $"{(profile.Weapons.Any() ? string.Join('\n', profile.Weapons.Select(x => x.ToString())) : "None yet!")}", true)
+                .AddField("5★ Characters", $"{(profile.Characters.Any() ? WishItemString(profile.Characters) : "None yet!")}", true)
+                .AddField("5★ Weapons", $"{(profile.Weapons.Any() ? WishItemString(profile.Weapons) : "None yet!")}", true)
                 .WithThumbnailUrl($"attachment://{fileName}");
 
             if (analyticsResult.IsSuccess)
@@ -74,6 +77,32 @@ namespace GenshinLibrary.Modules
                     $"{(analyticsResult.Value[Banner.Weapon] as EventBannerStats).RateUpGuarantees()}", true);
 
             await RespondWithFileAsync(stream, fileName, embed: embed.Build());
+
+            static string WishItemString(IEnumerable<WishCount> wcs)
+            {
+                const int embedLimit = 1024;
+                const string format = "\n+{0} more...";
+
+                StringBuilder sb = new();
+                int added = 0;
+                var count = wcs.Count();
+
+                foreach(var wc in wcs)
+                {
+                    var wcstr = $"\n{wc}";
+
+                    if (sb.Length + wcstr.Length + 1 >= embedLimit - format.Length)
+                    {
+                        sb.Append(string.Format(format, count - added));
+                        break;
+                    }
+                    
+                    sb.Append(wcstr);
+                    added++;
+                }
+
+                return sb.ToString();
+            }
         }
 
         [SlashCommand("avatar", "Change your profile avatar")]
