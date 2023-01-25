@@ -29,6 +29,8 @@ namespace GenshinLibrary.Modules
             [Summary(description: "Whose analytics to display. Leave empty to see your own")] IUser user = null
             )
         {
+            await DeferAsync();
+
             user ??= Context.User;
 
             var embed = new EmbedBuilder();
@@ -76,7 +78,7 @@ namespace GenshinLibrary.Modules
                     $"{(analyticsResult.Value[Banner.Character] as EventBannerStats).RateUpGuarantees()}\n" +
                     $"{(analyticsResult.Value[Banner.Weapon] as EventBannerStats).RateUpGuarantees()}", true);
 
-            await RespondWithFileAsync(stream, fileName, embed: embed.Build());
+            await FollowupWithFileAsync(stream, fileName, embed: embed.Build());
 
             static string WishItemString(IEnumerable<WishCount> wcs)
             {
